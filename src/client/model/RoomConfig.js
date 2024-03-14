@@ -31,7 +31,13 @@ RoomConfig.prototype.bonusClasses = {
     BonusEnemyStraightAngle: 'bonus-enemy-straight-angle',
     BonusGameBorderless: 'bonus-game-borderless',
     BonusAllColor:'bonus-all-color',
-    BonusGameClear: 'bonus-all-clear'
+    BonusGameClear: 'bonus-all-clear',
+    BonusSelfRandom: 'bonus-self-random',
+    BonusLeaderRandom: 'bonus-leader-random',
+    BonusEnemyRandom: 'bonus-enemy-random',
+    BonusLeaderFast: 'bonus-leader-fast',
+    BonusLeaderInverse: 'bonus-leader-inverse',
+    BonusLeaderSlow: 'bonus-leader-slow'
 };
 
 /**
@@ -53,7 +59,8 @@ RoomConfig.prototype.presets = [
     new SpeedPreset(),
     new SizePreset(),
     new SoloPreset(),
-    new EmptyPreset()
+    new EmptyPreset(),
+    new RandomPreset()
 ];
 
 /**

@@ -39,3 +39,15 @@ BonusGameBorderless.prototype.getEffects = function(game)
         ['borderless', true]
     ];
 };
+
+/**
+ * Get probability
+ *
+ * @param {Game} game
+ *
+ * @return {Number}
+ */
+BonusGameBorderless.prototype.getProbability = function (game)
+{
+    return BonusGameBorderless.prototype.probability;
+};

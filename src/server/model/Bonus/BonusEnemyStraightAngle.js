@@ -40,3 +40,15 @@ BonusEnemyStraightAngle.prototype.getEffects = function(avatar)
         ['angularVelocityBase', Math.PI/2]
     ];
 };
+
+/**
+ * Get probability
+ *
+ * @param {Game} game
+ *
+ * @return {Number}
+ */
+BonusEnemyStraightAngle.prototype.getProbability = function (game)
+{
+    return BonusEnemyStraightAngle.prototype.probability;
+};

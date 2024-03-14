@@ -30,3 +30,15 @@ BonusEnemyInverse.prototype.getEffects = function(avatar)
 {
     return [['inverse', 1]];
 };
+
+/**
+ * Get probability
+ *
+ * @param {Game} game
+ *
+ * @return {Number}
+ */
+BonusEnemyInverse.prototype.getProbability = function (game)
+{
+    return BonusEnemyInverse.prototype.probability;
+};

@@ -12,7 +12,7 @@ function BonusManager(game)
     this.onLoad = this.onLoad.bind(this);
 
     this.loaded = false;
-    this.sprite = new SpriteAsset('images/bonus.png', 3, 4, this.onLoad, true);
+    this.sprite = new SpriteAsset('images/bonus.png', 3, 6, this.onLoad, true);
 }
 
 BonusManager.prototype = Object.create(BaseBonusManager.prototype);
@@ -42,7 +42,13 @@ BonusManager.prototype.spritePosition = [
     'BonusEnemyInverse',
     'BonusSelfSmall',
     'BonusGameClear',
-    'BonusEnemyStraightAngle'
+    'BonusEnemyStraightAngle',
+    'BonusSelfRandom',
+    'BonusLeaderRandom',
+    'BonusEnemyRandom',
+    'BonusLeaderFast',
+    'BonusLeaderInverse',
+    'BonusLeaderSlow'
 ];
 
 /**

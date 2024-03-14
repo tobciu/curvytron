@@ -26,7 +26,13 @@ function BaseRoomConfig(room)
         BonusEnemyStraightAngle: true,
         BonusGameBorderless: true,
         BonusAllColor: true,
-        BonusGameClear: true
+        BonusGameClear: true,
+        BonusSelfRandom: false,
+        BonusLeaderRandom: false,
+        BonusEnemyRandom: false,
+        BonusLeaderFast: true,
+        BonusLeaderInverse: true,
+        BonusLeaderSlow: true
     };
 }
 

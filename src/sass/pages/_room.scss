@@ -589,7 +589,7 @@
                 height: $bonus-size;
                 display: inline-block;
                 background: url(../images/bonus.png) no-repeat transparent;
-                background-size: $bonus-size*3 $bonus-size*4;
+                background-size: $bonus-size*3 $bonus-size*6;
                 position: relative;
                 text-align: center;
                 color: #FFF;
@@ -635,6 +635,24 @@
                 }
                 &.bonus-enemy-straight-angle {
                     @include bonus-sprite(2, 3);
+                }
+                &.bonus-self-random {
+                    @include bonus-sprite(0, 4);
+                }
+                &.bonus-leader-random {
+                    @include bonus-sprite(1, 4);
+                }
+                &.bonus-enemy-random {
+                    @include bonus-sprite(2, 4);
+                }
+                &.bonus-leader-fast {
+                    @include bonus-sprite(0, 5);
+                }
+                &.bonus-leader-inverse {
+                    @include bonus-sprite(1, 5);
+                }
+                &.bonus-leader-slow {
+                    @include bonus-sprite(2, 5);
                 }
 
                 i {

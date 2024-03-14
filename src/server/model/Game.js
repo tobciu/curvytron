@@ -239,12 +239,16 @@ Game.prototype.onRoundNew = function()
     this.deaths.clear();
     this.bonusStack.clear();
 
+    var scoreLeader = this.sortAvatars(this.avatars).getFirst().score;
     for (i = this.avatars.items.length - 1; i >= 0; i--) {
         avatar = this.avatars.items[i];
         if (avatar.present) {
             position = this.world.getRandomPosition(avatar.radius, this.spawnMargin);
             avatar.setPosition(position[0], position[1]);
             avatar.setAngle(this.world.getRandomDirection(avatar.x, avatar.y, this.spawnAngleMargin));
+            if (scoreLeader !== 0 && avatar.score === scoreLeader) {
+                avatar.setColor('#FFD700');
+            }
         } else {
             this.deaths.add(avatar);
         }
