@@ -30,11 +30,7 @@ BonusGameClear.prototype.getProbability = function (game)
 {
     var ratio = 1 - game.getAliveAvatars().count() / game.getPresentAvatars().count();
 
-    if (ratio < 0.5) {
-        return this.probability;
-    }
-
-    return Math.round((BaseBonus.prototype.probability - ratio) * 10) / 10;
+    return Math.round(ratio * 10) / 10;
 };
 
 /**
