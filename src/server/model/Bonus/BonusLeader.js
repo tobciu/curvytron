@@ -31,7 +31,16 @@ BonusLeader.prototype.affect = 'leader';
  */
 BonusLeader.prototype.getTarget = function(avatar, game)
 {
-    return game.sortAvatars(game.avatars.filter(function () { return this.alive && !this.equal(avatar); })).items;
+    var sortAvatars = game.sortAvatars(game.avatars.filter(function () {
+        return this.alive && !this.equal(avatar);
+    }));
+    var leader = sortAvatars.getFirst();
+    if (leader !== null) {
+        return sortAvatars.filter(function () {
+            return this.score === leader.score;
+        }).items;
+    }
+    return [];
 };
 
 /**
@@ -70,5 +79,13 @@ BonusLeader.prototype.probability = 0.5;
  */
 BonusLeader.prototype.getProbability = function (game)
 {
+    var leader = game.sortAvatars(game.avatars.filter(function () {
+        return this.alive;
+    })).getFirst();
+    if (leader === null) {
+        return 0;
+    } else if (leader.score === 0) {
+        return 0;
+    }
     return BonusLeader.prototype.probability;
 };
