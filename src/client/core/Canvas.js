@@ -258,12 +258,17 @@ Canvas.prototype.pastImage = function(image)
  * @param {Number} radius
  * @param {String} color
  */
-Canvas.prototype.drawCircle = function(x, y, radius, color)
+Canvas.prototype.drawCircle = function(x, y, radius, color, borderColor)
 {
     this.context.beginPath();
     this.context.arc(x, y, radius, 0, this.twoPi, false);
     this.context.fillStyle = color;
     this.context.fill();
+    if(color !== borderColor) {
+        this.context.lineWidth = 5;
+        this.context.strokeStyle = borderColor;
+        this.context.stroke();
+    }
 };
 
 /**

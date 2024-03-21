@@ -247,7 +247,7 @@ Game.prototype.onRoundNew = function()
             avatar.setPosition(position[0], position[1]);
             avatar.setAngle(this.world.getRandomDirection(avatar.x, avatar.y, this.spawnAngleMargin));
             if (scoreLeader !== 0 && avatar.score === scoreLeader) {
-                avatar.setColor('#FFD700');
+                avatar.setBorderColor('#FFD700');
             }
         } else {
             this.deaths.add(avatar);

@@ -15,7 +15,7 @@ function Explode(avatar, effect)
 
     var width = this.width/2;
 
-    this.canvas.drawCircle(width, width, width, avatar.color);
+    this.canvas.drawCircle(width, width, width, avatar.color, avatar.color);
 
     for (var i = this.particles.length - 1; i >= 0; i--) {
         this.particles[i] = new ExplodeParticle(

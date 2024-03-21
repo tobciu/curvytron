@@ -149,6 +149,17 @@ Avatar.prototype.setColor = function(color)
 };
 
 /**
+ * Set borderColor
+ *
+ * @param {Number} borderColor
+ */
+Avatar.prototype.setBorderColor = function(borderColor)
+{
+    this.borderColor = borderColor;
+    this.emit('property', {avatar: this, property: 'borderColor', value: this.borderColor});
+};
+
+/**
  * Add point
  *
  * @param {Float} x

@@ -121,6 +121,17 @@ Avatar.prototype.setColor = function(color)
 };
 
 /**
+ * Set borderColor
+ *
+ * @param {String} borderColor
+ */
+Avatar.prototype.setBorderColor = function(borderColor)
+{
+    BaseAvatar.prototype.setBorderColor.call(this, borderColor);
+    this.drawHead();
+};
+
+/**
  * Set score
  *
  * @param {Number} score
@@ -153,7 +164,8 @@ Avatar.prototype.drawHead = function()
         this.canvasRadius,
         this.canvasRadius,
         this.radius * this.canvas.scale,
-        this.color
+        this.color,
+        this.borderColor
     );
 };
 
