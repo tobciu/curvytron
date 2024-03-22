@@ -127,6 +127,17 @@ Avatar.prototype.setInvincible = function(invincible)
 };
 
 /**
+ * Set ghost
+ *
+ * @param {Number} ghost
+ */
+Avatar.prototype.setGhost = function(ghost)
+{
+    BaseAvatar.prototype.setGhost.call(this, ghost);
+    this.emit('property', {avatar: this, property: 'ghost', value: this.ghost});
+};
+
+/**
  * Set inverse
  *
  * @param {Number} inverse

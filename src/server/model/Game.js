@@ -48,10 +48,10 @@ Game.prototype.update = function(step)
         if (avatar.alive) {
             avatar.update(step);
 
-            border = this.world.getBoundIntersect(avatar.body, this.borderless ? 0 : avatar.radius);
+            border = this.world.getBoundIntersect(avatar.body, this.borderless || avatar.ghost ? 0 : avatar.radius);
 
             if (border) {
-                if (this.borderless) {
+                if (this.borderless || avatar.ghost) {
                     position = this.world.getOposite(border[0], border[1]);
                     avatar.setPosition(position[0], position[1]);
                 } else {

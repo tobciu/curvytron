@@ -54,6 +54,9 @@ BonusStack.prototype.apply = function(property, value)
         case 'invincible':
             this.target.setInvincible(value ? true : false);
             break;
+        case 'ghost':
+            this.target.setGhost(value ? true : false);
+            break;
         case 'printing':
             this.target.printManager[value > 0 ? 'start' : 'stop']();
             break;

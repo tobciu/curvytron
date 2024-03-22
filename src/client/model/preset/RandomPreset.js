@@ -39,5 +39,6 @@ RandomPreset.prototype.bonuses = [
     'BonusEnemyRandom',
     'BonusLeaderFast',
     'BonusLeaderInverse',
-    'BonusLeaderSlow'
+    'BonusLeaderSlow',
+    'BonusSelfBorderless'
 ].sort(function() {return 0.5 - Math.random();}).slice(0, Math.floor(Math.random() * 17));

@@ -32,7 +32,8 @@ function BaseRoomConfig(room)
         BonusEnemyRandom: false,
         BonusLeaderFast: true,
         BonusLeaderInverse: true,
-        BonusLeaderSlow: true
+        BonusLeaderSlow: true,
+        BonusSelfBorderless: true
     };
 }
 

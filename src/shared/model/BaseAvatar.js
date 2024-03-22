@@ -10,6 +10,7 @@ function BaseAvatar(player)
     this.id              = player.id;
     this.name            = player.name;
     this.color           = player.color;
+    this.borderColor           = player.color;
     this.player          = player;
     this.x               = 0;
     this.y               = 0;
@@ -73,6 +74,13 @@ BaseAvatar.prototype.inverse = false;
  * @type {Boolean}
  */
 BaseAvatar.prototype.invincible = false;
+
+/**
+ * Invincible
+ *
+ * @type {Boolean}
+ */
+BaseAvatar.prototype.ghost = false;
 
 /**
  * Type of tunrn: round or straight
@@ -265,6 +273,16 @@ BaseAvatar.prototype.setInvincible = function(invincible)
 };
 
 /**
+ * Set ghost
+ *
+ * @param {Number} ghost
+ */
+BaseAvatar.prototype.setGhost = function(ghost)
+{
+    this.ghost = ghost ? true : false;
+};
+
+/**
  * Get distance
  *
  * @param {Number} fromX
@@ -361,6 +379,16 @@ BaseAvatar.prototype.setColor = function(color)
 };
 
 /**
+ * Set borderColor
+ *
+ * @param {Number} color
+ */
+BaseAvatar.prototype.setBorderColor = function(borderColor)
+{
+    this.borderColor = borderColor;
+};
+
+/**
  * Clear
  */
 BaseAvatar.prototype.clear = function()
@@ -378,6 +406,7 @@ BaseAvatar.prototype.clear = function()
     this.alive               = true;
     this.printing            = false;
     this.color               = this.player.color;
+    this.borderColor         = this.player.color;
     this.radius              = BaseAvatar.prototype.radius;
     this.inverse             = BaseAvatar.prototype.inverse;
     this.invincible          = BaseAvatar.prototype.invincible;
@@ -412,6 +441,7 @@ BaseAvatar.prototype.serialize = function()
         id: this.id,
         name: this.name,
         color: this.color,
+        borderColor: this.borderColor,
         score: this.score
     };
 };

@@ -37,7 +37,8 @@ RoomConfig.prototype.bonusClasses = {
     BonusEnemyRandom: 'bonus-enemy-random',
     BonusLeaderFast: 'bonus-leader-fast',
     BonusLeaderInverse: 'bonus-leader-inverse',
-    BonusLeaderSlow: 'bonus-leader-slow'
+    BonusLeaderSlow: 'bonus-leader-slow',
+    BonusSelfBorderless: 'bonus-self-borderless'
 };
 
 /**

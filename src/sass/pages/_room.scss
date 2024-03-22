@@ -589,7 +589,7 @@
                 height: $bonus-size;
                 display: inline-block;
                 background: url(../images/bonus.png) no-repeat transparent;
-                background-size: $bonus-size*3 $bonus-size*6;
+                background-size: $bonus-size*3 $bonus-size*7;
                 position: relative;
                 text-align: center;
                 color: #FFF;
@@ -653,6 +653,9 @@
                 }
                 &.bonus-leader-slow {
                     @include bonus-sprite(2, 5);
+                }
+                &.bonus-self-borderless {
+                    @include bonus-sprite(0, 6);
                 }
 
                 i {

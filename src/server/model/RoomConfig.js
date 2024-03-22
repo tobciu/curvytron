@@ -34,7 +34,8 @@ RoomConfig.prototype.bonusTypes = {
     BonusEnemyRandom: BonusEnemyRandom,
     BonusLeaderFast: BonusLeaderFast,
     BonusLeaderInverse: BonusLeaderInverse,
-    BonusLeaderSlow: BonusLeaderSlow
+    BonusLeaderSlow: BonusLeaderSlow,
+    BonusSelfBorderless: BonusSelfBorderless
 
 };
 
