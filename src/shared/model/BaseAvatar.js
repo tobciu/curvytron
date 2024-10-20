@@ -404,6 +404,7 @@ BaseAvatar.prototype.clear = function()
     this.roundScore          = 0;
     this.velocity            = BaseAvatar.prototype.velocity;
     this.alive               = true;
+    this.ghost               = false;
     this.printing            = false;
     this.color               = this.player.color;
     this.borderColor         = this.player.color;
