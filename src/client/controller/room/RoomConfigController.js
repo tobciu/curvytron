@@ -92,6 +92,10 @@ RoomConfigController.prototype.togglePreset = function(preset)
 RoomConfigController.prototype.applyPreset = function(preset)
 {
     if (this.repository.amIMaster()) {
+        if(preset.name && preset.name == "Random"){
+            preset.calculateRandom();
+        }
+
         for (var bonus in this.config.bonuses) {
             if (this.config.bonuses[bonus] !== preset.hasBonus(bonus)) {
                 this.toggleBonus(bonus);

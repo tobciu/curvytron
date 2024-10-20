@@ -21,7 +21,14 @@ RandomPreset.prototype.name = 'Random';
  *
  * @type {Array}
  */
-RandomPreset.prototype.bonuses = [
+Preset.prototype.bonuses = [];
+
+/**
+ * All bonuses
+ *
+ * @type {Array}
+ */
+RandomPreset.prototype.allBonuses = [
     'BonusSelfFast',
     'BonusEnemyFast',
     'BonusSelfSlow',
@@ -41,4 +48,8 @@ RandomPreset.prototype.bonuses = [
     'BonusLeaderInverse',
     'BonusLeaderSlow',
     'BonusSelfBorderless'
-].sort(function() {return 0.5 - Math.random();}).slice(0, Math.floor(Math.random() * 17));
+];
+
+RandomPreset.prototype.calculateRandom = function(){
+    RandomPreset.prototype.bonuses = RandomPreset.prototype.allBonuses.sort(function() {return 0.5 - Math.random();}).slice(0, Math.floor(Math.random() * (RandomPreset.prototype.allBonuses.length - 1)))
+}
