@@ -73,7 +73,7 @@ RoomConfigController.prototype.toggleBonus = function(bonus)
  */
 RoomConfigController.prototype.togglePreset = function(preset)
 {
-    if (this.config.preset === preset) {
+    if (this.config.preset === preset && preset.name && preset.name != "Random") {
         if (preset === this.config.getDefaultPreset()) {
             return;
         }
