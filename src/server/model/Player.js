@@ -1,28 +1,19 @@
+import BasePlayer from '../../shared/model/BasePlayer.js';
+
 /**
  * Player
- *
- * @param {SocketClient} client
- * @param {String} name
- * @param {String} color
  */
-function Player(client, name, color)
-{
-    BasePlayer.call(this, client, name, color);
+class Player extends BasePlayer {
+    /**
+     * Serialize
+     *
+     * @return {Object}
+     */
+    serialize() {
+        const data = super.serialize();
+        data.active = this.client.active;
+        return data;
+    }
 }
 
-Player.prototype = Object.create(BasePlayer.prototype);
-Player.prototype.constructor = Player;
-
-/**
- * Serialize
- *
- * @return {Object}
- */
-Player.prototype.serialize = function()
-{
-    var data = BasePlayer.prototype.serialize.call(this);
-
-    data.active = this.client.active;
-
-    return data;
-};
+export default Player;

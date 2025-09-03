@@ -1,44 +1,37 @@
+import BonusLeader from './BonusLeader.js';
+
 /**
  * Inverse Leader Bonus
- *
- * @param {Number} x
- * @param {Number} y
  */
-function BonusLeaderInverse(x, y)
-{
-    BonusEnemy.call(this, x, y);
+class BonusLeaderInverse extends BonusLeader {
+    /**
+     * Probability
+     *
+     * @type {Number}
+     */
+    probability = 0.8;
+
+    /**
+     * Get effects
+     *
+     * @param {Avatar} avatar
+     *
+     * @return {Array}
+     */
+    getEffects(avatar) {
+        return [['inverse', 1]];
+    }
+
+    /**
+     * Get probability
+     *
+     * @param {Game} game
+     *
+     * @return {Number}
+     */
+    getProbability(game) {
+        return super.getProbability(game) * this.probability;
+    }
 }
 
-BonusLeaderInverse.prototype = Object.create(BonusLeader.prototype);
-BonusLeaderInverse.prototype.constructor = BonusLeaderInverse;
-
-/**
- * Probability
- *
- * @type {Number}
- */
-BonusLeaderInverse.prototype.probability = 0.8;
-
-/**
- * Get effects
- *
- * @param {Avatar} avatar
- *
- * @return {Array}
- */
-BonusLeaderInverse.prototype.getEffects = function(avatar)
-{
-    return [['inverse', 1]];
-};
-
-/**
- * Get probability
- *
- * @param {Game} game
- *
- * @return {Number}
- */
-BonusLeaderInverse.prototype.getProbability = function (game)
-{
-    return BonusLeader.prototype.probability * BonusLeaderInverse.prototype.probability;
-};
+export default BonusLeaderInverse;

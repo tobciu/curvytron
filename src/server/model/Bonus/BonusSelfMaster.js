@@ -1,35 +1,29 @@
+import BonusSelf from './BonusSelf.js';
+
 /**
  * Master Bonus
- *
- * @param {Number} x
- * @param {Number} y
  */
-function BonusSelfMaster(x, y)
-{
-    BonusSelf.call(this, x, y);
+class BonusSelfMaster extends BonusSelf {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    duration = 7500;
+
+    /**
+     * Get effects
+     *
+     * @param {Avatar} avatar
+     *
+     * @return {Array}
+     */
+    getEffects(avatar) {
+        return [
+            ['invincible', true],
+            ['printing', -1]
+        ];
+    }
 }
 
-BonusSelfMaster.prototype = Object.create(BonusSelf.prototype);
-BonusSelfMaster.prototype.constructor = BonusSelfMaster;
-
-/**
- * Duration
- *
- * @type {Number}
- */
-BonusSelfMaster.prototype.duration = 7500;
-
-/**
- * Get effects
- *
- * @param {Avatar} avatar
- *
- * @return {Array}
- */
-BonusSelfMaster.prototype.getEffects = function(avatar)
-{
-    return [
-        ['invincible', true],
-        ['printing', -1]
-    ];
-};
+export default BonusSelfMaster;

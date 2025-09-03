@@ -1,55 +1,51 @@
+import BaseRoom from '../../shared/model/BaseRoom.js';
+import RoomController from '../controller/RoomController.js';
+
 /**
  * Room
- *
- * @param {String} name
  */
-function Room(name)
-{
-    BaseRoom.call(this, name);
+class Room extends BaseRoom {
+    constructor(name) {
+        super(name);
+        this.controller = new RoomController(this);
+    }
 
-    this.controller = new RoomController(this);
+    /**
+     * Close
+     */
+    close() {
+        this.emit('close', { room: this });
+    }
+
+    /**
+     * Add player
+     *
+     * @param {Player} player
+     */
+    addPlayer(player) {
+        const result = super.addPlayer(player);
+
+        if (result) {
+            this.emit('player:join', { room: this, player: player });
+        }
+
+        return result;
+    }
+
+    /**
+     * Remove player
+     *
+     * @param {Player} player
+     */
+    removePlayer(player) {
+        const result = super.removePlayer(player);
+
+        if (result) {
+            this.emit('player:leave', { room: this, player: player });
+        }
+
+        return result;
+    }
 }
 
-Room.prototype = Object.create(BaseRoom.prototype);
-Room.prototype.constructor = Room;
-
-/**
- * Close
- */
-Room.prototype.close = function()
-{
-    this.emit('close', {room: this});
-};
-
-/**
- * Add player
- *
- * @param {Player} player
- */
-Room.prototype.addPlayer = function(player)
-{
-    var result = BaseRoom.prototype.addPlayer.call(this, player);
-
-    if (result) {
-        this.emit('player:join', {room: this, player: player});
-    }
-
-    return result;
-};
-
-
-/**
- * Remove player
- *
- * @param {Player} player
- */
-Room.prototype.removePlayer = function(player)
-{
-    var result = BaseRoom.prototype.removePlayer.call(this, player);
-
-    if (result) {
-        this.emit('player:leave', {room: this, player: player});
-    }
-
-    return result;
-};
+export default Room;

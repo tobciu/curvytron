@@ -1,358 +1,335 @@
+import EventEmitter from 'tom32i-event-emitter.js';
+import BaseFPSLogger from '../service/BaseFPSLogger.js';
+import BaseBonusManager from '../manager/BaseBonusManager.js';
+import BaseAvatar from './BaseAvatar.js';
+
 /**
  * BaseGame
- *
- * @param {Room} room
  */
-function BaseGame(room)
-{
-    EventEmitter.call(this);
+class BaseGame extends EventEmitter {
+    /**
+     * Loop frame rate
+     *
+     * @type {Number}
+     */
+    framerate = 1 / 60 * 1000;
 
-    this.room         = room;
-    this.name         = this.room.name;
-    this.frame        = null;
-    this.avatars      = this.room.players.map(function () { return this.getAvatar(); });
-    this.size         = this.getSize(this.avatars.count());
-    this.rendered     = null;
-    this.maxScore     = room.config.getMaxScore();
-    this.fps          = new FPSLogger();
-    this.started      = false;
-    this.bonusManager = new BonusManager(this, room.config.getBonuses(), room.config.getVariable('bonusRate'));
-    this.inRound      = false;
+    /**
+     * Map size factor per player
+     *
+     * @type {Number}
+     */
+    perPlayerSize = 80;
 
-    this.start    = this.start.bind(this);
-    this.stop     = this.stop.bind(this);
-    this.loop     = this.loop.bind(this);
-    this.newRound = this.newRound.bind(this);
-    this.endRound = this.endRound.bind(this);
-    this.end      = this.end.bind(this);
-    this.onFrame  = this.onFrame.bind(this);
-}
+    /**
+     * Time before round start
+     *
+     * @type {Number}
+     */
+    warmupTime = 3000;
 
-BaseGame.prototype = Object.create(EventEmitter.prototype);
-BaseGame.prototype.constructor = BaseGame;
+    /**
+     * Time after round end
+     *
+     * @type {Number}
+     */
+    warmdownTime = 5000;
 
-/**
- * Loop frame rate
- *
- * @type {Number}
- */
-BaseGame.prototype.framerate = 1/60 * 1000;
+    /**
+     * Margin from borders
+     *
+     * @type {Number}
+     */
+    spawnMargin = 0.05;
 
-/**
- * Map size factor per player
- *
- * @type {Number}
- */
-BaseGame.prototype.perPlayerSize = 80;
+    /**
+     * Angle margin from borders
+     *
+     * @type {Number}
+     */
+    spawnAngleMargin = 0.3;
 
-/**
- * Time before round start
- *
- * @type {Number}
- */
-BaseGame.prototype.warmupTime = 3000;
+    /**
+     * Borderless
+     *
+     * @type {Boolean}
+     */
+    borderless = false;
 
-/**
- * Time after round end
- *
- * @type {Number}
- */
-BaseGame.prototype.warmdownTime = 5000;
+    constructor(room) {
+        super();
 
-/**
- * Margin from borders
- *
- * @type {Number}
- */
-BaseGame.prototype.spawnMargin = 0.05;
+        this.room = room;
+        this.name = this.room.name;
+        this.frame = null;
+        this.avatars = this.room.players.map(player => new BaseAvatar(player));
+        this.size = this.getSize(this.avatars.count());
+        this.rendered = null;
+        this.maxScore = room.config.getMaxScore();
+        this.fps = new BaseFPSLogger();
+        this.started = false;
+        this.bonusManager = new BaseBonusManager(this);
+        this.inRound = false;
 
-/**
- * Angle margin from borders
- *
- * @type {Number}
- */
-BaseGame.prototype.spawnAngleMargin = 0.3;
-
-/**
- * Borderless
- *
- * @type {Boolean}
- */
-BaseGame.prototype.borderless = false;
-
-/**
- * Update
- *
- * @param {Number} step
- */
-BaseGame.prototype.update = function(step) {};
-
-/**
- * Remove a avatar from the game
- *
- * @param {Avatar} avatar
- */
-BaseGame.prototype.removeAvatar = function(avatar)
-{
-    if (this.avatars.exists(avatar)) {
-        avatar.die();
-        avatar.destroy();
+        this.start = this.start.bind(this);
+        this.stop = this.stop.bind(this);
+        this.loop = this.loop.bind(this);
+        this.newRound = this.newRound.bind(this);
+        this.endRound = this.endRound.bind(this);
+        this.end = this.end.bind(this);
+        this.onFrame = this.onFrame.bind(this);
     }
-};
 
-/**
- * Start loop
- */
-BaseGame.prototype.start = function()
-{
-    if (!this.frame) {
-        this.onStart();
-        this.loop();
-    }
-};
+    /**
+     * Update
+     *
+     * @param {Number} step
+     */
+    update(step) { }
 
-/**
- * Stop loop
- */
-BaseGame.prototype.stop = function()
-{
-    if (this.frame) {
-        this.clearFrame();
-        this.onStop();
-    }
-};
-
-/**
- * Animation loop
- */
-BaseGame.prototype.loop = function()
-{
-    this.newFrame();
-
-    var now  = new Date().getTime(),
-        step = now - this.rendered;
-
-    this.rendered = now;
-
-    this.onFrame(step);
-    this.fps.onFrame();
-};
-
-/**
- * On start
- */
-BaseGame.prototype.onStart = function()
-{
-    this.rendered = new Date().getTime();
-    this.bonusManager.start();
-    this.fps.start();
-};
-
-/**
- * Onn stop
- */
-BaseGame.prototype.onStop = function()
-{
-    this.rendered = null;
-    this.bonusManager.stop();
-    this.fps.stop();
-
-    var size = this.getSize(this.getPresentAvatars().count());
-
-    if (this.size !== size) {
-        this.setSize(size);
-    }
-};
-
-/**
- * On round new
- */
-BaseGame.prototype.onRoundNew = function()
-{
-    this.borderless = BaseGame.prototype.borderless;
-
-    this.bonusManager.clear();
-
-    for (var i = this.avatars.items.length - 1; i >= 0; i--) {
-        if (this.avatars.items[i].present) {
-            this.avatars.items[i].clear();
+    /**
+     * Remove a avatar from the game
+     *
+     * @param {Avatar} avatar
+     */
+    removeAvatar(avatar) {
+        if (this.avatars.exists(avatar)) {
+            avatar.die();
+            avatar.destroy();
         }
     }
-};
 
-/**
- * On round end
- */
-BaseGame.prototype.onRoundEnd = function() {};
-
-/**
- * Get new frame
- */
-BaseGame.prototype.newFrame = function()
-{
-    this.frame = setTimeout(this.loop, this.framerate);
-};
-
-/**
- * Clear frame
- */
-BaseGame.prototype.clearFrame = function()
-{
-    clearTimeout(this.frame);
-    this.frame = null;
-};
-
-/**
- * On frame
- *
- * @param {Number} step
- */
-BaseGame.prototype.onFrame = function(step)
-{
-    this.update(step);
-};
-
-/**
- * Update game size
- */
-BaseGame.prototype.setSize = function()
-{
-    this.size = this.getSize(this.getPresentAvatars().count());
-};
-
-/**
- * Get size by players
- *
- * @param {Number} players
- *
- * @return {Number}
- */
-BaseGame.prototype.getSize = function(players)
-{
-    var square = this.perPlayerSize * this.perPlayerSize,
-        size   = Math.sqrt(square + ((players - 1) * square / 5));
-
-    return Math.round(size);
-};
-
-/**
- * Are all avatars ready?
- *
- * @return {Boolean}
- */
-BaseGame.prototype.isReady = function()
-{
-    return this.getLoadingAvatars().isEmpty();
-};
-
-/**
- * Get still loading avatars
- *
- * @return {Collection}
- */
-BaseGame.prototype.getLoadingAvatars = function()
-{
-    return this.avatars.filter(function () { return this.present && !this.ready; });
-};
-
-/**
- * Get alive avatars
- *
- * @return {Collection}
- */
-BaseGame.prototype.getAliveAvatars = function()
-{
-    return this.avatars.filter(function () { return this.alive; });
-};
-
-/**
- * Get present avatars
- *
- * @return {Collection}
- */
-BaseGame.prototype.getPresentAvatars = function()
-{
-    return this.avatars.filter(function () { return this.present; });
-};
-
-/**
- * Sort avatars
- *
- * @param {Object} avatars
- *
- * @return {Object}
- */
-BaseGame.prototype.sortAvatars = function(avatars)
-{
-    avatars = typeof(avatars) !== 'undefined' ? avatars : this.avatars;
-
-    avatars.sort(function (a, b) { return a.score > b.score ? -1 : (a.score < b.score ? 1 : 0); });
-
-    return avatars;
-};
-
-/**
- * Set borderless
- *
- * @param {Boolean} borderless
- */
-BaseGame.prototype.setBorderless = function(borderless)
-{
-    this.borderless = borderless ? true : false;
-};
-
-/**
- * Serialize
- *
- * @return {Object}
- */
-BaseGame.prototype.serialize = function()
-{
-    return {
-        name: this.name,
-        players: this.avatars.map(function () { return this.serialize(); }).items,
-        maxScore: this.maxScore
-    };
-};
-
-/**
- * New round
- */
-BaseGame.prototype.newRound = function(time)
-{
-    this.started = true;
-
-    if (!this.inRound) {
-        this.inRound = true;
-        this.onRoundNew();
-        setTimeout(this.start, typeof(time) !== 'undefined' ? time : this.warmupTime);
-    }
-};
-
-/**
- * Check end of round
- */
-BaseGame.prototype.endRound = function()
-{
-    if (this.inRound) {
-        this.inRound = false;
-        this.onRoundEnd();
-        setTimeout(this.stop, this.warmdownTime);
-    }
-};
-
-/**
- * FIN DU GAME
- */
-BaseGame.prototype.end = function()
-{
-    if (this.started) {
-        this.started = false;
-        this.stop();
-        this.emit('end', {game: this});
-
-        return true;
+    /**
+     * Start loop
+     */
+    start() {
+        if (!this.frame) {
+            this.onStart();
+            this.loop();
+        }
     }
 
-    return false;
-};
+    /**
+     * Stop loop
+     */
+    stop() {
+        if (this.frame) {
+            this.clearFrame();
+            this.onStop();
+        }
+    }
+
+    /**
+     * Animation loop
+     */
+    loop() {
+        this.newFrame();
+
+        const now = new Date().getTime();
+        const step = now - this.rendered;
+
+        this.rendered = now;
+
+        this.onFrame(step);
+        this.fps.onFrame();
+    }
+
+    /**
+     * On start
+     */
+    onStart() {
+        this.rendered = new Date().getTime();
+        this.bonusManager.start();
+        this.fps.start();
+    }
+
+    /**
+     * Onn stop
+     */
+    onStop() {
+        this.rendered = null;
+        this.bonusManager.stop();
+        this.fps.stop();
+
+        const size = this.getSize(this.getPresentAvatars().count());
+
+        if (this.size !== size) {
+            this.setSize(size);
+        }
+    }
+
+    /**
+     * On round new
+     */
+    onRoundNew() {
+        this.borderless = BaseGame.prototype.borderless;
+        this.bonusManager.clear();
+
+        for (let i = this.avatars.items.length - 1; i >= 0; i--) {
+            if (this.avatars.items[i].present) {
+                this.avatars.items[i].clear();
+            }
+        }
+    }
+
+    /**
+     * On round end
+     */
+    onRoundEnd() { }
+
+    /**
+     * Get new frame
+     */
+    newFrame() {
+        this.frame = window.requestAnimationFrame(this.loop);
+    }
+
+    /**
+     * Clear frame
+     */
+    clearFrame() {
+        window.cancelAnimationFrame(this.frame);
+        this.frame = null;
+    }
+
+    /**
+     * On frame
+     *
+     * @param {Number} step
+     */
+    onFrame(step) {
+        this.update(step);
+    }
+
+    /**
+     * Update game size
+     */
+    setSize() {
+        this.size = this.getSize(this.getPresentAvatars().count());
+    }
+
+    /**
+     * Get size by players
+     *
+     * @param {Number} players
+     *
+     * @return {Number}
+     */
+    getSize(players) {
+        const square = this.perPlayerSize * this.perPlayerSize;
+        const size = Math.sqrt(square + ((players - 1) * square / 5));
+        return Math.round(size);
+    }
+
+    /**
+     * Are all avatars ready?
+     *
+     * @return {Boolean}
+     */
+    isReady() {
+        return this.getLoadingAvatars().isEmpty();
+    }
+
+    /**
+     * Get still loading avatars
+     *
+     * @return {Collection}
+     */
+    getLoadingAvatars() {
+        return this.avatars.filter(function () { return this.present && !this.ready; });
+    }
+
+
+
+    /**
+     * Get alive avatars
+     *
+     * @return {Collection}
+     */
+    getAliveAvatars() {
+        return this.avatars.filter(function () { return this.alive; });
+    }
+
+    /**
+     * Get present avatars
+     *
+     * @return {Collection}
+     */
+    getPresentAvatars() {
+        return this.avatars.filter(function () { return this.present; });
+    }
+
+    /**
+     * Sort avatars
+     *
+     * @param {Object} avatars
+     *
+     * @return {Object}
+     */
+    sortAvatars(avatars) {
+        avatars = typeof (avatars) !== 'undefined' ? avatars : this.avatars;
+        avatars.sort((a, b) => (a.score > b.score ? -1 : (a.score < b.score ? 1 : 0)));
+        return avatars;
+    }
+
+    /**
+     * Set borderless
+     *
+     * @param {Boolean} borderless
+     */
+    setBorderless(borderless) {
+        this.borderless = !!borderless;
+    }
+
+    /**
+     * Serialize
+     *
+     * @return {Object}
+     */
+    serialize() {
+        return {
+            name: this.name,
+            players: this.avatars.map(function () { return this.serialize(); }).items,
+            maxScore: this.maxScore
+        };
+    }
+
+    /**
+     * New round
+     */
+    newRound(time) {
+        this.started = true;
+
+        if (!this.inRound) {
+            this.inRound = true;
+            this.onRoundNew();
+            setTimeout(this.start, typeof (time) !== 'undefined' ? time : this.warmupTime);
+        }
+    }
+
+    /**
+     * Check end of round
+     */
+    endRound() {
+        if (this.inRound) {
+            this.inRound = false;
+            this.onRoundEnd();
+            setTimeout(this.stop, this.warmdownTime);
+        }
+    }
+
+    /**
+     * FIN DU GAME
+     */
+    end() {
+        if (this.started) {
+            this.started = false;
+            this.stop();
+            this.emit('end', { game: this });
+            return true;
+        }
+        return false;
+    }
+}
+
+export default BaseGame;

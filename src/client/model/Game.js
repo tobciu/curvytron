@@ -1,335 +1,254 @@
+import BaseGame from '../../shared/model/BaseGame.js';
+import Canvas from '../core/Canvas.js';
+import Explode from '../animation/Explode.js';
+import BonusManager from '../manager/BonusManager.js';
+
 /**
  * Game
- *
- * @param {Room} room
  */
-function Game(room)
-{
-    BaseGame.call(this, room);
+export default class Game extends BaseGame {
+    constructor(room) {
+        super(room);
 
-    this.animations = [];
+        // Game properties:
+        this.animations = [];
+        this.backgroundColor = '#222222';
+        this.stackMargin = 15;
 
-    this.onResize = this.onResize.bind(this);
-    this.onDie    = this.onDie.bind(this);
+        this.onResize = this.onResize.bind(this);
+        this.onDie = this.onDie.bind(this);
 
-    window.addEventListener('error', this.stop);
-    window.addEventListener('resize', this.onResize);
+        window.addEventListener('error', this.stop);
+        window.addEventListener('resize', this.onResize);
 
-    for (var avatar, i = this.avatars.items.length - 1; i >= 0; i--) {
-        this.avatars.items[i].on('die', this.onDie);
+        for (let i = this.avatars.items.length - 1; i >= 0; i--) {
+            this.avatars.items[i].on('die', this.onDie);
+        }
     }
-}
 
-Game.prototype = Object.create(BaseGame.prototype);
-Game.prototype.constructor = Game;
+    loadDOM(elements) {
+        this.render = elements.render;
+        this.gameInfos = elements.infos;
+        this.canvas = new Canvas(0, 0, elements.game);
+        this.background = new Canvas(0, 0, elements.background);
+        this.effect = new Canvas(0, 0, elements.effect);
 
-/**
- * Margin between player an bonus stack
- *
- * @type {Number}
- */
-Game.prototype.stackMargin = 15;
+        this.bonusManager.loadDOM(elements.bonus);
+        this.onResize();
+    }
 
-/**
- * Background color
- *
- * @type {String}
- */
-Game.prototype.backgroundColor = '#222222';
 
-/**
- * Load DOM
- */
-Game.prototype.loadDOM = function()
-{
-    this.render     = document.getElementById('render');
-    this.gameInfos  = document.getElementById('game-infos');
-    this.canvas     = new Canvas(0, 0, document.getElementById('game'));
-    this.background = new Canvas(0, 0, document.getElementById('background'));
-    this.effect     = new Canvas(0, 0, document.getElementById('effect'));
+    onFrame(step) {
+        for (let i = this.avatars.items.length - 1; i >= 0; i--) {
+            const avatar = this.avatars.items[i];
+            if (avatar.alive) {
+                avatar.update(step);
+                this.checkCollision(avatar);
+            }
+        }
 
-    this.bonusManager.loadDOM();
-    this.onResize();
-};
+        this.bonusManager.update(step);
+        this.draw(step);
+    }
 
-/**
- * Get new frame
- */
-Game.prototype.newFrame = function()
-{
-    this.frame = window.requestAnimationFrame(this.loop);
-};
+    /**
+     * Check avatar collision
+     *
+     * @param {Avatar} avatar
+     */
+    checkCollision(avatar) {
+        // Wall collision
+        if (!this.borderless) {
+            if (avatar.x - avatar.radius < 0 || avatar.x + avatar.radius > this.size ||
+                avatar.y - avatar.radius < 0 || avatar.y + avatar.radius > this.size) {
+                avatar.die();
+                return;
+            }
+        }
 
-/**
- * Clear frame
- */
-Game.prototype.clearFrame = function()
-{
-    window.cancelAnimationFrame(this.frame);
-    this.frame = null;
-};
+        // Other players collision
+        for (let i = this.avatars.items.length - 1; i >= 0; i--) {
+            const other = this.avatars.items[i];
+            if (other.alive && avatar.trail.isCollision(other.trail)) {
+                 avatar.die();
+                 return;
+            }
+        }
 
-/**
- * On frame
- *
- * @param {Number} step
- */
-Game.prototype.onFrame = function(step)
-{
-    this.draw(step);
-};
+        // Self collision
+        if (avatar.trail.isSelfCollision()) {
+            avatar.die();
+            return;
+        }
 
-/**
- * On round new
- */
-Game.prototype.onRoundNew = function()
-{
-    BaseGame.prototype.onRoundNew.call(this);
-    this.repaint();
-};
+        // Bonus collision
+        for (let i = this.bonusManager.bonuses.items.length - 1; i >= 0; i--) {
+            const bonus = this.bonusManager.bonuses.items[i];
+            if (bonus.active && avatar.isColliding(bonus)) {
+                this.bonusManager.add(bonus.constructor, avatar);
+            }
+        }
+    }
 
-/**
- * On start
- */
-Game.prototype.onStart = function()
-{
-    this.effect.clear();
-    BaseGame.prototype.onStart.call(this);
-};
+    onRoundNew() {
+        this.repaint();
+    }
 
-/**
- * Is tie break
- *
- * @return {Boolean}
- */
-Game.prototype.isTieBreak = function()
-{
-    var maxScore = this.maxScore;
+    onStart() {
+        this.effect.clear();
+    }
 
-    return this.avatars.match(function () { return this.score >= maxScore; }) !== null;
-};
-
-/**
- * Are all avatars ready?
- *
- * @return {Boolean}
- */
-Game.prototype.isReady = function()
-{
-    return this.started ? true : BaseGame.prototype.isReady.call(this);
-};
-
-/**
- * Clear trails
- */
-Game.prototype.clearTrails = function()
-{
-    this.clearBackground();
-};
-
-/**
- * End
- */
-Game.prototype.end = function()
-{
-    if (BaseGame.prototype.end.call(this)) {
+    end() {
+        this.stop();
         window.removeEventListener('error', this.stop);
         window.removeEventListener('resize', this.onResize);
     }
-};
 
-/**
- * Update size
- */
-Game.prototype.setSize = function()
-{
-    BaseGame.prototype.setSize.call(this);
-    this.onResize();
-};
-
-/**
- * Repaint
- */
-Game.prototype.repaint = function()
-{
-    this.animations.length = 0;
-    this.clearBackground();
-    this.effect.clear();
-    this.canvas.clear();
-    this.draw();
-};
-
-
-/**
- * Draw
- *
- * @param {Number} step
- */
-Game.prototype.draw = function(step)
-{
-    for (var animation, a = this.animations.length - 1; a >= 0; a--) {
-        animation = this.animations[a];
-        animation.draw();
-        if (animation.done && animation.cleared) {
-            this.animations.splice(a, 1);
-        }
+    setSize(size) {
+        this.size = size;
+        this.onResize();
     }
 
-    for (var avatar, i = this.avatars.items.length - 1; i >= 0; i--) {
-        avatar = this.avatars.items[i];
-        if (avatar.present && (avatar.alive || avatar.changed)) {
-            this.clearAvatar(avatar);
-            this.clearBonusStack(avatar);
-        }
+    setBorderless(borderless) {
+        this.borderless = borderless;
     }
 
-    for (avatar, i = this.avatars.items.length - 1; i >= 0; i--) {
-        avatar = this.avatars.items[i];
-        if (avatar.present && (avatar.alive || avatar.changed)) {
-            if (avatar.alive) {
-                avatar.update(this.frame ? step : 0);
-            }
-
-            this.drawTail(avatar);
-            this.drawAvatar(avatar);
-            this.drawBonusStack(avatar);
-
-            if (!this.frame && avatar.local) {
-                this.drawArrow(avatar);
+    getLeader() {
+        let leader = null;
+        for (let i = this.avatars.items.length - 1; i >= 0; i--) {
+            const avatar = this.avatars.items[i];
+            if (avatar.alive && (!leader || avatar.score > leader.score)) {
+                leader = avatar;
             }
         }
+        return leader;
     }
 
-    this.bonusManager.draw();
-};
-
-/**
- * Draw tail
- *
- * @param {Avatar} avatar
- */
-Game.prototype.drawTail = function(avatar)
-{
-    var points = avatar.trail.getLastSegment();
-
-    if (points) {
-        this.background.drawLineScaled(points, avatar.width, avatar.color, 'round');
+    getRandomEnemy(avatar) {
+        const enemies = this.avatars.items.filter(a => a !== avatar && a.alive);
+        if (enemies.length > 0) {
+            return enemies[Math.floor(Math.random() * enemies.length)];
+        }
+        return null;
     }
-};
 
-/**
- * Draw avatar
- *
- * @param {Avatar} avatar
- */
-Game.prototype.drawAvatar = function(avatar)
-{
-    this.canvas.drawImageTo(avatar.canvas.element, avatar.startX, avatar.startY);
-    avatar.clearX     = avatar.startX;
-    avatar.clearY     = avatar.startY;
-    avatar.clearWidth = avatar.canvas.element.width;
-};
-
-/**
- * Clear bonus from the canvas
- *
- * @param {Bonus} bonus
- */
-Game.prototype.clearAvatar = function(avatar)
-{
-    this.canvas.clearZone(avatar.clearX, avatar.clearY, avatar.clearWidth, avatar.clearWidth);
-};
-
-/**
- * Clear bonus stack
- *
- * @param {Avatar} avatar
- */
-Game.prototype.clearBonusStack = function(avatar)
-{
-    if (avatar.bonusStack.lastWidth) {
-        this.canvas.clearZone(
-            avatar.startX + this.stackMargin,
-            avatar.startY + this.stackMargin,
-            avatar.bonusStack.lastWidth,
-            avatar.bonusStack.lastHeight
-        );
+    repaint() {
+        this.animations.length = 0;
+        this.clearBackground();
+        this.effect.clear();
+        this.canvas.clear();
+        this.draw();
     }
-};
 
+    draw(step) {
+        this.animations.forEach(animation => {
+            animation.draw();
+            // simplified cleanup
+        });
 
-/**
- * Draw bonus stack
- *
- * @param {Avatar} avatar
- */
-Game.prototype.drawBonusStack = function(avatar)
-{
-    if (avatar.hasBonus()) {
-        avatar.bonusStack.lastWidth  = avatar.bonusStack.canvas.element.width;
-        avatar.bonusStack.lastHeight = avatar.bonusStack.canvas.element.height;
+        for (let i = this.avatars.items.length - 1; i >= 0; i--) {
+            const avatar = this.avatars.items[i];
+            if (avatar.present && (avatar.alive || avatar.changed)) {
+                this.clearAvatar(avatar);
+                this.clearBonusStack(avatar);
+            }
+        }
 
-        this.canvas.drawImageTo(
-            avatar.bonusStack.canvas.element,
-            avatar.startX + this.stackMargin,
-            avatar.startY + this.stackMargin
-        );
+        for (let i = this.avatars.items.length - 1; i >= 0; i--) {
+            const avatar = this.avatars.items[i];
+            if (avatar.present && (avatar.alive || avatar.changed)) {
+                this.drawTail(avatar);
+                this.drawAvatar(avatar);
+                this.drawBonusStack(avatar);
+            }
+        }
+
+        this.bonusManager.draw();
     }
-};
 
-/**
- * Draw arrow
- *
- * @param {Avatar} avatar
- */
-Game.prototype.drawArrow = function(avatar)
-{
-    this.effect.drawImageScaledAngle(avatar.arrow.element, avatar.x - 5, avatar.y - 5, 10, 10, avatar.angle);
-};
-
-/**
- * Clear background with color
- */
-Game.prototype.clearBackground = function()
-{
-    this.background.color(this.backgroundColor);
-};
-
-/**
- * On die
- *
- * @param {Event} event
- */
-Game.prototype.onDie = function(event)
-{
-    this.animations.push(new Explode(event.detail, this.effect));
-};
-
-/**
- * On resize
- */
-Game.prototype.onResize = function()
-{
-    var w=window,d=document,e=d.documentElement,g=document.body,x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;
-
-    var width = Math.min(x - this.gameInfos.clientWidth - 8, y - 8),
-        scale = width / this.size,
-        avatar;
-
-    this.render.style.width  = (width + 8) + 'px';
-    this.render.style.height = (width + 8) + 'px';
-    this.canvas.setDimension(width, width, scale);
-    this.effect.setDimension(width, width, scale);
-    this.background.setDimension(width, width, scale, true);
-    this.bonusManager.setDimension(width, scale);
-
-    for (var i = this.avatars.items.length - 1; i >= 0; i--) {
-        avatar = this.avatars.items[i];
-
-        avatar.setScale(scale);
-
-        if (typeof(avatar.input) !== 'undefined') {
-            avatar.input.setWidth(x);
+    drawTail(avatar) {
+        const points = avatar.trail.getLastSegment();
+        if (points) {
+            this.background.drawLineScaled(points, avatar.width, avatar.color, 'round');
         }
     }
-};
+
+    drawAvatar(avatar) {
+        this.canvas.drawImageTo(avatar.canvas.element, avatar.startX, avatar.startY);
+        avatar.clearX = avatar.startX;
+        avatar.clearY = avatar.startY;
+        avatar.clearWidth = avatar.canvas.element.width;
+    }
+
+    clearAvatar(avatar) {
+        this.canvas.clearZone(avatar.clearX, avatar.clearY, avatar.clearWidth, avatar.clearWidth);
+    }
+
+    clearBackground() {
+        this.background.color(this.backgroundColor);
+    }
+
+    clearTrails() {
+        for (let i = this.avatars.items.length - 1; i >= 0; i--) {
+            this.avatars.items[i].trail.clear();
+        }
+        this.clearBackground();
+    }
+
+    onDie(event) {
+        this.animations.push(new Explode(event.detail, this.effect));
+    }
+
+    drawBonusStack(avatar) {
+        const bonuses = avatar.bonusStack.bonuses.items;
+        const width = avatar.canvas.element.width;
+        const margin = this.stackMargin * avatar.canvas.scale;
+        let x = avatar.startX + width + margin;
+        let y = avatar.startY;
+
+        for (let i = 0; i < bonuses.length; i++) {
+            const bonus = bonuses[i];
+            this.canvas.drawImageTo(bonus.asset, x, y, width, width);
+            x += width + margin;
+        }
+    }
+
+    clearBonusStack(avatar) {
+        const bonuses = avatar.bonusStack.bonuses.items;
+        if (bonuses.length > 0) {
+            const width = avatar.canvas.element.width;
+            const margin = this.stackMargin * avatar.canvas.scale;
+            const x = avatar.startX + width + margin;
+            const y = avatar.startY;
+            const zoneWidth = (width + margin) * bonuses.length;
+            this.canvas.clearZone(x, y, zoneWidth, width);
+        }
+    }
+
+    onResize() {
+        const w = window,
+            d = document,
+            e = d.documentElement,
+            g = document.body,
+            x = w.innerWidth || e.clientWidth || g.clientWidth,
+            y = w.innerHeight || e.clientHeight || g.clientHeight;
+
+        const width = Math.min(x - this.gameInfos.clientWidth - 8, y - 8);
+        const scale = width / this.size;
+
+        this.render.style.width = (width + 8) + 'px';
+        this.render.style.height = (width + 8) + 'px';
+        this.canvas.setDimension(width, width, scale);
+        this.effect.setDimension(width, width, scale);
+        this.background.setDimension(width, width, scale, true);
+        this.bonusManager.setDimension(width, scale);
+
+        for (let i = this.avatars.items.length - 1; i >= 0; i--) {
+            const avatar = this.avatars.items[i];
+            avatar.setScale(scale);
+            if (avatar.input) {
+                avatar.input.setWidth(x);
+            }
+        }
+    }
+}

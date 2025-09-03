@@ -1,25 +1,20 @@
+import BonusLeader from './BonusLeader.js';
+import BaseAvatar from '../../../shared/model/BaseAvatar.js';
+
 /**
  * Slow Leader Bonus
- *
- * @param {Number} x
- * @param {Number} y
  */
-function BonusLeaderSlow(x, y)
-{
-    BonusEnemy.call(this, x, y);
+class BonusLeaderSlow extends BonusLeader {
+    /**
+     * Get effects
+     *
+     * @param {Avatar} avatar
+     *
+     * @return {Array}
+     */
+    getEffects(avatar) {
+        return [['velocity', -BaseAvatar.prototype.velocity / 2]];
+    }
 }
 
-BonusLeaderSlow.prototype = Object.create(BonusLeader.prototype);
-BonusLeaderSlow.prototype.constructor = BonusLeaderSlow;
-
-/**
- * Get effects
- *
- * @param {Avatar} avatar
- *
- * @return {Array}
- */
-BonusLeaderSlow.prototype.getEffects = function(avatar)
-{
-    return [['velocity', -BaseAvatar.prototype.velocity/2]];
-};
+export default BonusLeaderSlow;

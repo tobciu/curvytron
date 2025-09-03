@@ -1,42 +1,38 @@
+import Tracker from './Tracker.js';
+import md5 from 'MD5';
+
 /**
  * Client tracker
- *
- * @param {Inspector} inspector
- * @param {Client} client
  */
-function ClientTracker (inspector, client)
-{
-    Tracker.call(this, inspector, client.id);
+class ClientTracker extends Tracker {
+    constructor(inspector, client) {
+        super(inspector, client.id);
 
-    this.client = client;
-    this.ip     = client.ip;
+        this.client = client;
+        this.ip = client.ip;
 
-    this.onLatency = this.onLatency.bind(this);
+        this.onLatency = this.onLatency.bind(this);
 
-    this.client.pingLogger.on('latency', this.onLatency);
+        this.client.pingLogger.on('latency', this.onLatency);
+    }
+
+    /**
+     * On latency
+     *
+     * @param {Number} latency
+     */
+    onLatency(latency) {
+        this.emit('latency', { tracker: this, latency: latency });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    getValues() {
+        const data = super.getValues();
+        data.ip = md5(this.ip);
+        return data;
+    }
 }
 
-ClientTracker.prototype = Object.create(Tracker.prototype);
-ClientTracker.prototype.constructor = ClientTracker;
-
-/**
- * On latency
- *
- * @param {Number} latency
- */
-ClientTracker.prototype.onLatency = function(latency)
-{
-    this.emit('latency', {tracker: this, latency: latency});
-};
-
-/**
- * @inheritDoc
- */
-ClientTracker.prototype.getValues = function()
-{
-    var data = Tracker.prototype.getValues.call(this);
-
-    data.ip = md5(this.ip);
-
-    return data;
-};
+export default ClientTracker;

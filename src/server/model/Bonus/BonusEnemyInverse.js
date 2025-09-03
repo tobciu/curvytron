@@ -1,44 +1,37 @@
+import BonusEnemy from './BonusEnemy.js';
+
 /**
  * Inverse Enemy Bonus
- *
- * @param {Number} x
- * @param {Number} y
  */
-function BonusEnemyInverse(x, y)
-{
-    BonusEnemy.call(this, x, y);
+class BonusEnemyInverse extends BonusEnemy {
+    /**
+     * Probability
+     *
+     * @type {Number}
+     */
+    probability = 0.8;
+
+    /**
+     * Get effects
+     *
+     * @param {Avatar} avatar
+     *
+     * @return {Array}
+     */
+    getEffects(avatar) {
+        return [['inverse', 1]];
+    }
+
+    /**
+     * Get probability
+     *
+     * @param {Game} game
+     *
+     * @return {Number}
+     */
+    getProbability(game) {
+        return this.probability;
+    }
 }
 
-BonusEnemyInverse.prototype = Object.create(BonusEnemy.prototype);
-BonusEnemyInverse.prototype.constructor = BonusEnemyInverse;
-
-/**
- * Probability
- *
- * @type {Number}
- */
-BonusEnemyInverse.prototype.probability = 0.8;
-
-/**
- * Get effects
- *
- * @param {Avatar} avatar
- *
- * @return {Array}
- */
-BonusEnemyInverse.prototype.getEffects = function(avatar)
-{
-    return [['inverse', 1]];
-};
-
-/**
- * Get probability
- *
- * @param {Game} game
- *
- * @return {Number}
- */
-BonusEnemyInverse.prototype.getProbability = function (game)
-{
-    return BonusEnemyInverse.prototype.probability;
-};
+export default BonusEnemyInverse;

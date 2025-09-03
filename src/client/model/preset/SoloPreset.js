@@ -1,31 +1,18 @@
+import Preset from '../../../shared/model/Preset.js';
+
 /**
  * Solo Preset
  */
-function SoloPreset ()
-{
-    Preset.call(this);
+export default class SoloPreset extends Preset {
+    constructor() {
+        super();
+
+        this.name = 'Solo';
+        this.bonuses = [
+            'BonusSelfSmall',
+            'BonusSelfSlow',
+            'BonusSelfFast',
+            'BonusSelfMaster'
+        ];
+    }
 }
-
-SoloPreset.prototype = Object.create(Preset.prototype);
-SoloPreset.prototype.constructor = SoloPreset;
-
-/**
- * Name
- *
- * @type {String}
- */
-SoloPreset.prototype.name = 'Solo';
-
-/**
- * Bonuses
- *
- * @type {Array}
- */
-SoloPreset.prototype.bonuses = [
-    'BonusSelfSmall',
-    'BonusSelfSlow',
-    'BonusSelfFast',
-    'BonusSelfMaster',
-    'BonusGameBorderless',
-    'BonusGameClear'
-];

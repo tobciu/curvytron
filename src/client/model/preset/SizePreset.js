@@ -1,26 +1,16 @@
+import Preset from '../../../shared/model/Preset.js';
+
 /**
  * Size Preset
  */
-function SizePreset ()
-{
-    Preset.call(this);
+export default class SizePreset extends Preset {
+    constructor() {
+        super();
+
+        this.name = 'Size';
+        this.bonuses = [
+            'BonusSelfSmall',
+            'BonusEnemyBig'
+        ];
+    }
 }
-
-SizePreset.prototype = Object.create(Preset.prototype);
-SizePreset.prototype.constructor = SizePreset;
-
-/**
- * Name
- *
- * @type {String}
- */
-SizePreset.prototype.name = 'Super size me';
-
-/**
- * Bonuses
- *
- * @type {Array}
- */
-SizePreset.prototype.bonuses = [
-    'BonusEnemyBig'
-];

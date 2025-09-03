@@ -1,85 +1,82 @@
 /**
  * Analyser
- *
- * @param {Object} $rootScope
  */
-function Analyser($rootScope)
-{
-    if (typeof(ga) === 'undefined') {
-        return false;
+class Analyser {
+    constructor($rootScope) {
+        if (typeof(ga) === 'undefined') {
+            return false;
+        }
+
+        this.$rootScope = $rootScope;
+
+        this.onRouteChange = this.onRouteChange.bind(this);
+
+        this.$rootScope.$on('$routeChangeSuccess', this.onRouteChange);
+        this.$rootScope.$on('$routeUpdate', this.onRouteChange);
     }
 
-    this.$rootScope = $rootScope;
+    /**
+     * On route changed
+     *
+     * @param {Event} event
+     * @param {Object} currentScope
+     * @param {Object} previousScope
+     */
+    onRouteChange(event, currentScope, previousScope) {
+        const path = this.getPath(currentScope.originalPath, currentScope.pathParams);
+        const title = this.getTitle(currentScope.$$route.controller, currentScope.params);
 
-    this.onRouteChange = this.onRouteChange.bind(this);
+        this.sendPageView(path, title);
+    }
 
-    this.$rootScope.$on('$routeChangeSuccess', this.onRouteChange);
-    this.$rootScope.$on('$routeUpdate', this.onRouteChange);
-}
+    /**
+     * Get path
+     *
+     * @param {String} path
+     * @param {Object} params
+     *
+     * @return {String}
+     */
+    getPath(path, params) {
+        for (const key in params) {
+            if (Object.hasOwnProperty(key)) {
+                path = path.replace(':' + key, params[key]);
+            }
+        }
 
-/**
- * On route changed
- *
- * @param {Event} event
- * @param {Object} currentScope
- * @param {Object} previousScope
- */
-Analyser.prototype.onRouteChange = function(event, currentScope, previousScope)
-{
-    var path  = this.getPath(currentScope.originalPath, currentScope.pathParams),
-        title = this.getTitle(currentScope.$$route.controller, currentScope.params);
+        return path;
+    }
 
-    this.sendPageView(path, title);
-};
+    /**
+     * Get title
+     *
+     * @param {String} controller
+     * @param {Object} params
+     *
+     * @return {String}
+     */
+    getTitle(controller, params) {
+        if (controller === 'RoomsController') {
+            return 'Home';
+        }
 
-/**
- * Get path
- *
- * @param {String} path
- * @param {Object} params
- *
- * @return {String}
- */
-Analyser.prototype.getPath = function(path, params)
-{
-    for (var key in params) {
-        if (Object.hasOwnProperty(key)) {
-            path = path.replace(':' + key, params[key]);
+        if (controller === 'RoomController') {
+            return 'Room: ' + (typeof(params.name) !== 'undefined' ? params.name : null);
+        }
+
+        if (controller === 'GameController') {
+            return 'Game: ' + (typeof(params.name) !== 'undefined' ? params.name : null);
         }
     }
 
-    return path;
-};
-
-/**
- * Get title
- *
- * @param {String} controller
- * @param {Object} params
- *
- * @return {String}
- */
-Analyser.prototype.getTitle = function(controller, params)
-{
-    if (controller === 'RoomsController') {
-        return 'Home';
+    /**
+     * Send page view
+     *
+     * @param {Object} data
+     */
+    sendPageView(page, title) {
+        ga('send', 'pageview', {page: page, title: title});
     }
+}
 
-    if (controller === 'RoomController') {
-        return 'Room: ' + (typeof(params.name) !== 'undefined' ? params.name : null);
-    }
-
-    if (controller === 'GameController') {
-        return 'Game: ' + (typeof(params.name) !== 'undefined' ? params.name : null);
-    }
-};
-
-/**
- * Send page view
- *
- * @param {Object} data
- */
-Analyser.prototype.sendPageView = function(page, title)
-{
-    ga('send', 'pageview', {page: page, title: title});
-};
+export default Analyser;

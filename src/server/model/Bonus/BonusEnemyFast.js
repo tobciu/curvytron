@@ -1,32 +1,27 @@
+import BonusEnemy from './BonusEnemy.js';
+import BaseAvatar from '../../../shared/model/BaseAvatar.js';
+
 /**
  * Fast Enemy Bonus
- *
- * @param {Number} x
- * @param {Number} y
  */
-function BonusEnemyFast(x, y)
-{
-    BonusEnemy.call(this, x, y);
+class BonusEnemyFast extends BonusEnemy {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    duration = 6000;
+
+    /**
+     * Get effects
+     *
+     * @param {Avatar} avatar
+     *
+     * @return {Array}
+     */
+    getEffects(avatar) {
+        return [['velocity', 0.75 * BaseAvatar.prototype.velocity]];
+    }
 }
 
-BonusEnemyFast.prototype = Object.create(BonusEnemy.prototype);
-BonusEnemyFast.prototype.constructor = BonusEnemyFast;
-
-/**
- * Duration
- *
- * @type {Number}
- */
-BonusEnemyFast.prototype.duration = 6000;
-
-/**
- * Get effects
- *
- * @param {Avatar} avatar
- *
- * @return {Array}
- */
-BonusEnemyFast.prototype.getEffects = function(avatar)
-{
-    return [['velocity', 0.75 * BaseAvatar.prototype.velocity]];
-};
+export default BonusEnemyFast;

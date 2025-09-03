@@ -1,17 +1,12 @@
+import Preset from '../../../shared/model/Preset.js';
+
 /**
  * Empty Preset
  */
-function EmptyPreset ()
-{
-    Preset.call(this);
+export default class EmptyPreset extends Preset {
+    constructor() {
+        super();
+
+        this.name = 'None';
+    }
 }
-
-EmptyPreset.prototype = Object.create(Preset.prototype);
-EmptyPreset.prototype.constructor = EmptyPreset;
-
-/**
- * Name
- *
- * @type {String}
- */
-EmptyPreset.prototype.name = 'No bonuses';

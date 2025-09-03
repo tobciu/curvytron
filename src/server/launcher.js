@@ -1,8 +1,12 @@
-var config,
-    packageInfo = require('../package.json');
+import Server from './core/Server.js';
+import Inspector from './core/Inspector.js';
+import fs from 'fs';
+
+let config;
 
 try {
-    config = require('../config.json');
+const configData = fs.readFileSync('config.json', 'utf8');
+    config = JSON.parse(configData);
 } catch (error) {
     config = {
         port: 8080,
@@ -10,14 +14,14 @@ try {
     };
 }
 
-var server = new Server({ port: config.port });
+const server = new Server({ port: config.port });
 
 if (config.inspector.enabled) {
     try {
-      new Inspector(server, config.inspector);
+        new Inspector(server, config.inspector);
     } catch (error) {
         console.error('Inspector error:', error);
     }
 }
 
-module.exports = server;
+export default server;

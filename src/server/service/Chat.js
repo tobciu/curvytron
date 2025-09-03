@@ -1,26 +1,27 @@
+import BaseChat from '../../shared/service/BaseChat.js';
+import FloodFilter from './FloodFilter.js';
+import Message from '../model/Message.js';
+
 /**
  * Chat system
  */
-function Chat()
-{
-    BaseChat.call(this);
+class Chat extends BaseChat {
+    constructor() {
+        super();
+        this.floodFilter = new FloodFilter(this.messages);
+    }
 
-    this.floodFilter = new FloodFilter(this.messages);
+    /**
+     * Is message valid?
+     *
+     * @param {Message} message
+     *
+     * @return {Boolean}
+     */
+    isValid(message) {
+        const length = message.content.length;
+        return length > 0 && length <= Message.prototype.maxLength && this.floodFilter.isValid(message);
+    }
 }
 
-Chat.prototype = Object.create(BaseChat.prototype);
-Chat.prototype.constructor = Chat;
-
-/**
- * Is message valid?
- *
- * @param {Message} message
- *
- * @return {Boolean}
- */
-Chat.prototype.isValid = function(message)
-{
-    var length = message.content.length;
-
-    return length > 0 && length <= Message.prototype.maxLength && this.floodFilter.isValid(message);
-};
+export default Chat;

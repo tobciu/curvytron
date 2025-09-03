@@ -50,7 +50,13 @@ header {
   position: relative;
   border-bottom: 10px solid #FFF;
   position: relative;
+  z-index: 100;
   @include gradient($header-background-from, $header-background-to);
+
+  nav {
+    position: relative;
+    z-index: 9999;
+  }
 
   .logo {
     z-index: 10;
@@ -86,6 +92,11 @@ header {
   .game-copy {
     display: none;
   }
+}
+
+main {
+  position: relative;
+  z-index: 50;
 }
 
 footer {
