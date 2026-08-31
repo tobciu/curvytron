@@ -160,3 +160,16 @@ Representative events: `room:fetch`, `room:create`, `room:join`, `room:open`,
 | UI screens | `src/client/controller/*`, `src/client/views/*` |
 | Rendering | `src/client/core/Canvas.js`, `src/client/model/Game.js`, `src/client/model/Avatar.js` |
 | Build inclusion / order | `recipes/client.json`, `recipes/server.json`, `gulpfile.js` |
+
+## 7. Known quirks (carry-overs to watch during the rewrite)
+
+- **Double URL-encoding of room names.** The hash routes read
+  `/#/room/The%2520great%2520conflict` — a space becomes `%2520` (encoded twice). Room
+  names with spaces/punctuation round-trip only because both sides make the same mistake;
+  the rewrite's router should encode once and fix this.
+- **No payload validation** on socket events — every handler trusts `data.*` shapes.
+- **Event-name strings are duplicated** across ~6 controllers with no shared schema
+  (see [`protocol.md`](protocol.md) "Notes for the rewrite").
+- **`stressTest.js`** is special-cased out of the client bundle and injected at runtime.
+- **`config.json` is read twice** (`launcher.js` and `gulpfile.js` for the GA token).
+- Client-side `SocketClient` sends unbatched (`interval = 0`); only the server batches.

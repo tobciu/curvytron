@@ -107,6 +107,19 @@ build `outDir` (e.g. `web/` or a new `dist/`) and serve `index.html` as the SPA 
 
 ### Step 4 — Migrate screens (one PR each)
 
+Screen inventory (visual baseline = `doc/images/*.png`):
+
+| Screen | Screenshot | Today (AngularJS) | New (Svelte) |
+| --- | --- | --- | --- |
+| Rooms list | `rooms-overview.png` | `RoomsController` + `views/rooms/list.html` | `routes/RoomsList.svelte` |
+| Room / lobby | `lobby.png` | `RoomController` + `PlayerListController` + `ChatController` + `views/rooms/detail.html` | `routes/Room.svelte` + `PlayerList` / `Chat` components |
+| Room config (master) | `lobby-with-config-panel.png` | `RoomConfigController` + `views/room/parameters.html` (+ `model/preset/*`) | `RoomConfig.svelte` |
+| Profile panel | `my-profile.png` | `ProfileController` + `Profile` service + `views/profile/*` | `Profile.svelte` + `stores/profile` (localStorage) |
+| Round countdown / HUD | `game-start-with-countdown.png` | `GameController` + `RoundController` + `WaitingController` + `MetricController` | `routes/Game.svelte` HUD + `stores/game` |
+| In play | `game-with-trail-and-bonus.png` | `GameController` + `GameRepository` + `core/Canvas` | canvas mounted in `Game.svelte` (Step 5) |
+| Round won | `game-over-round-won.png` | `RoundController` + `KillLogController` | `RoundOverlay.svelte` + `KillLog.svelte` |
+| Final scoreboard | `game-end-score-board.png` | `GameController` end state + `views/game/play.html` | `Scoreboard.svelte` |
+
 Order = simplest first, so the pattern is proven before the hard screen:
 
 1. **About** (`/about`) — static; trivial.

@@ -11,11 +11,14 @@ The code still works but is frozen on 2015-era tooling — see
 [Project status](#project-status) and the
 [Modernization roadmap](doc/modernization-roadmap.md).
 
+![Curvytron in play — curved trails and bonuses on the arena](doc/images/game-with-trail-and-bonus.png)
+
 ---
 
 ## Table of contents
 
 - [Gameplay](#gameplay)
+- [Screenshots](#screenshots)
 - [Tech stack](#tech-stack)
 - [Architecture at a glance](#architecture-at-a-glance)
 - [Repository layout](#repository-layout)
@@ -39,6 +42,18 @@ The code still works but is frozen on 2015-era tooling — see
   (small, fast, slow, big, inverse, master, borderless, clear, colour swap, ...).
 - First to the room's **max score** wins the game; each round awards points for surviving
   and for every opponent that died before you.
+
+## Screenshots
+
+| | |
+| --- | --- |
+| [Rooms overview](doc/images/rooms-overview.png) | [Room / lobby](doc/images/lobby.png) |
+| [Room config (master)](doc/images/lobby-with-config-panel.png) | [Profile panel](doc/images/my-profile.png) |
+| [Round countdown](doc/images/game-start-with-countdown.png) | [In play — trails + bonuses](doc/images/game-with-trail-and-bonus.png) |
+| [Round won](doc/images/game-over-round-won.png) | [Final scoreboard](doc/images/game-end-score-board.png) |
+
+These are the **visual baseline** for the [Svelte rewrite](doc/rewrite-plan.md) — each
+screen must match before it is redesigned.
 
 ## Tech stack
 

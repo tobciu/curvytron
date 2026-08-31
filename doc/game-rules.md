@@ -227,6 +227,29 @@ The enabled set per room is `RoomConfig.bonusTypes` /
 (Exact multipliers live in the `getEffects` of each file; the "Random" variants pick a
 sibling effect at spawn/apply time.)
 
+### Presets (client-side convenience)
+
+The room-config UI ("BONUS" panel — see
+[`images/lobby-with-config-panel.png`](images/lobby-with-config-panel.png)) offers presets
+that bulk-toggle the per-bonus switches. They are **client-only** lists of bonus class
+names (`src/client/model/preset/*`, base `src/shared/model/Preset.js`); picking one sends
+the corresponding `room:config:bonus` toggles. `RoomConfigController` shows **CUSTOM** when
+the current on/off set matches no preset.
+
+| Preset (UI label) | Class | Contents |
+| --- | --- | --- |
+| All | `DefaultPreset` | the 12 "default-on" bonuses |
+| Speed of light | `SpeedPreset` | `BonusSelfFast`, `BonusEnemyFast` |
+| Super size me | `SizePreset` | size-related bonuses |
+| Solo | `SoloPreset` | self + game bonuses only (`Small/Slow/Fast/Master`, `Borderless`, `Clear`) |
+| No bonuses | `EmptyPreset` | none |
+| Random | `RandomPreset` | a random subset, **recomputed each time it's selected** |
+| Custom | `CustomPreset` | whatever is currently toggled |
+
+The "Bonus quantity" slider in that panel is the `bonusRate` room variable (−1…1) from
+[the config rules above](#room--lobby-rules) / [`protocol.md`](protocol.md)
+(`room:config:variable`).
+
 ## Room / lobby rules
 
 | Rule | Where | Value |
