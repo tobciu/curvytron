@@ -122,11 +122,22 @@ socket), `Chat`, `SoundManager`, `Notifier`, `Radio`, `Analyser`, `ActivityWatch
 In-game controllers (`src/client/controller/game/`): `PlayerListController`,
 `RoundController`, `MetricController`, `WaitingController`, `KillLogController`.
 
-Rendering is framework-free: `core/Canvas.js` wraps a `<canvas>` 2D context; the client
-`model/Game.js` runs its own loop to draw trails, avatars and bonuses, using the same
-shared physics classes for local prediction. Input mapping (keyboard/gamepad/touch) is in
-`model/PlayerInput.js` / `model/PlayerControl.js` on top of the `tom32i-*` libs;
-`GamepadListener` is instantiated once in `app.js`.
+Rendering is framework-free: `core/Canvas.js` wraps a 2D context. The game view stacks
+**four `<canvas>` layers** (`#background`, `#bonus`, `#game` — the trails/avatars —, and
+`#effect`), each sized to the square arena (e.g. 792×792). The client `model/Game.js` runs
+its own loop to draw trails, avatars and bonuses, using the same shared physics classes for
+local prediction. Input mapping (keyboard/gamepad/touch) is in `model/PlayerInput.js` /
+`model/PlayerControl.js` on top of the `tom32i-*` libs; `GamepadListener` is instantiated
+once in `app.js`.
+
+The lobby and homepage **are** responsive (they stack on narrow viewports); the **in-game
+view is not** — it's a fixed desktop layout (canvas + left HUD column) that clips on small
+screens, even though touch controls exist in `PlayerInput`. Making the game view responsive
+is an explicit rewrite goal.
+
+Screens seen on the live instance beyond the [screenshots](../README.md#screenshots): a
+first-run **profile prompt** ("Hi there! We just need to know a few things…") shown when no
+local player exists yet, and the **empty rooms list** ("Start by creating a room:").
 
 ## 5. Wire protocol
 

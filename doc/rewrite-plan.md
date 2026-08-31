@@ -111,7 +111,8 @@ Screen inventory (visual baseline = `doc/images/*.png`):
 
 | Screen | Screenshot | Today (AngularJS) | New (Svelte) |
 | --- | --- | --- | --- |
-| Rooms list | `rooms-overview.png` | `RoomsController` + `views/rooms/list.html` | `routes/RoomsList.svelte` |
+| First-run profile prompt | *(live only — "Hi there!")* | `CurvytronController` + `views/profile/*` | folded into `Profile.svelte` / onboarding guard |
+| Rooms list (+ empty state) | `rooms-overview.png` | `RoomsController` + `views/rooms/list.html` | `routes/RoomsList.svelte` |
 | Room / lobby | `lobby.png` | `RoomController` + `PlayerListController` + `ChatController` + `views/rooms/detail.html` | `routes/Room.svelte` + `PlayerList` / `Chat` components |
 | Room config (master) | `lobby-with-config-panel.png` | `RoomConfigController` + `views/room/parameters.html` (+ `model/preset/*`) | `RoomConfig.svelte` |
 | Profile panel | `my-profile.png` | `ProfileController` + `Profile` service + `views/profile/*` | `Profile.svelte` + `stores/profile` (localStorage) |
@@ -147,8 +148,11 @@ is live and smoke-tested.
   directly (as today via `GameRepository`) — **not** through Svelte stores. Svelte only
   drives the surrounding HUD.
 - Input: `PlayerInput` already emits `move`; forward to `socket` as `player:move`.
+- **Make the game view responsive** (it isn't today): canvas scales to viewport, HUD
+  becomes a collapsible panel / overlay on narrow screens, touch zones usable on mobile.
 - **Verify:** full round with 2 local players + a spectator tab; trails, bonuses, death,
-  scoring, borderless, `clear` all behave as before; no frame drops from Svelte.
+  scoring, borderless, `clear` all behave as before; no frame drops from Svelte; playable
+  at 375 px wide.
 
 ### Step 6 — Replace remaining AngularJS-era libs
 
