@@ -151,7 +151,8 @@ is live and smoke-tested.
 - Remove `gulpfile.js`, `bower.json`, `bower-resolutions.json`, `.jshintrc`, the
   `src/client/views/*` Angular templates, `src/client/controller/*`,
   `src/client/service/*` that were ported, `src/client/app.js`.
-- `Dockerfile` → `node:20-alpine` multi-stage (`npm ci && npm run build`).
+- `Dockerfile` → `node:20-alpine` multi-stage; `docker-compose.yml` → pulled `image:`.
+  Full target and CI image-push: [`deployment.md`](deployment.md).
 - Update `README.md`, `CLAUDE.md`, `doc/installation.md`, `doc/dev.md` to the new
   commands. Update `.gitignore` (drop `bower_components/`, add `dist/` if used).
 - **Verify:** clean checkout → `npm ci && npm run build && npm start` → play a round.

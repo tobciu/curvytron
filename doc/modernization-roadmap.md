@@ -24,9 +24,25 @@ behind the running app.
 - WebSocket transport → migrate `faye-websocket` → **`ws`**, protocol unchanged —
   [ADR 0002](adr/0002-websocket-transport.md).
 - Detailed client-rewrite steps → [`rewrite-plan.md`](rewrite-plan.md).
+- Deployment target: CI-built Docker image, run via `docker compose` →
+  [`deployment.md`](deployment.md).
 
 Current-state reference (what must keep working): [`architecture.md`](architecture.md),
 [`game-rules.md`](game-rules.md), [`protocol.md`](protocol.md), [`flows.md`](flows.md).
+
+### What gets modernized: client vs. server
+
+| | Client (`src/client`, views) | Server (`src/server`) | Shared (`src/shared`) |
+| --- | --- | --- | --- |
+| Framework | **rewritten** AngularJS → Svelte 5 | none today, none added — architecture kept | n/a |
+| Language/modules | ESM + TS (Phase 2) | ESM + TS (Phase 2) | ESM + TS, imported by both |
+| Dependencies | drop `angular*`, `soundjs`, `tom32i-*` bower | `faye-websocket`→`ws`, Express 4→5, drop `usage`, influx client | — |
+| Runtime | browser | Node 20 | both |
+| Kept as-is | canvas renderer, client sim | pseudo-class model, custom WS protocol, `setTimeout` loop, `World` collision grid | all `Base*` logic |
+
+So: **both are modernized** (tooling, module system, types, deps, Docker), but only the
+**client** gets a new framework. The server's design is sound — it's just old syntax and
+old libraries.
 
 ### Golden rule
 
@@ -60,8 +76,11 @@ throwaway shell. The runtime server (`node bin/curvytron.js`) already runs fine 
 
 - Document the exact steps + Node version that currently produce a working build (in a
   scratch `doc/legacy-build-notes.md` or a pinned issue).
-- Record a smoke-test procedure (2 local players, one full round) and, ideally, a short
-  screen capture / screenshots.
+- Record a smoke-test procedure (2 local players, one full round).
+- **Capture baseline screenshots** into `doc/images/`: rooms list, room/lobby (master view
+  with the config panel open), in-game (trails + a bonus + HUD), game-over scoreboard,
+  profile panel. These are the visual parity reference for the Svelte migration and a hero
+  image for the README.
 - Snapshot the produced `web/js/curvytron.js` / `bin/curvytron.js` sizes and the
   `gulp jshint` output for later comparison.
 
@@ -95,8 +114,10 @@ produces the **same output contract**. No framework change, server untouched.
   (`quotmark:single` → `quotes`, `eqeqeq`, `curly`, `camelcase`, 4-space `indent`,
   `no-undef` off for now given globals). Add `eslint-config` + `.eslintrc`. Keep
   `.jshintrc` until ESLint is green, then remove.
-- **Dockerfile:** `FROM node:20-alpine`, multi-stage (build stage runs `npm ci && npm run
-  build`, runtime stage copies `web/` + `bin/`), drop the opaque `cyrale/curvytron` base.
+- **Dockerfile → multi-stage `node:20-alpine`** (build: `npm ci && npm run build`;
+  runtime: non-root, `--omit=dev`, healthcheck), drop the opaque `cyrale/curvytron` base.
+  `docker-compose.yml` switches from `build: .` to a pulled `image:`. Full target +
+  Compose + CI image-push in [`deployment.md`](deployment.md).
 - **`.editorconfig`** already added; wire `editorconfig-checker` into `lint` optionally.
 
 **Deliverable check:** `npm ci && npm run build && node bin/curvytron.js` on Node 20
@@ -192,7 +213,9 @@ imported by Svelte components. The canvas never goes through Svelte's reactivity
 - **Tests:** add [Vitest](https://vitest.dev/) (or the Node built-in test runner).
   Start with `src/shared/` (pure logic: scoring, collision math, `Collection`,
   `BaseSocketClient` framing) — highest value, no DOM needed.
-- **CI:** GitHub Actions — `lint` + `build` + `test` on push/PR; cache `npm ci`.
+- **CI:** GitHub Actions — `lint` + `build` + `test` on push/PR; cache `npm ci`. On
+  merge/tag, **build and push the Docker image** to a registry (GHCR) — see
+  [`deployment.md`](deployment.md).
 - **SonarQube:** wire up the empty `.sonar/` (there is a `sonarqube` MCP available);
   add `sonar-project.properties`, gate PRs on the quality gate.
 - **Dependabot / renovate** for ongoing dependency hygiene.

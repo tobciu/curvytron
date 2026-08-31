@@ -11,6 +11,7 @@ Human-facing overview is in [`README.md`](README.md).
 - [`doc/flows.md`](doc/flows.md) — sequence diagrams for the main flows
 - [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md) — phased plan + decisions
 - [`doc/rewrite-plan.md`](doc/rewrite-plan.md) — the AngularJS → Svelte + Vite playbook
+- [`doc/deployment.md`](doc/deployment.md) — target Docker image + `docker compose` + CI build
 - [`doc/adr/`](doc/adr) — ADR 0001 (Svelte), ADR 0002 (`ws` transport)
 
 ## What this is
@@ -96,8 +97,11 @@ Tasks are in [`gulpfile.js`](gulpfile.js); bundle contents in [`recipes/`](recip
   per PR, on the `modernize` branch. `src/shared/**` + `src/client/core|model|animation`
   are reused (converted to ESM/TS), **not** rewritten; the canvas stays out of Svelte's
   render cycle. See [`doc/rewrite-plan.md`](doc/rewrite-plan.md) + [ADR 0001](doc/adr/0001-client-framework.md).
-- Transport: `faye-websocket` → **`ws`**, protocol framing unchanged, server-only change
-  ([ADR 0002](doc/adr/0002-websocket-transport.md)).
+- Transport: `faye-websocket` (unmaintained, last release 2021) → **`ws`**, protocol
+  framing unchanged, server-only change ([ADR 0002](doc/adr/0002-websocket-transport.md)).
+- Server is modernized (ESM/TS, deps, Docker) but **not** re-frameworked — its design stays.
+- Deploy target: CI builds a multi-stage Docker image, `docker compose` pulls & runs it
+  ([`doc/deployment.md`](doc/deployment.md)).
 - Do build/deps/ESM (roadmap phases 1–3) before/with the rewrite; never a big-bang.
 
 ## Common tasks

@@ -222,6 +222,7 @@ Contributor-facing notes live in [`CLAUDE.md`](CLAUDE.md).
 | [`doc/flows.md`](doc/flows.md) | Sequence diagrams: connect, create/join room, lobby config & launch, round lifecycle, spectate, leave/close |
 | [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md) | Phased modernization plan; decisions taken |
 | [`doc/rewrite-plan.md`](doc/rewrite-plan.md) | Step-by-step client rewrite playbook (AngularJS → Svelte + Vite) |
+| [`doc/deployment.md`](doc/deployment.md) | Target Docker image (multi-stage) + `docker compose` deploy + CI image build |
 | [`doc/adr/`](doc/adr) | Architecture Decision Records (0001 framework, 0002 transport) |
 | [`doc/installation.md`](doc/installation.md) | Original install instructions |
 | [`doc/dev.md`](doc/dev.md) | Dev environment, watch build, stress test |

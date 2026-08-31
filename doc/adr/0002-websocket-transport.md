@@ -8,8 +8,11 @@
 ## Context
 
 The server terminates WebSockets with **`faye-websocket`** (`src/server/dependencies.js`,
-`src/server/core/Server.js`). It is lightly maintained and predates modern Node WS
-practice. On top of it sits Curvytron's own batched-JSON protocol
+`src/server/core/Server.js`). It is **effectively unmaintained**: latest release `0.11.4`
+is from **May 2021**, preceded by multi-year gaps (`0.11.1` Jan 2017 → `0.11.3` Jun 2019).
+It predates modern Node WS practice. By contrast, **`ws`** is one of the most-used Node
+packages and is actively released (`8.21.x` in 2025). On top of `faye-websocket` sits
+Curvytron's own batched-JSON protocol
 ([`../protocol.md`](../protocol.md)), implemented in the shared class
 `src/shared/core/BaseSocketClient.js`.
 
