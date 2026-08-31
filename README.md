@@ -205,16 +205,24 @@ technically stalled:
 - No automated tests, no CI.
 
 The goal of this fork is to **modernize incrementally without ever breaking the game**.
-The plan, with both a "keep AngularJS" and a "framework rewrite" target documented, is in
-[`doc/modernization-roadmap.md`](doc/modernization-roadmap.md). Contributor-facing notes
-live in [`CLAUDE.md`](CLAUDE.md).
+The phased plan is in [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md).
+Decisions taken so far: the AngularJS shell is being rewritten to **Svelte 5 + TypeScript +
+Vite** ([ADR 0001](doc/adr/0001-client-framework.md)), screen by screen behind the running
+app ([`doc/rewrite-plan.md`](doc/rewrite-plan.md)); the server WebSocket moves from
+`faye-websocket` to `ws` with the protocol unchanged ([ADR 0002](doc/adr/0002-websocket-transport.md)).
+Contributor-facing notes live in [`CLAUDE.md`](CLAUDE.md).
 
 ## Documentation
 
 | Doc | Contents |
 | --- | --- |
 | [`doc/architecture.md`](doc/architecture.md) | Full architecture: connection → room → round lifecycle, server core objects, client wiring, bundle mapping |
-| [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md) | Phased modernization plan + target-architecture options |
+| [`doc/game-rules.md`](doc/game-rules.md) | Movement/turn physics, trail & printing, collision & death, scoring, rounds, map sizing, the bonus system + catalogue, all constants |
+| [`doc/protocol.md`](doc/protocol.md) | The WebSocket protocol: framing, batching, compression, handshake, full event reference (lobby / room / game) |
+| [`doc/flows.md`](doc/flows.md) | Sequence diagrams: connect, create/join room, lobby config & launch, round lifecycle, spectate, leave/close |
+| [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md) | Phased modernization plan; decisions taken |
+| [`doc/rewrite-plan.md`](doc/rewrite-plan.md) | Step-by-step client rewrite playbook (AngularJS → Svelte + Vite) |
+| [`doc/adr/`](doc/adr) | Architecture Decision Records (0001 framework, 0002 transport) |
 | [`doc/installation.md`](doc/installation.md) | Original install instructions |
 | [`doc/dev.md`](doc/dev.md) | Dev environment, watch build, stress test |
 | [`doc/configuration.md`](doc/configuration.md) | `config.json` reference |

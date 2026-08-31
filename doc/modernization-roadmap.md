@@ -14,7 +14,19 @@ Curvytron works but its toolchain is a decade old and actively blocks further de
 - **No tests, no CI.**
 
 The aim is to reach a modern, reproducible, modular, testable codebase **without a big-bang
-rewrite** and **without the game ever becoming unplayable**.
+rewrite** and **without the game ever becoming unplayable**. The client shell **is** being
+rewritten onto a new framework (AngularJS is EOL) — but incrementally, screen by screen,
+behind the running app.
+
+**Decisions taken:**
+
+- Client framework → **Svelte 5 + TypeScript + Vite** — [ADR 0001](adr/0001-client-framework.md).
+- WebSocket transport → migrate `faye-websocket` → **`ws`**, protocol unchanged —
+  [ADR 0002](adr/0002-websocket-transport.md).
+- Detailed client-rewrite steps → [`rewrite-plan.md`](rewrite-plan.md).
+
+Current-state reference (what must keep working): [`architecture.md`](architecture.md),
+[`game-rules.md`](game-rules.md), [`protocol.md`](protocol.md), [`flows.md`](flows.md).
 
 ### Golden rule
 
@@ -27,9 +39,9 @@ rewrite** and **without the game ever becoming unplayable**.
   replacement is proven.
 - **Behavior-preserving first.** Tooling/module/type changes before feature or framework
   changes.
-- **Phases 1–3 are independent of the eventual UI direction** — do them first; defer the
-  Angular-vs-rewrite decision (Phase 4) until the code is modular enough to estimate it
-  honestly.
+- **Phases 1–3 are independent of the UI framework** and should land first: they make the
+  engine importable and typed, which is what the Svelte rewrite (Phase 4) consumes. Phase 4
+  folds Phase 1's build swap into its Step 0.
 - **Use the MCP servers** for current docs before adopting/upgrading anything: `context7`
   (`resolve-library-id` → `query-docs`) for library docs, `deepwiki` for repo Q&A,
   `sonarqube` for quality baselines.
@@ -123,10 +135,10 @@ type-checking. Still no UI framework change.
 
 - **Express 4 → 5** (or evaluate a lighter static-file setup; Express is only used for
   `express.static('web')`).
-- **`faye-websocket`**: decide keep vs. migrate to [`ws`](https://github.com/websockets/ws).
-  The custom batched protocol in `BaseSocketClient` is transport-agnostic, so `ws` is a
-  low-risk swap; do **not** pull in Socket.IO (different framing, would need a protocol
-  rewrite). Document the decision as an ADR.
+- **`faye-websocket` → `ws`** ([ADR 0002](adr/0002-websocket-transport.md)). The custom
+  batched protocol in `BaseSocketClient` is transport-agnostic, so this is a server-only
+  change with the protocol framing untouched; do **not** pull in Socket.IO. Independent of
+  Phase 4 — can land before or after.
 - **`influx`** (Inspector): upgrade to a supported `@influxdata/influxdb-client` or gate
   the whole Inspector behind a clean optional plugin boundary.
 - `optionalDependencies` `usage` (native, unmaintained) → replace with
@@ -137,47 +149,39 @@ type-checking. Still no UI framework change.
 
 ---
 
-## Phase 4 — Client framework: decision point
+## Phase 4 — Client rewrite: AngularJS → Svelte + Vite
 
-By now the code is modular and typed, so the effort of each option is estimable. **Both
-options keep the server and the wire protocol as-is initially.**
+**Decided** ([ADR 0001](adr/0001-client-framework.md)): the AngularJS shell is replaced by
+**Svelte 5 + TypeScript**, built with **Vite**, using Svelte stores as the socket-fed state
+layer. Full step-by-step playbook: [`rewrite-plan.md`](rewrite-plan.md).
 
-### Option A — Keep, then gradually retire AngularJS
+**Approach — strangler, not big-bang.** Stand the Svelte app up next to the working
+AngularJS one and move it one screen at a time; `main` stays untouched and the `modernize`
+branch stays shippable after every PR. This is the explicit fix for why `origin/ai_migrate`
+(a parallel React + socket.io rewrite that also never migrated the server) stalled.
 
-- Bump **AngularJS 1.4.3 → 1.8.x** (final release, has some security backports) as a
-  stepping stone.
-- Extract UI pieces (room list, room detail, chat, profile, in-game HUD) one at a time
-  into **framework-agnostic Web Components** (or a tiny view lib), leaving Angular as a
-  shrinking shell until it can be deleted.
-- The renderer and client-side simulation are already framework-free — untouched.
+**What is reused, not rewritten:** `src/shared/**`, `src/client/core/*`,
+`src/client/model/*`, `src/client/animation/*` — the canvas renderer, client-side
+simulation and the `BaseSocketClient` protocol. They are converted to ESM/TS in Phase 2 and
+imported by Svelte components. The canvas never goes through Svelte's reactivity.
 
-**Pros:** always shippable; smallest blast radius; shared logic untouched; no parallel
-"new app" to keep in sync.
-**Cons:** two paradigms coexist for a long time; slower to a "clean" end state; Web
-Components tooling is less batteries-included than a full framework.
+**Steps (condensed — see `rewrite-plan.md`):**
 
-### Option B — Rewrite the client shell on a modern framework (e.g. React + Vite)
+0. Vite + Svelte scaffold; port the SASS + GA-injection Gulp tasks; keep `gulp` as fallback.
+1. Make the engine importable (ESM/TS) + swap `tom32i-*` Bower libs for npm.
+2. Socket layer: a **typed event map** (from [`protocol.md`](protocol.md)),
+   a `request()` promise wrapper, and Svelte stores replacing the `*Repository` services.
+3. `App.svelte` shell + hash routing matching today's routes.
+4. Migrate screens one PR each: About → Rooms list → Profile → Room/lobby → Game HUD;
+   delete each AngularJS controller/view as its replacement goes live.
+5. `Game.svelte` mounts the existing canvas renderer in `onMount`; HUD reads the `game`
+   store, renderer consumes socket events directly.
+6. Replace `angular-bootstrap-colorpicker`, `createjs-soundjs`, `angular-cookies`.
+7. Delete `gulpfile.js`, `bower.json`, AngularJS, ported controllers/views; modern
+   `Dockerfile`; update docs.
 
-- New **React + Vite** app for routing, lobby, rooms, chat, profile, results.
-- The game `<canvas>` becomes one isolated component wrapping the existing (now modular)
-  renderer + client sim; the WS layer (`SocketClient` + repositories) is reused as plain
-  modules behind a context/hook.
-- Server-side game logic and protocol stay put; modernize them later on their own track.
-
-**Pros:** clean target stack, large ecosystem, best long-term DX and hiring story.
-**Cons:** biggest, riskiest step. A prior one-shot AI attempt at exactly this
-(`origin/ai_migrate`, React 19 + Vite + socket.io) stalled because the **server
-counterpart was never migrated** and the game wouldn't start — treat that as the cautionary
-tale: do it *incrementally behind the working app*, screen by screen, with the smoke test
-gating each merge, not as a parallel rewrite.
-
-### Recommendation
-
-Do **Phases 1–3 first** regardless. Then, if the team wants a mainstream framework and has
-the bandwidth for a multi-PR migration, choose **B but executed incrementally** (new
-framework mounted alongside the old shell, routes moved one by one). If bandwidth is
-limited or "always green" matters more than reaching a pure end state, choose **A**.
-Record the choice as an ADR under `doc/adr/`.
+**Risk:** L (many small PRs, but each is revertible and smoke-tested).
+**Playable:** yes after every step.
 
 ---
 
@@ -205,8 +209,9 @@ Record the choice as an ADR under `doc/adr/`.
 | 1 Build/deps | **yes** — unblocks everything | M | yes |
 | 2 Modules/syntax | high value | M–L | yes (per module) |
 | 3 Runtime deps | medium | S–M | yes |
-| 4 Framework | optional / strategic | L (A) – XL (B) | yes if incremental |
+| 4 Rewrite (Svelte) | committed | L (many small PRs) | yes — screen by screen |
 | 5 Quality/CI | do parts early | S–M | yes |
 
 Phase 1 is the single highest-leverage step: it makes the repo buildable on a normal
-machine and enables everything after it.
+machine and enables everything after it. Phase 4's detailed playbook — including how its
+Step 0 subsumes Phase 1 — is in [`rewrite-plan.md`](rewrite-plan.md).

@@ -1,8 +1,17 @@
 # CLAUDE.md
 
 Working notes for Claude Code (and other automated contributors) on this repository.
-Human-facing overview is in [`README.md`](README.md); the modernization plan is in
-[`doc/modernization-roadmap.md`](doc/modernization-roadmap.md).
+Human-facing overview is in [`README.md`](README.md).
+
+**Documentation map:**
+
+- [`doc/architecture.md`](doc/architecture.md) — how the codebase fits together
+- [`doc/game-rules.md`](doc/game-rules.md) — physics, trail, collision, scoring, bonuses, constants
+- [`doc/protocol.md`](doc/protocol.md) — the WebSocket event reference
+- [`doc/flows.md`](doc/flows.md) — sequence diagrams for the main flows
+- [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md) — phased plan + decisions
+- [`doc/rewrite-plan.md`](doc/rewrite-plan.md) — the AngularJS → Svelte + Vite playbook
+- [`doc/adr/`](doc/adr) — ADR 0001 (Svelte), ADR 0002 (`ws` transport)
 
 ## What this is
 
@@ -80,6 +89,16 @@ Tasks are in [`gulpfile.js`](gulpfile.js); bundle contents in [`recipes/`](recip
 - Style/comments: terse `/** ... */` headers on every function, matching existing files.
 - Keep changes minimal and reversible; the golden rule is **the game must still start and
   be playable** after any change.
+
+## Modernization direction (decided)
+
+- Client shell: rewrite AngularJS → **Svelte 5 + TS + Vite**, strangler-style, one screen
+  per PR, on the `modernize` branch. `src/shared/**` + `src/client/core|model|animation`
+  are reused (converted to ESM/TS), **not** rewritten; the canvas stays out of Svelte's
+  render cycle. See [`doc/rewrite-plan.md`](doc/rewrite-plan.md) + [ADR 0001](doc/adr/0001-client-framework.md).
+- Transport: `faye-websocket` → **`ws`**, protocol framing unchanged, server-only change
+  ([ADR 0002](doc/adr/0002-websocket-transport.md)).
+- Do build/deps/ESM (roadmap phases 1–3) before/with the rewrite; never a big-bang.
 
 ## Common tasks
 
