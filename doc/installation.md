@@ -1,7 +1,12 @@
 ## Prerequisite
 
-Curvytron runs on [node.js >= v0.10](https://nodejs.org/).
-You need to install node on the machine that will run the Curvytron server.
+Curvytron runs on [node.js](https://nodejs.org/). The **built server**
+(`node bin/curvytron.js`) runs on current Node (20+).
+
+> ⚠️ The **legacy build** below still uses Gulp 3 + Bower and needs an **old Node
+> (~8–10)** — `gulp-sass@0.7` and the `bower install` hook do not work on modern npm/Node.
+> Use [`nvm`](https://github.com/nvm-sh/nvm) to select an old Node just for the build.
+> Replacing this toolchain is [Phase 1 of the modernization roadmap](modernization-roadmap.md).
 
 ## Installation
 
