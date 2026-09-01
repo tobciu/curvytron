@@ -21,9 +21,13 @@ export class BaseAvatar extends EventEmitter {
   static readonly invincible = false;
   static readonly directionInLoop = true;
 
-  /** Concrete Trail / BonusStack — overridden by the client/server Avatar subclasses. */
-  protected TrailClass: new (owner: any) => BaseTrail = BaseTrail;
-  protected BonusStackClass: new (owner: any) => BaseBonusStack = BaseBonusStack;
+  /**
+   * Concrete Trail / BonusStack — overridden by the client/server Avatar subclasses.
+   * **static** (not an instance field) so they are already in place when the base
+   * constructor runs — an instance-field initializer would run *after* super().
+   */
+  static TrailClass: new (owner: any) => BaseTrail = BaseTrail;
+  static BonusStackClass: new (owner: any) => BaseBonusStack = BaseBonusStack;
 
   id: string | number;
   name: string;
@@ -65,8 +69,9 @@ export class BaseAvatar extends EventEmitter {
     this.color = player.color;
     this.borderColor = player.color;
     this.player = player;
-    this.trail = new this.TrailClass(this);
-    this.bonusStack = new this.BonusStackClass(this);
+    const ctor = this.constructor as typeof BaseAvatar;
+    this.trail = new ctor.TrailClass(this);
+    this.bonusStack = new ctor.BonusStackClass(this);
   }
 
   equal(avatar: BaseAvatar): boolean {

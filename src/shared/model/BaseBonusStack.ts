@@ -20,7 +20,7 @@ export interface StackableBonus {
  * resulting values onto it. `resolve()` recomputes from scratch each time a bonus
  * is added or removed.
  */
-export class BaseBonusStack<T = Record<string, number>> extends EventEmitter {
+export class BaseBonusStack<T = any> extends EventEmitter {
   target: T;
   bonuses = new Collection<StackableBonus>();
 

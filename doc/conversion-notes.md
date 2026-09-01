@@ -24,7 +24,7 @@ Living document — extended as cases come up.
 | `Foo.prototype.CONST = 5` (balancing constants) | `readonly CONST = 5` class field (or `static` where it was read via `Foo.prototype.CONST`) |
 | `this.cb = this.cb.bind(this)` in ctor | keep as-is for now (callbacks passed to `setTimeout`/events); arrow-field cleanup is Phase 2 |
 | bundle-global reference to another class | `import { Other } from './Other.ts'` |
-| **Base→concrete-subclass reference** (only 7: `BaseAvatar`→`Trail`/`BonusStack`, `BaseRoom`→`RoomConfig`/`Game`, `BaseGame`→`BonusManager`/`FPSLogger`, `BasePlayer`→`Avatar`) | Base declares an injected class field it `new`s (`protected TrailClass!: typeof BaseTrail`); each concrete subclass assigns the concrete class. |
+| **Base→concrete-subclass reference** (only 7: `BaseAvatar`→`Trail`/`BonusStack`, `BaseRoom`→`RoomConfig`/`Game`, `BaseGame`→`BonusManager`/`FPSLogger`, `BasePlayer`→`Avatar`) | Base declares a **`static`** injected class ref (`static TrailClass = BaseTrail`); the base constructor reads it via `(this.constructor as typeof BaseX).TrailClass`; each concrete subclass does `static override TrailClass = Trail`. **Must be `static`, not an instance field** — an instance-field initializer runs *after* `super()`, so the base constructor would still see the base default. |
 
 ## Conventions
 
@@ -68,3 +68,18 @@ Living document — extended as cases come up.
 | `shared/model/Preset` + client presets | ⬜ Phase 2 (client-only UI) |
 | `server/core/{Body,AvatarBody,Island,World}` (collision grid) | ✅ |
 | `src/server/**` rest (Server+ws, SocketClient, SocketGroup, PingLogger, Inspector, controllers, managers, model subclasses, repository, service, trackers, launcher→main.ts) | ⬜ |
+
+## Phase 1 acceptance — reached
+
+`npm run build && PORT=xxxx node dist-server/main.js` on **Node 24**:
+
+- serves the Phase-0 reference client from `web-ref/` (assembled by
+  `scripts/prepare-reference-web.mjs`)
+- the legacy AngularJS client connects and the lobby works
+- a scripted WS client can `whoami` → create → join → add players → ready
+- **a full round runs**: `round:new` → `game:start` → ~60 fps `position`
+  frames → bonus spawn → deaths → `round:end`
+
+Server is fully ESM/TS on `ws` (no `faye-websocket`, no `dependencies.js`,
+no gulp). Inspector + trackers are stubbed out (deployed config has them
+off) — port them if metrics are wanted.

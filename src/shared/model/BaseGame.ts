@@ -30,8 +30,8 @@ export class BaseGame extends EventEmitter {
   static readonly borderlessDefault = false;
 
   /** Concrete FPS logger / bonus manager — overridden by the client/server Game. */
-  protected FpsLoggerClass: new () => BaseFPSLogger = BaseFPSLogger;
-  protected BonusManagerClass: new (game: any, bonuses: unknown[], rate: number) => BaseBonusManager =
+  static FpsLoggerClass: new () => BaseFPSLogger = BaseFPSLogger;
+  static BonusManagerClass: new (game: any, bonuses: unknown[], rate: number) => BaseBonusManager =
     BaseBonusManager;
 
   room: GameRoom;
@@ -57,8 +57,9 @@ export class BaseGame extends EventEmitter {
     });
     this.size = this.getSize(this.avatars.count());
     this.maxScore = room.config.getMaxScore();
-    this.fps = new this.FpsLoggerClass();
-    this.bonusManager = new this.BonusManagerClass(
+    const ctor = this.constructor as typeof BaseGame;
+    this.fps = new ctor.FpsLoggerClass();
+    this.bonusManager = new ctor.BonusManagerClass(
       this,
       room.config.getBonuses(),
       room.config.getVariable('bonusRate') ?? 0,

@@ -183,9 +183,9 @@ describe('BasePlayer', () => {
       marker = true;
     }
     class MyPlayer extends BasePlayer {
+      static override AvatarClass = MyAvatar;
       constructor() {
         super(client, 'p', '#5cae24');
-        this.AvatarClass = MyAvatar;
         this.id = 42;
       }
     }

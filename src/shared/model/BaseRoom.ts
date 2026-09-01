@@ -13,8 +13,8 @@ export class BaseRoom extends EventEmitter {
   static readonly maxLength = 25;
   static readonly launchTime = 5000;
 
-  protected RoomConfigClass: new (room: any) => BaseRoomConfig = BaseRoomConfig;
-  protected GameClass: new (room: any) => BaseGame = BaseGame;
+  static RoomConfigClass: new (room: any) => BaseRoomConfig = BaseRoomConfig;
+  static GameClass: new (room: any) => BaseGame = BaseGame;
 
   name: string;
   players = new Collection<BasePlayer>([], 'id', true);
@@ -25,7 +25,7 @@ export class BaseRoom extends EventEmitter {
     super();
 
     this.name = name;
-    this.config = new this.RoomConfigClass(this);
+    this.config = new (this.constructor as typeof BaseRoom).RoomConfigClass(this);
     this.closeGame = this.closeGame.bind(this);
   }
 
@@ -61,7 +61,7 @@ export class BaseRoom extends EventEmitter {
 
   newGame(): BaseGame | null {
     if (!this.game) {
-      this.game = new this.GameClass(this);
+      this.game = new (this.constructor as typeof BaseRoom).GameClass(this);
       this.game.on('end', this.closeGame);
       this.emit('game:new', { room: this, game: this.game });
 

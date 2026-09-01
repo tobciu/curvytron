@@ -11,7 +11,7 @@ export class BasePlayer extends EventEmitter {
   static readonly colorMaxLength = 20;
 
   /** Concrete Avatar — overridden by the client/server Player subclasses. */
-  protected AvatarClass: new (player: any) => BaseAvatar = BaseAvatar;
+  static AvatarClass: new (player: any) => BaseAvatar = BaseAvatar;
 
   client: PlayerClient;
   name: string;
@@ -52,7 +52,7 @@ export class BasePlayer extends EventEmitter {
 
   getAvatar(): BaseAvatar {
     if (!this.avatar) {
-      this.avatar = new this.AvatarClass(this as unknown as AvatarPlayer);
+      this.avatar = new (this.constructor as typeof BasePlayer).AvatarClass(this as unknown as AvatarPlayer);
     }
     return this.avatar;
   }

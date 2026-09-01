@@ -36,3 +36,6 @@ Thumbs.db
 # Misc
 .cache/
 *.tgz
+
+# assembled by scripts/prepare-reference-web.mjs
+web-ref/

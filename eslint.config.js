@@ -9,6 +9,7 @@ export default tseslint.config(
       'dist-server/',
       'node_modules/',
       'web/',
+      'web-ref/',
       'doc/reference-build/',
       // Legacy client + build — removed during the modernization, not worth linting.
       'src/client/',
@@ -34,6 +35,7 @@ export default tseslint.config(
       curly: ['warn', 'all'],
       camelcase: ['warn', { properties: 'never' }],
       'no-var': 'warn',
+      '@typescript-eslint/no-this-alias': 'off',
       'prefer-const': 'warn',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],

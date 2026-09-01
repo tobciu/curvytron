@@ -32,7 +32,7 @@
     }
   ],
   "scripts": {
-    "build": "npm run build:server",
+    "build": "node scripts/prepare-reference-web.mjs && npm run build:server",
     "build:server": "node scripts/build-server.mjs",
     "start": "node dist-server/main.js",
     "dev": "node scripts/build-server.mjs --watch",
@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
+    "@types/express": "^5.0.0",
     "@types/node": "^24.0.0",
     "@types/ws": "^8.5.12",
     "esbuild": "^0.25.0",
