@@ -7,7 +7,7 @@ const r = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 
 export default defineConfig({
   root: 'src/client',
-  // Static media the legacy client expects at the web root (images/, sounds/, font/).
+  // Game media served at the web root (images/, sounds/, font/) — copied into dist/ on build.
   publicDir: r('./web'),
   plugins: [svelte()],
   resolve: {

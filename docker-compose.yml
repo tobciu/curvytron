@@ -1,6 +1,15 @@
-version: '3.9'
 services:
   curvytron:
-    build: .
+    # Local build from source. Once CI publishes to a registry, replace the
+    # `build:` block below with:  image: ghcr.io/tobciu/curvytron:latest
+    build:
+      context: .
+      target: runtime
+    image: curvytron:local
+    restart: unless-stopped
     ports:
       - "8080:8080"
+    # config.json is optional — the server defaults to port 8080, inspector off.
+    # To supply one, create ./config.json first, then uncomment:
+    # volumes:
+    #   - ./config.json:/app/config.json:ro

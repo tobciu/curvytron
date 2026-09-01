@@ -26,5 +26,5 @@
     }
   },
   "include": ["src/shared/**/*", "src/server/**/*", "scripts/**/*"],
-  "exclude": ["node_modules", "dist", "dist-server", "web-ref", "doc/reference-build", "src/client"]
+  "exclude": ["node_modules", "dist", "dist-server", "doc/reference-build", "src/client"]
 }

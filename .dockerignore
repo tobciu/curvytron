@@ -1,0 +1,15 @@
+.git
+.gitignore
+.claude
+node_modules
+dist
+dist-server
+web-ref
+doc
+stats
+coverage
+*.log
+config.json
+.env
+.env.*
+.DS_Store

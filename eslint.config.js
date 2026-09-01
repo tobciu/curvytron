@@ -9,12 +9,11 @@ export default tseslint.config(
       'dist-server/',
       'node_modules/',
       'web/',
-      'web-ref/',
       'doc/reference-build/',
-      // Legacy client + build — removed during the modernization, not worth linting.
+      // Svelte client — type-checked by svelte-check (no eslint-plugin-svelte yet).
       'src/client/',
+      // Deferred legacy CommonJS (server trackers — not yet ported to ESM/TS).
       'src/**/*.js',
-      'gulpfile.js',
     ],
   },
 

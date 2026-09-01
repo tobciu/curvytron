@@ -21,8 +21,9 @@ function loadConfig(): ServerConfig {
   }
 
   const port = Number(process.env.PORT ?? file.port ?? 8080);
+  // The Vite client build (index.html + assets + copied web/ media) lands in dist/.
   const staticDir =
-    process.env.STATIC_DIR ?? (existsSync('web/index.html') ? 'web' : 'web-ref');
+    process.env.STATIC_DIR ?? (existsSync('dist/index.html') ? 'dist' : 'web');
 
   if (file.inspector?.enabled || process.env.INSPECTOR_ENABLED === 'true') {
     console.warn('Inspector requested but not yet ported to the modern build — skipping.');

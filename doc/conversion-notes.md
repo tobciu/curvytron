@@ -138,7 +138,21 @@ off) — port them if metrics are wanted.
     warmup countdown → server-driven movement + trail → arrow-key steering
     turns the curve → wall crash → kill log + round/game-end overlays +
     scoreboard → "Back to the room" preserves membership.
-- **Step 6** ⬜ replace `angular-bootstrap-colorpicker` / `createjs-soundjs` (Web Audio).
-- **Step 7** ⬜ delete AngularJS (`app.js`, `controller/`, `service/`, `repository/`,
-  `views/`, `model/*.js`), `gulpfile.js`, `bower.json`, `.jshintrc`, the `web-ref`
-  fallback; modern multi-stage `node:24-alpine` Dockerfile.
+- **Step 6** ⬜ sound. `angular-bootstrap-colorpicker` was already replaced (Profile uses
+  native `<input type=color>` + hex). `createjs-soundjs` → Web Audio for the
+  death / bonus-pop / bonus-clear / win cues + the radio feature — still to do.
+- **Step 7** ✅ delete AngularJS + legacy build:
+  - removed `src/client/{app.js, controller/, service/, repository/, views/,
+    stressTest.js}`, `src/client/model/{*.js, bonus/*.js, message/, preset/}`,
+    `src/client/manager/BonusManager.js`, `src/shared/model/{BaseBonus.js, Preset.js}`.
+  - removed `gulpfile.js`, `bower.json`, `bower-resolutions.json`, `recipes/`,
+    `.jshintrc`, `web-ref/`, `scripts/prepare-reference-web.mjs`.
+  - `package.json` `build` = `build:server && build:client`; `src/server/main.ts`
+    serves `dist/` (falls back to `web/`); `Dockerfile` → multi-stage
+    `node:24-alpine` (non-root, `--omit=dev`, healthcheck) + `.dockerignore`;
+    `docker-compose.yml` builds `target: runtime`.
+  - `README.md` + `CLAUDE.md` rewritten for the post-rewrite state.
+  - Still `.js` and deferred: `src/server/trackers/*.js`, server `Inspector`
+    (InfluxDB, config-gated off) — ignored by tsc/eslint.
+  - Verified: `npm run build` from a clean tree, then `node dist-server/main.js`
+    serves the built client on `dist/` (index / assets / images all 200).

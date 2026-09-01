@@ -32,7 +32,7 @@
     }
   ],
   "scripts": {
-    "build": "node scripts/prepare-reference-web.mjs && npm run build:server && npm run build:client",
+    "build": "npm run build:server && npm run build:client",
     "build:server": "node scripts/build-server.mjs",
     "start": "node dist-server/main.js",
     "dev": "node scripts/build-server.mjs --watch",
