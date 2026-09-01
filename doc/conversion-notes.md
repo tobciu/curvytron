@@ -57,7 +57,7 @@ Living document — extended as cases come up.
 | `shared/manager/BaseBonusManager` + `{client,server}` | ⬜ |
 | `shared/model/BasePlayer` + `{client,server}/model/Player` | ⬜ |
 | `shared/model/BaseAvatar` + `{client,server}/model/Avatar` | ⬜ |
-| `shared/model/BaseRoomConfig` + `{client,server}/model/RoomConfig` | ⬜ |
+| `shared/model/BaseRoomConfig` (base only; concrete RoomConfig needs the bonus classes) | ✅ base |
 | `shared/model/BaseRoom` + `{client,server}/model/Room` | ⬜ |
 | `shared/model/BaseGame` + `{client,server}/model/Game` | ⬜ |
 | `shared/service/BaseChat` + `{client,server}/service/Chat` | ⬜ |
