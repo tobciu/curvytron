@@ -54,8 +54,9 @@ Living document — extended as cases come up.
 | `shared/model/BaseTrail` + `{client,server}/model/Trail` | ✅ (client Trail has no DOM deps) |
 | `shared/model/BaseBonusStack` (base only) | ✅ base |
 | **Bonus subsystem** — `shared/model/BaseBonus` + `shared/manager/BaseBonusManager` + `server/model/Bonus/*` (~28) + `server/manager/BonusManager` + `server/model/RoomConfig` + `{client,server}/model/BonusStack` | ⬜ (one cohesive slice — the instance-vs-prototype constant reads are entangled) |
-| `shared/model/BasePlayer` + `{client,server}/model/Player` | ⬜ |
-| `shared/model/BaseAvatar` + `{client,server}/model/Avatar` | ⬜ |
+| `shared/model/BaseAvatar` (base; injects `TrailClass`/`BonusStackClass`, default to the base classes) | ✅ base |
+| `shared/model/BasePlayer` (base; injects `AvatarClass`) | ✅ base |
+| `{client,server}/model/{Avatar,Player}` subclasses | ⬜ |
 | `shared/model/BaseRoomConfig` (base only; concrete RoomConfig needs the bonus classes) | ✅ base |
 | `shared/model/BaseRoom` + `{client,server}/model/Room` | ⬜ |
 | `shared/model/BaseGame` + `{client,server}/model/Game` | ⬜ |
