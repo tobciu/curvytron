@@ -48,8 +48,9 @@ Living document — extended as cases come up.
 | --- | --- |
 | `shared/Collection` | ✅ `ab91567` |
 | `shared/service/Compressor` | ✅ `ab91567` |
-| `shared/service/BaseFPSLogger` + `server/service/FPSLogger` | ✅ |
-| `shared/service/BaseTickrateLogger` | ✅ |
+| `shared/service/BaseFPSLogger` + `server/service/FPSLogger` | ✅ `acbfa89` |
+| `shared/service/BaseTickrateLogger` | ✅ `acbfa89` |
+| `shared/core/BaseSocketClient` (+ `SocketLike` iface for the `ws` adapter) | ✅ |
 | `shared/model/BaseTrail` + `{client,server}/model/Trail` | ⬜ |
 | `shared/model/BaseBonusStack` + `{client,server}` | ⬜ |
 | `shared/model/BaseBonus` + bonus subclasses | ⬜ |
