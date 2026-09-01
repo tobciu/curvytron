@@ -58,9 +58,11 @@ Living document — extended as cases come up.
 | `shared/model/BasePlayer` (base; injects `AvatarClass`) | ✅ base |
 | `{client,server}/model/{Avatar,Player}` subclasses | ⬜ |
 | `shared/model/BaseRoomConfig` (base only; concrete RoomConfig needs the bonus classes) | ✅ base |
-| `shared/model/BaseRoom` + `{client,server}/model/Room` | ⬜ |
-| `shared/model/BaseGame` + `{client,server}/model/Game` | ⬜ |
-| `shared/service/BaseChat` (base) + `server/service/Chat` | ⬜ |
+| `shared/manager/BaseBonusManager` (base; the rest of the bonus subsystem still deferred) | ✅ base |
+| `shared/model/BaseGame` (base; injects `FpsLoggerClass`/`BonusManagerClass`) | ✅ base |
+| `shared/service/BaseChat` (base) | ✅ base |
+| `{client,server}/model/Game` subclasses | ⬜ |
+| `shared/model/BaseRoom` + `{client,server}/model/Room` | ⬜ (injects RoomConfigClass/GameClass) |
 | `{client,server}/core/SocketClient` (subclasses of the converted BaseSocketClient) | ⬜ |
 | `shared/model/Preset` + client presets | ⬜ Phase 2 (client-only UI) |
 | `src/server/**` (controllers, core, managers, trackers, launcher→main.ts) | ⬜ |

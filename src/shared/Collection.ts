@@ -5,7 +5,7 @@
  * iteration in {@link map}/{@link filter}/{@link walk}) is preserved.
  */
 export class Collection<T = any> {
-  ids: Array<T[keyof T] | number> = [];
+  ids: Array<string | number> = [];
   items: T[] = [];
   key: string;
   index: boolean;
@@ -22,8 +22,8 @@ export class Collection<T = any> {
     }
   }
 
-  private prop(element: T): T[keyof T] {
-    return (element as Record<string, unknown>)[this.key] as T[keyof T];
+  private prop(element: T): string | number {
+    return (element as Record<string, unknown>)[this.key] as string | number;
   }
 
   clear(): void {
@@ -73,7 +73,7 @@ export class Collection<T = any> {
     return false;
   }
 
-  removeById(id: T[keyof T] | number): boolean {
+  removeById(id: string | number): boolean {
     const index = this.ids.indexOf(id);
 
     if (index >= 0) {
@@ -102,7 +102,7 @@ export class Collection<T = any> {
     return this.ids.indexOf(this.prop(element));
   }
 
-  getIdIndex(id: T[keyof T] | number): number {
+  getIdIndex(id: string | number): number {
     return this.ids.indexOf(id);
   }
 
@@ -111,7 +111,7 @@ export class Collection<T = any> {
     this.ids.splice(index, 1);
   }
 
-  getById(id: T[keyof T] | number): T | null {
+  getById(id: string | number): T | null {
     const index = this.ids.indexOf(id);
 
     return index >= 0 ? (this.items[index] as T) : null;
@@ -125,7 +125,7 @@ export class Collection<T = any> {
     return this.getElementIndex(element) >= 0;
   }
 
-  indexExists(index: T[keyof T] | number): boolean {
+  indexExists(index: string | number): boolean {
     return this.ids.indexOf(index) >= 0;
   }
 
