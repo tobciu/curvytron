@@ -56,18 +56,17 @@ Living document — extended as cases come up.
 | **Bonus subsystem** — BaseBonus + server/model/Bonus/* (25) + server/manager/BonusManager | ✅ |
 | `shared/model/BaseAvatar` (base; injects `TrailClass`/`BonusStackClass`, default to the base classes) | ✅ base |
 | `shared/model/BasePlayer` (base; injects `AvatarClass`) | ✅ base |
-| `{client,server}/model/{Avatar,Player}` subclasses | ⬜ |
+| `server/model/*` (Avatar, Player, Room, Game, RoomConfig, BonusStack, …) | ✅ `94e95a4` |
 | `shared/model/BaseRoomConfig` (base only; concrete RoomConfig needs the bonus classes) | ✅ base |
 | `shared/manager/BaseBonusManager` (base; the rest of the bonus subsystem still deferred) | ✅ base |
 | `shared/model/BaseGame` (base; injects `FpsLoggerClass`/`BonusManagerClass`) | ✅ base |
 | `shared/service/BaseChat` (base) | ✅ base |
-| `{client,server}/model/Game` subclasses | ⬜ |
+| `server/{core,controller,manager,repository,service}/*` + `main.ts` (ws) | ✅ `94e95a4` |
 | `shared/model/BaseRoom` (base; injects RoomConfigClass/GameClass) | ✅ base |
-| `{client,server}/model/Room` subclasses | ⬜ |
-| `{client,server}/core/SocketClient` (subclasses of the converted BaseSocketClient) | ⬜ |
+| `server/core/Inspector` + `server/trackers/*` (InfluxDB) | ⬜ deferred (config-gated off) |
+| **client** `src/client/**` (engine → ESM/TS, then Svelte shell) | ⬜ Phase 2 |
 | `shared/model/Preset` + client presets | ⬜ Phase 2 (client-only UI) |
 | `server/core/{Body,AvatarBody,Island,World}` (collision grid) | ✅ |
-| `src/server/**` rest (Server+ws, SocketClient, SocketGroup, PingLogger, Inspector, controllers, managers, model subclasses, repository, service, trackers, launcher→main.ts) | ⬜ |
 
 ## Phase 1 acceptance — reached
 
