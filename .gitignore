@@ -9,6 +9,7 @@ web/js/
 web/index.html
 bin/
 dist/
+dist-server/
 stats/
 
 # Local config
