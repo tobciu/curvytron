@@ -82,3 +82,19 @@ Living document — extended as cases come up.
 Server is fully ESM/TS on `ws` (no `faye-websocket`, no `dependencies.js`,
 no gulp). Inspector + trackers are stubbed out (deployed config has them
 off) — port them if metrics are wanted.
+
+## Phase 2 progress
+
+- **Step 0** ✅ Vite + Svelte 5 scaffold (`5b2208d`)
+- **Step 1a** ✅ client engine primitives → TS: `core/{Canvas,SocketClient,StopWatch}`,
+  `animation/{BounceIn,Explode,ExplodeParticle}` (`a797a52`)
+- **Step 1b (part)** ✅ vendored libs + input stack:
+  `lib/{SpriteAsset, mappers}` (replace `tom32i-asset-loader` / `tom32i-key-mapper`),
+  `model/{Client, RoomListItem, PlayerControl, PlayerInput, Player}`.
+  Gamepad capture is stubbed (`GamepadMapper` / `PlayerInput` gamepad branch) —
+  was unfinished upstream too; keyboard + touch are live.
+- **Step 1b (rest)** ⬜ `model/{Avatar, Game, BonusStack, Room, RoomConfig}`,
+  `manager/BonusManager`, `model/bonus/{MapBonus, StackedBonus}`, `model/{message,preset}/*`
+  — render/Canvas-bound, best done alongside the `Game.svelte` canvas component (Step 5).
+- **Steps 2–7** ⬜ typed socket layer + stores → shell + routing → screen migration →
+  canvas component → lib swaps → delete AngularJS.
