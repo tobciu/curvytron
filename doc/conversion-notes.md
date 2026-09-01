@@ -51,7 +51,7 @@ Living document — extended as cases come up.
 | `shared/service/BaseFPSLogger` + `server/service/FPSLogger` | ✅ `acbfa89` |
 | `shared/service/BaseTickrateLogger` | ✅ `acbfa89` |
 | `shared/core/BaseSocketClient` (+ `SocketLike` iface for the `ws` adapter) | ✅ |
-| `shared/model/BaseTrail` + `{client,server}/model/Trail` | ⬜ |
+| `shared/model/BaseTrail` + `{client,server}/model/Trail` | ✅ (client Trail has no DOM deps) |
 | `shared/model/BaseBonusStack` + `{client,server}` | ⬜ |
 | `shared/model/BaseBonus` + bonus subclasses | ⬜ |
 | `shared/manager/BaseBonusManager` + `{client,server}` | ⬜ |
