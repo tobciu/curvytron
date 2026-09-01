@@ -5,6 +5,7 @@ import { Compressor } from '@shared/service/Compressor.ts';
 import { socket } from '../socket/client.ts';
 import type { ServerToClient } from '../socket/events.ts';
 import { profile } from './profile.ts';
+import { sound } from '../sound.ts';
 import { room, type RoomState } from './room.ts';
 import { Game, type GameCanvases } from '../../model/Game.ts';
 import { Avatar, type AvatarOwner } from '../../model/Avatar.ts';
@@ -236,6 +237,7 @@ function createGameStore() {
         return;
       }
       dead.die();
+      sound.play('death');
       const killer = d[1] != null ? byId(d[1]) : null;
       const type: KillLogEntry['type'] = !killer
         ? 'wall'
@@ -276,11 +278,13 @@ function createGameStore() {
           game.bonusManager.assets[d[3]],
         ),
       );
+      sound.play('bonus-pop');
     },
     'bonus:clear': (d: ServerToClient['bonus:clear']) => {
       const bonus = game?.bonusManager.bonuses.getById(d);
       if (bonus && game) {
         game.bonusManager.remove(bonus);
+        sound.play('bonus-clear');
       }
     },
     'bonus:stack': (d: ServerToClient['bonus:stack']) => {
@@ -326,6 +330,7 @@ function createGameStore() {
     },
     'end': () => {
       game?.end();
+      sound.play('win');
       const winner = game?.avatars.getFirst() ?? null;
       clearWarmup();
       patch(() => ({

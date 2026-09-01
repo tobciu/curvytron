@@ -98,8 +98,9 @@ off) — port them if metrics are wanted.
   The legacy `model/{Room, RoomConfig}` and `model/{message,preset}/*` are **not
   ported** — the `room` / `game` stores replace them. `model/*.js` (AngularJS)
   still present, deleted in Step 7.
-- **Steps 2–5** ✅ typed socket layer + stores → shell + routing → screen migration →
-  canvas game (detail below). **Steps 6–7** ⬜ lib swaps → delete AngularJS.
+- **Steps 2–7** ✅ typed socket layer + stores → shell + routing → screen migration →
+  canvas game → sound → delete AngularJS + modern Dockerfile (detail below).
+  Remaining: CI workflow; deep `doc/*.md` refresh; the deferred trackers/Inspector.
 
 - **Step 2** ✅ typed socket layer + first stores:
   `lib/socket/{events.ts, client.ts}` (typed `ServerToClient`/`ClientToServer`
@@ -138,9 +139,14 @@ off) — port them if metrics are wanted.
     warmup countdown → server-driven movement + trail → arrow-key steering
     turns the curve → wall crash → kill log + round/game-end overlays +
     scoreboard → "Back to the room" preserves membership.
-- **Step 6** ⬜ sound. `angular-bootstrap-colorpicker` was already replaced (Profile uses
-  native `<input type=color>` + hex). `createjs-soundjs` → Web Audio for the
-  death / bonus-pop / bonus-clear / win cues + the radio feature — still to do.
+- **Step 6** ✅ sound. `angular-bootstrap-colorpicker` was already replaced earlier
+  (Profile: native `<input type=color>` + hex). `createjs-soundjs` → `lib/sound.ts`,
+  a tiny `HTMLAudioElement` player (one preloaded template per cue, cloned per
+  play, honours the profile `sound` toggle) — wired into the `game` store for
+  death / bonus-pop / bonus-clear / win. Mute toggle in the game HUD. The `radio`
+  (external music stream) feature is dropped.
+  Verified in the production build (served from `dist/`): full round, HUD mute
+  button toggles + persists, zero console errors.
 - **Step 7** ✅ delete AngularJS + legacy build:
   - removed `src/client/{app.js, controller/, service/, repository/, views/,
     stressTest.js}`, `src/client/model/{*.js, bonus/*.js, message/, preset/}`,

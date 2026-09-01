@@ -3,6 +3,7 @@
   import { get } from 'svelte/store';
   import { gameStore } from '../lib/stores/game.ts';
   import { room } from '../lib/stores/room.ts';
+  import { profile } from '../lib/stores/profile.ts';
   import { route, go, href } from '../lib/router.ts';
 
   let { name }: { name: string } = $props();
@@ -110,6 +111,11 @@
     </ul>
 
     <footer class="metrics">
+      <button
+        class="mute"
+        onclick={() => profile.patch({ sound: !$profile.sound })}
+        title={$profile.sound ? 'Mute sound' : 'Unmute sound'}
+      >{$profile.sound ? '🔊' : '🔇'}</button>
       <span class="fps">{$hud.fps} fps</span>
       <span class="ping">{$hud.latency}ms</span>
       {#if $hud.spectators}<span class="spectators">{$hud.spectators} 👁</span>{/if}
@@ -260,10 +266,19 @@
   }
   .metrics {
     display: flex;
+    align-items: center;
     gap: 0.75rem;
     font-size: 0.8rem;
     color: #888;
     margin: 0.5rem 0;
+  }
+  .mute {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0;
+    line-height: 1;
   }
   .chat {
     margin-top: auto;
