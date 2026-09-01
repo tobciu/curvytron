@@ -7,8 +7,10 @@ Human-facing overview is in [`README.md`](README.md).
 
 - [`doc/architecture.md`](doc/architecture.md) — how the codebase fits together
 - [`doc/game-rules.md`](doc/game-rules.md) — physics, trail, collision, scoring, bonuses, constants
-- [`doc/protocol.md`](doc/protocol.md) — the WebSocket event reference
+- [`doc/protocol.md`](doc/protocol.md) — the WebSocket event reference (both directions verified)
 - [`doc/flows.md`](doc/flows.md) — sequence diagrams for the main flows
+- [`doc/assets.md`](doc/assets.md) — sprite sheet / sounds / icon font inventory
+- [`doc/dependency-map.md`](doc/dependency-map.md) — legacy dep → npm / vendor / dropped
 - [`doc/pre-implementation-checklist.md`](doc/pre-implementation-checklist.md) — **authoritative**: decisions, revised phases, open items, test strategy
 - [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md) — phased plan (background)
 - [`doc/legacy-build-notes.md`](doc/legacy-build-notes.md) — how the frozen build/deploy work today

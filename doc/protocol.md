@@ -164,6 +164,25 @@ Clients that are actually playing also get `player:move` wired.
 | `bonus:clear` | `<bonusId>` | bonus removed (picked up or round end) |
 | `bonus:stack` | `[avatarId, "add" \| "remove", bonusId, "<BonusClassName>", duration]` | effect applied/removed on an avatar |
 
+## Completeness
+
+Both directions have been cross-checked against the source:
+
+- **Server → client**: 50 `socketGroup.addEvent(...)` / `client.addEvent(...)` call sites
+  across `RoomsController` / `RoomController` / `GameController` / `core/SocketClient` — all
+  listed above.
+- **Client → server**: every `client.on('…')` in `src/client/repository/*` +
+  `service/Chat.js` + the game controllers matches a server emit (or a client send with a
+  server handler). No unlisted wire events.
+
+### Client-internal events (NOT on the wire)
+
+`EventEmitter` events used only inside the browser — do not confuse with protocol events
+when building `lib/socket/events.ts`: `connected`, `disconnected` (socket lifecycle),
+`change`, `message`, `filtered`, `fps`, `load`, `loaded`, `move`, `control:change`,
+`listening:stop`, `config:open` / `config:variable` / `config:bonus` (local
+`RoomConfigController` ↔ its repository, distinct from the `room:config:*` wire events).
+
 ## Notes for the rewrite
 
 - The protocol is **transport-agnostic** — it only needs `socket.send(string)` and

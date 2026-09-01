@@ -43,27 +43,28 @@ owner has relaxed this: **the intermediate repo does not have to boot** — only
 | **3 — Docker + Compose + CI** | Multi-stage `node:24-alpine` image; compose pulls image; GH Actions builds+pushes on merge/tag | `docker compose up --build` → play a round in-container; registry pull path works |
 | **4 — Quality hardening** | Widen Vitest coverage; SonarQube; Dependabot; TS `strict` on | CI gates: lint + test + Playwright smoke on every PR |
 
-## Still to capture (research — no decisions blocked, but needed early)
+## Research — done
 
-- [ ] **Dependency map, Bower → npm/vendor** — for each of the 10 Bower deps: npm name +
-  version, or "vendor to `vendor/`", or "dropped (Svelte replaces it)". Priority:
-  `tom32i-event-emitter` (→ `eventemitter3`, decided), `tom32i-gamepad` + `tom32i-key-mapper`
-  (input — npm? vendor? small rewrite?), `tom32i-option-resolver` (used by shared models),
-  `tom32i-asset-loader` (bonus sprite / sounds), `createjs-soundjs` (→ Web Audio / `howler`),
-  `angular*` + `angular-bootstrap-colorpicker` (dropped with the rewrite).
-- [ ] **Exhaustive typed protocol** — grep every `addEvent(`/`.on(` on **both** sides
-  (server side already verified — 50 events, matches [`protocol.md`](protocol.md)); do the
-  client side) → a complete event table with payload types, as the spec for
-  `lib/socket/events.ts`.
-- [ ] **Real output contract** — the `<script>`/`<link>` tags in the produced
-  `web/index.html`; confirm nothing beyond the 6 outputs is needed (verify against the
-  deployed site's HTML).
-- [ ] **Asset & icon inventory** — how `web/images/bonus.png` is sliced (`BonusManager` /
-  `tom32i-asset-loader`); the `web/sounds/*` mp3+ogg pairs and their trigger points;
-  `web/font/curvytron.*` — list the `icon-*` glyphs actually used in the templates (keep
-  the icon font, or replace with inline SVG?).
-- [ ] **`config.json` on the deployed box** — is one mounted? what values? (drives the
-  env-var fallback design).
+- [x] **Dependency map** → [`dependency-map.md`](dependency-map.md). Result: the rewrite
+  adds **1 npm dep** (`eventemitter3`) + **3 vendored files** (`GamepadListener`, the 3
+  input mappers, `SpriteAsset` — ~400 lines); `tom32i-option-resolver` is **dead code**
+  (unreferenced); everything Angular/soundjs/colorpicker/html5-boilerplate is **dropped**.
+  Server: `express`→5, `faye`→`ws`, `usage`/`MD5` dropped, `influx`→`@influxdata/influxdb-client`.
+- [x] **Protocol completeness** → [`protocol.md`](protocol.md#completeness). Both directions
+  cross-checked against source (server: 50 emit sites; client: every `client.on` matches).
+  Client-internal (non-wire) events listed so they don't leak into `events.ts`.
+- [x] **Output contract** → [`legacy-build-notes.md`](legacy-build-notes.md#output-contract-verified-against-the-deployed-indexhtml).
+  Deployed `index.html` (~3.5 KB) loads only `js/dependencies.js`, `js/curvytron.js`,
+  `css/style.css`, Google-Fonts Lato, `images/favicon.png`; no GA. Views loaded at runtime.
+- [x] **Asset & icon inventory** → [`assets.md`](assets.md). `bonus.png` = 3×7 sprite,
+  **icon↔bonus mapping is shuffled per load** (must preserve); 5 registered sounds
+  (`.ogg`+`.mp3`); 26-glyph Fontello icon font → replace with inline SVG (4 referenced
+  names have no glyph today).
+- [x] **Deployed config** → [`legacy-build-notes.md`](legacy-build-notes.md#config-on-the-deployed-box).
+  A `config.js` is mounted to `/curvytron/bin/config.js` but the launcher reads
+  `../config.json`, so the mount is inert — **the server runs on all-default config**
+  (port 8080, GA off, inspector off). Phase-1 launcher: documented path **+ env vars**
+  (`PORT`, `GA_ID`, `INSPECTOR_*`), env wins.
 
 ## Testing strategy (resolves checklist item #8)
 

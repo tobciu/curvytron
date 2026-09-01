@@ -33,14 +33,57 @@ survives only because the base image **`cyrale/curvytron`** has the entire toolc
 
 `isx-curvytron.tobj.de`:
 
-- Image built **once** on the server with `docker build -t curvytron .` (this repo's
+- Image built **once** on the server (`docker build -t curvytron-nbx .` from this repo's
   `Dockerfile`), then run and left running since.
-- No CI, no registry, no `docker compose` for the app today (`docker-compose.yml` in the
-  repo is just `build: .`).
-- Update procedure today = rebuild the image on the box and restart the container.
+- No CI, no registry. The actual compose file on the box:
+  ```yaml
+  services:
+    curvytron:
+      container_name: curvytron
+      image: curvytron-nbx:latest
+      volumes:
+        - ./curvytron_data/config.js:/curvytron/bin/config.js
+  ```
+  (the repo's committed `docker-compose.yml` — `build: .` — is not what runs).
+- Update procedure = rebuild the image on the box and restart.
+
+### Config on the deployed box
+
+A `config.js` is mounted to `/curvytron/bin/config.js` with **all-default values**:
+
+```json
+{ "port": 8080, "googleAnalyticsId": null,
+  "inspector": { "enabled": false, "host": "127.0.0.1", "port": 8086,
+                 "username": "root", "password": "root", "database": "curvytron" } }
+```
+
+Note the mismatch: `src/server/launcher.js` does `require('../config.json')` (→
+`/curvytron/config.json` from the bundled `bin/curvytron.js`), **not** `bin/config.js`. So
+the mount is effectively inert and the server runs on its built-in fallback
+(`{ port: 8080, inspector: { enabled: false } }`) — which happens to equal the mounted
+values. **Takeaway for Phase 1:** the deployed config is 100% defaults; the new launcher
+should read a clearly-documented path **plus env vars** (`PORT`, `GA_ID`, `INSPECTOR_*`),
+env taking precedence.
 
 This is the "from" state that [`deployment.md`](deployment.md) replaces (CI builds a
 `node:24-alpine` multi-stage image → registry → `docker compose pull && up -d`).
+
+## Output contract (verified against the deployed `index.html`)
+
+The built `web/index.html` is ~3.5 KB, minified, `<body ng-app="curvytronApp"
+ng-controller="CurvytronController">`, and references exactly:
+
+| Kind | Reference |
+| --- | --- |
+| script | `js/dependencies.js` |
+| script | `js/curvytron.js` |
+| stylesheet | `css/style.css` |
+| stylesheet | `//fonts.googleapis.com/css?family=Lato:300,400,700` (external) |
+| icon | `images/favicon.png` |
+| author | `humans.txt` |
+
+No GA snippet (config `googleAnalyticsId` is null). Angular loads `js/views/**/*.html` at
+runtime. Full asset list: [`assets.md`](assets.md).
 
 ## Reference build (Phase 0 task)
 

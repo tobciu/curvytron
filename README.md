@@ -223,6 +223,8 @@ Contributor-facing notes live in [`CLAUDE.md`](CLAUDE.md).
 | [`doc/game-rules.md`](doc/game-rules.md) | Movement/turn physics, trail & printing, collision & death, scoring, rounds, map sizing, the bonus system + catalogue, all constants |
 | [`doc/protocol.md`](doc/protocol.md) | The WebSocket protocol: framing, batching, compression, handshake, full event reference (lobby / room / game) |
 | [`doc/flows.md`](doc/flows.md) | Sequence diagrams: connect, create/join room, lobby config & launch, round lifecycle, spectate, leave/close |
+| [`doc/assets.md`](doc/assets.md) | Static-asset inventory: bonus sprite sheet, sounds, icon font, images |
+| [`doc/dependency-map.md`](doc/dependency-map.md) | Every legacy dependency → npm / vendor / dropped |
 | [`doc/pre-implementation-checklist.md`](doc/pre-implementation-checklist.md) | **Authoritative plan**: settled decisions, revised phase order, what's still to capture, test strategy |
 | [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md) | Phased modernization plan (background; checklist wins on conflicts) |
 | [`doc/legacy-build-notes.md`](doc/legacy-build-notes.md) | How the frozen build + deploy work today; reference-build extraction |
