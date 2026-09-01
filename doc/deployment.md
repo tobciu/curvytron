@@ -10,7 +10,7 @@ Today's `Dockerfile` (`FROM cyrale/curvytron`, global `gulp`) and `docker-compos
 
 ```dockerfile
 # ---- build ----
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -18,7 +18,7 @@ COPY . .
 RUN npm run build            # Vite client build + server bundle -> ./dist (client) + ./bin
 
 # ---- runtime ----
-FROM node:20-alpine AS runtime
+FROM node:24-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 COPY package.json package-lock.json ./

@@ -28,7 +28,13 @@ behind the running app.
   [`deployment.md`](deployment.md).
 
 Current-state reference (what must keep working): [`architecture.md`](architecture.md),
-[`game-rules.md`](game-rules.md), [`protocol.md`](protocol.md), [`flows.md`](flows.md).
+[`game-rules.md`](game-rules.md), [`protocol.md`](protocol.md), [`flows.md`](flows.md),
+[`legacy-build-notes.md`](legacy-build-notes.md).
+
+> **The revised, authoritative plan** — settled decisions, the relaxed "repo need not stay
+> runnable mid-rebuild" constraint, and the revised phase order — lives in
+> [`pre-implementation-checklist.md`](pre-implementation-checklist.md). The phase
+> descriptions below are background; where they differ, the checklist wins.
 
 ### What gets modernized: client vs. server
 
@@ -37,7 +43,7 @@ Current-state reference (what must keep working): [`architecture.md`](architectu
 | Framework | **rewritten** AngularJS → Svelte 5 | none today, none added — architecture kept | n/a |
 | Language/modules | ESM + TS (Phase 2) | ESM + TS (Phase 2) | ESM + TS, imported by both |
 | Dependencies | drop `angular*`, `soundjs`, `tom32i-*` bower | `faye-websocket`→`ws`, Express 4→5, drop `usage`, influx client | — |
-| Runtime | browser | Node 20 | both |
+| Runtime | browser | Node 24 | both |
 | Kept as-is | canvas renderer, client sim | pseudo-class model, custom WS protocol, `setTimeout` loop, `World` collision grid | all `Base*` logic |
 
 So: **both are modernized** (tooling, module system, types, deps, Docker), but only the
@@ -46,8 +52,10 @@ old libraries.
 
 ### Golden rule
 
-> After every phase (ideally every PR), `build → start server → open browser → create room
-> → play a round with 2 local players` must still work.
+> **At the end of every phase**, `build → start server → open browser → create room → play
+> a round` must work. Intermediate commits/PRs need not boot (owner's call — see
+> [`pre-implementation-checklist.md`](pre-implementation-checklist.md)); the Phase 0
+> reference build is the fallback, not `gulp`.
 
 ## Guiding principles
 
@@ -62,11 +70,12 @@ old libraries.
   (`resolve-library-id` → `query-docs`) for library docs, `deepwiki` for repo Q&A,
   `sonarqube` for quality baselines.
 
-## Interim Node pin
+## Node pin
 
-`.nvmrc` / `.node-version` pin **Node 20** — the target we build *towards*. Until Phase 1
-lands, the **legacy `gulp` build still needs an old Node (~8–10)**; run it under `nvm` in a
-throwaway shell. The runtime server (`node bin/curvytron.js`) already runs fine on Node 20.
+`.nvmrc` / `.node-version` pin **Node 24** (current LTS, support → Apr 2028). The legacy
+build does **not** run on any normal Node — it only builds inside the `cyrale/curvytron`
+Docker image (Node `v0.10.48`, with gulp 3 + `bower_components` baked in). See
+[`legacy-build-notes.md`](legacy-build-notes.md). Everything new targets Node 24.
 
 ---
 
@@ -74,17 +83,14 @@ throwaway shell. The runtime server (`node bin/curvytron.js`) already runs fine 
 
 **Goal:** a known-good reference so later phases are verifiable.
 
-- Document the exact steps + Node version that currently produce a working build (in a
-  scratch `doc/legacy-build-notes.md` or a pinned issue).
-- Record a smoke-test procedure (2 local players, one full round).
-- **Capture baseline screenshots** into `doc/images/`: rooms list, room/lobby (master view
-  with the config panel open), in-game (trails + a bonus + HUD), game-over scoreboard,
-  profile panel. These are the visual parity reference for the Svelte migration and a hero
-  image for the README.
-- Snapshot the produced `web/js/curvytron.js` / `bin/curvytron.js` sizes and the
-  `gulp jshint` output for later comparison.
+- ✅ Legacy build/deploy documented — [`legacy-build-notes.md`](legacy-build-notes.md).
+- ✅ Baseline screenshots in [`doc/images/`](images) (8 screens) — visual parity reference.
+- ✅ Smoke-test procedure recorded (create room → player → one full round).
+- **Extract the reference build** from the running `cyrale/curvytron` container
+  (`gulp` inside it, `docker cp` the artifacts) into `doc/reference-build/`. This is the
+  fallback the rest of the plan builds against, and the output contract Phase 1 reproduces.
 
-**Risk:** none. **Playable:** yes (unchanged).
+**Risk:** none.
 
 ---
 
@@ -114,16 +120,16 @@ produces the **same output contract**. No framework change, server untouched.
   (`quotmark:single` → `quotes`, `eqeqeq`, `curly`, `camelcase`, 4-space `indent`,
   `no-undef` off for now given globals). Add `eslint-config` + `.eslintrc`. Keep
   `.jshintrc` until ESLint is green, then remove.
-- **Dockerfile → multi-stage `node:20-alpine`** (build: `npm ci && npm run build`;
+- **Dockerfile → multi-stage `node:24-alpine`** (build: `npm ci && npm run build`;
   runtime: non-root, `--omit=dev`, healthcheck), drop the opaque `cyrale/curvytron` base.
   `docker-compose.yml` switches from `build: .` to a pulled `image:`. Full target +
   Compose + CI image-push in [`deployment.md`](deployment.md).
 - **`.editorconfig`** already added; wire `editorconfig-checker` into `lint` optionally.
 
-**Deliverable check:** `npm ci && npm run build && node bin/curvytron.js` on Node 20
-produces a byte-for-byte-equivalent-*enough* game; smoke test passes.
+**Deliverable check:** `npm ci && npm run build && node bin/curvytron.js` on Node 24
+produces a working game; smoke test passes.
 
-**Risk:** medium (build correctness). **Playable:** yes, after each sub-step.
+**Risk:** medium (build correctness).
 
 ---
 
@@ -164,7 +170,7 @@ type-checking. Still no UI framework change.
   the whole Inspector behind a clean optional plugin boundary.
 - `optionalDependencies` `usage` (native, unmaintained) → replace with
   `process.resourceUsage()` / `os` metrics or drop.
-- Set `"engines": { "node": ">=20" }` and CI matrix on current LTS lines.
+- Set `"engines": { "node": ">=24" }` and CI matrix on current LTS lines.
 
 **Risk:** low–medium. **Playable:** yes.
 
@@ -176,10 +182,13 @@ type-checking. Still no UI framework change.
 **Svelte 5 + TypeScript**, built with **Vite**, using Svelte stores as the socket-fed state
 layer. Full step-by-step playbook: [`rewrite-plan.md`](rewrite-plan.md).
 
-**Approach — strangler, not big-bang.** Stand the Svelte app up next to the working
-AngularJS one and move it one screen at a time; `main` stays untouched and the `modernize`
-branch stays shippable after every PR. This is the explicit fix for why `origin/ai_migrate`
-(a parallel React + socket.io rewrite that also never migrated the server) stalled.
+**Approach — incremental, not big-bang.** Migrate one screen per PR, deleting the matching
+AngularJS controller/view as each replacement lands. `main` stays untouched; the
+`modernize` branch is verified **at the end of each phase**, not every commit (owner's
+call — see [`pre-implementation-checklist.md`](pre-implementation-checklist.md)). This is
+the fix for why `origin/ai_migrate` (a parallel React + socket.io rewrite that also never
+migrated the server) stalled — the difference is here the server + shared code are
+modernized *first* (Phase 1) and each phase is independently checkable.
 
 **What is reused, not rewritten:** `src/shared/**`, `src/client/core/*`,
 `src/client/model/*`, `src/client/animation/*` — the canvas renderer, client-side

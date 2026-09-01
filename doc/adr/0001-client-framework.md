@@ -70,8 +70,9 @@ is deliberately framework-shaped so the same steps apply.
   components, not rewritten.
 - AngularJS, `angular-route`, `angular-cookies`, `angular-bootstrap-colorpicker`,
   `createjs-soundjs` (replace with the Web Audio API or `howler`) are removed by the end.
-- Each screen is migrated behind the running app (strangler pattern); `main` stays
-  shippable throughout. Work happens on the `modernize` branch.
+- Each screen is migrated in its own PR, deleting the matching AngularJS controller/view as
+  it lands. Work happens on the `modernize` branch; verification is per-phase, not
+  per-commit ([`../pre-implementation-checklist.md`](../pre-implementation-checklist.md)).
 - Requires committing to Svelte 5 runes syntax and the Vite toolchain in CI (roadmap
   Phase 5).
 - Transport modernization is a **separate** decision — see

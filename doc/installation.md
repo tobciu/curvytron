@@ -1,12 +1,12 @@
 ## Prerequisite
 
 Curvytron runs on [node.js](https://nodejs.org/). The **built server**
-(`node bin/curvytron.js`) runs on current Node (20+).
+(`node bin/curvytron.js`) runs on current Node.
 
-> ⚠️ The **legacy build** below still uses Gulp 3 + Bower and needs an **old Node
-> (~8–10)** — `gulp-sass@0.7` and the `bower install` hook do not work on modern npm/Node.
-> Use [`nvm`](https://github.com/nvm-sh/nvm) to select an old Node just for the build.
-> Replacing this toolchain is [Phase 1 of the modernization roadmap](modernization-roadmap.md).
+> ⚠️ The **legacy build** below cannot be reproduced on a normal machine — the Gulp 3 +
+> `bower_components` toolchain only exists inside the `cyrale/curvytron` Docker image
+> (Node `v0.10.48`). See [`legacy-build-notes.md`](legacy-build-notes.md). Replacing it is
+> [Phase 1 of the modernization roadmap](modernization-roadmap.md).
 
 ## Installation
 

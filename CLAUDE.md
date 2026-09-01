@@ -9,7 +9,9 @@ Human-facing overview is in [`README.md`](README.md).
 - [`doc/game-rules.md`](doc/game-rules.md) — physics, trail, collision, scoring, bonuses, constants
 - [`doc/protocol.md`](doc/protocol.md) — the WebSocket event reference
 - [`doc/flows.md`](doc/flows.md) — sequence diagrams for the main flows
-- [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md) — phased plan + decisions
+- [`doc/pre-implementation-checklist.md`](doc/pre-implementation-checklist.md) — **authoritative**: decisions, revised phases, open items, test strategy
+- [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md) — phased plan (background)
+- [`doc/legacy-build-notes.md`](doc/legacy-build-notes.md) — how the frozen build/deploy work today
 - [`doc/rewrite-plan.md`](doc/rewrite-plan.md) — the AngularJS → Svelte + Vite playbook
 - [`doc/deployment.md`](doc/deployment.md) — target Docker image + `docker compose` + CI build
 - [`doc/adr/`](doc/adr) — ADR 0001 (Svelte), ADR 0002 (`ws` transport)
@@ -35,9 +37,10 @@ Tasks are in [`gulpfile.js`](gulpfile.js); bundle contents in [`recipes/`](recip
 
 - **All build outputs are git-ignored** (`web/js/`, `web/css/`, `web/index.html`, `bin/`,
   `stats/`). Never commit them. Rebuild after pulling.
-- The legacy toolchain (`gulp@3`, `gulp-sass@0.7`) **requires an old Node (~8–10)**.
-  `npm install` also auto-runs `bower install` (a `scripts.install` hook). Do not assume
-  `npm install` works on a modern machine — flag it instead.
+- The legacy build **only runs inside the `cyrale/curvytron` image** (Node `v0.10.48`); it
+  cannot be reproduced standalone. `npm install` auto-runs `bower install` (a
+  `scripts.install` hook) and fails on modern npm. See
+  [`doc/legacy-build-notes.md`](doc/legacy-build-notes.md).
 - `config.json` (git-ignored) is optional; `src/server/launcher.js` falls back to
   `{ port: 8080, inspector: { enabled: false } }`.
 
@@ -93,16 +96,22 @@ Tasks are in [`gulpfile.js`](gulpfile.js); bundle contents in [`recipes/`](recip
 
 ## Modernization direction (decided)
 
-- Client shell: rewrite AngularJS → **Svelte 5 + TS + Vite**, strangler-style, one screen
-  per PR, on the `modernize` branch. `src/shared/**` + `src/client/core|model|animation`
-  are reused (converted to ESM/TS), **not** rewritten; the canvas stays out of Svelte's
-  render cycle. See [`doc/rewrite-plan.md`](doc/rewrite-plan.md) + [ADR 0001](doc/adr/0001-client-framework.md).
-- Transport: `faye-websocket` (unmaintained, last release 2021) → **`ws`**, protocol
-  framing unchanged, server-only change ([ADR 0002](doc/adr/0002-websocket-transport.md)).
-- Server is modernized (ESM/TS, deps, Docker) but **not** re-frameworked — its design stays.
-- Deploy target: CI builds a multi-stage Docker image, `docker compose` pulls & runs it
+- **Read [`doc/pre-implementation-checklist.md`](doc/pre-implementation-checklist.md) first**
+  — settled decisions + revised phase order + the relaxed "repo need not stay runnable
+  mid-rebuild" constraint. It wins over older phrasing elsewhere.
+- Client shell: rewrite AngularJS → **Svelte 5 + TS + Vite**, one screen per PR (delete the
+  old controller/view as each lands), on the `modernize` branch. `src/shared/**` +
+  `src/client/core|model|animation` are reused (converted to ESM/TS), **not** rewritten;
+  the canvas stays out of Svelte's render cycle.
+- Transport: `faye-websocket` (unmaintained) → **`ws`**, protocol framing unchanged.
+- Server modernized (ESM/TS, deps, Docker) but **not** re-frameworked. `EventEmitter` →
+  `eventemitter3`; drop `usage`/`MD5`; `src/server/dependencies.js` removed.
+- Node **24 LTS**; **npm** + lockfile; TS path alias `@shared` → `src/shared`.
+- Legacy build only runs in the `cyrale/curvytron` image (Node 0.10) —
+  [`doc/legacy-build-notes.md`](doc/legacy-build-notes.md). Phase 0 extracts a reference
+  build as the fallback.
+- Deploy: CI builds a `node:24-alpine` multi-stage image → registry → `docker compose`
   ([`doc/deployment.md`](doc/deployment.md)).
-- Do build/deps/ESM (roadmap phases 1–3) before/with the rewrite; never a big-bang.
 
 ## Common tasks
 

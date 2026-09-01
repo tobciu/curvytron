@@ -8,16 +8,19 @@ swap) into its first steps.
 
 ## Principles
 
-1. **Strangler pattern.** Stand the new app up next to the old one and move it one screen
-   at a time. Never a parallel from-scratch rewrite (that is what stalled
-   `origin/ai_migrate`).
-2. **`main` stays shippable.** Every step ends with `build → start server → play a 2-player
-   round` working. Merge small PRs to `modernize`.
+1. **Incremental, screen by screen.** Migrate one screen per PR; delete the matching
+   AngularJS controller/view as each replacement lands. Not a parallel from-scratch rewrite
+   (that is what stalled `origin/ai_migrate`) — but the old app is **not** kept running
+   alongside either (see #2).
+2. **Verify per phase, not per commit.** The owner has relaxed "runnable at every commit":
+   intermediate states need not boot. Each *phase* ends in a verifiable state; the Phase 0
+   **reference build** (not `gulp`) is the fallback. See
+   [`pre-implementation-checklist.md`](pre-implementation-checklist.md).
 3. **Keep the engine.** `src/shared/**`, `src/client/core/*`, `src/client/model/*`,
    `src/client/animation/*` are **reused** — converted to ES modules / TypeScript, not
    rewritten. The canvas renderer never goes through Svelte's reactivity.
 4. **Transport is a separate track.** The `faye-websocket` → `ws` swap (ADR 0002) touches
-   only the server and can land before or after, independently.
+   only the server and lands with Phase 1.
 5. **Behaviour parity first.** Match today's screens and rules exactly; redesign later.
 
 ## Target layout
@@ -49,16 +52,17 @@ build `outDir` (e.g. `web/` or a new `dist/`) and serve `index.html` as the SPA 
 ### Step 0 — Tooling: Vite + Svelte scaffold (roadmap Phase 1)
 
 - `npm create vite@latest` → Svelte + TS template; add `svelte`, `@sveltejs/vite-plugin-svelte`,
-  `vite`, `typescript`, `sass`. Commit `package-lock.json`. Remove the `scripts.install`
-  bower hook.
-- `vite.config.ts`: build `outDir` = the directory the Node server serves; dev server with
-  a `proxy` so `/` WebSocket + REST hit `localhost:8080` during `npm run dev`.
+  `vite`, `typescript`, `sass`. Commit `package-lock.json`.
+- **Delete `gulpfile.js`, `bower.json`, `bower-resolutions.json`, the `scripts.install`
+  hook** now — the [reference build](legacy-build-notes.md#reference-build-phase-0-task) is
+  the fallback, not `gulp`.
+- `vite.config.ts`: build `outDir` → `dist/`; dev server `proxy` so the WebSocket hits the
+  Node server during `npm run dev`.
 - Port the two non-JS Gulp tasks: SASS (`src/sass/style.scss` — Vite handles it) and the
-  Google-Analytics injection (a tiny Vite `transformIndexHtml` plugin reading
-  `config.json`).
-- Keep `gulpfile.js` working in parallel until Step 7 (fallback build).
+  Google-Analytics token (now **runtime** — injected by the server or a tiny
+  `transformIndexHtml` plugin from `config.json` / `GA_ID` env).
 - **Verify:** `npm run build` produces a served bundle; a placeholder `App.svelte` renders
-  at `/`; the old game still builds via `gulp`.
+  at `/`.
 
 ### Step 1 — Make the engine importable (roadmap Phase 2, scoped)
 
@@ -69,8 +73,9 @@ build `outDir` (e.g. `web/` or a new `dist/`) and serve `index.html` as the SPA 
   with the pure-logic files that have the most value under types: `Compressor`,
   `Collection`, `BaseSocketClient`, `BaseAvatar`, `BaseGame`, `BaseTrail`,
   `BaseRoomConfig`.
-- Replace the `tom32i-*` Bower libs with npm equivalents (`tom32i-event-emitter.js` is on
-  npm; `gamepad.js` / `keyboard` — use `gamepad.js` npm or a small local module).
+- Replace the `tom32i-*` Bower libs: `EventEmitter` → **`eventemitter3`** (npm, Node +
+  browser); gamepad/key-mapper → `gamepad.js` npm or a small local module;
+  `option-resolver` → inline a tiny helper or drop.
 - **Verify:** engine modules import cleanly into a throwaway script; `BaseSocketClient`
   round-trips a framed message in a unit test (first Vitest test — roadmap Phase 5 starts
   here).
@@ -168,7 +173,7 @@ is live and smoke-tested.
 - Remove `gulpfile.js`, `bower.json`, `bower-resolutions.json`, `.jshintrc`, the
   `src/client/views/*` Angular templates, `src/client/controller/*`,
   `src/client/service/*` that were ported, `src/client/app.js`.
-- `Dockerfile` → `node:20-alpine` multi-stage; `docker-compose.yml` → pulled `image:`.
+- `Dockerfile` → `node:24-alpine` multi-stage; `docker-compose.yml` → pulled `image:`.
   Full target and CI image-push: [`deployment.md`](deployment.md).
 - Update `README.md`, `CLAUDE.md`, `doc/installation.md`, `doc/dev.md` to the new
   commands. Update `.gitignore` (drop `bower_components/`, add `dist/` if used).

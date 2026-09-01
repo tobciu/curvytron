@@ -142,36 +142,24 @@ Dockerfile / docker-compose.yml
 
 ## Getting started
 
-> ⚠️ **The legacy toolchain does not run on current Node.js.** `gulp-sass@0.7` /
-> `gulp@3` need an old Node (roughly **8–10**; use [`nvm`](https://github.com/nvm-sh/nvm)
-> / [`nvm-windows`](https://github.com/coreybutler/nvm-windows)). `npm install` also
-> auto-runs `bower install` via a `scripts.install` hook, which fails on modern npm.
-> Fixing this is [Phase 1 of the roadmap](doc/modernization-roadmap.md).
+> ⚠️ **The legacy build cannot be reproduced on a normal machine.** Its toolchain
+> (`gulp@3`, `gulp-sass@0.7`/old libsass, `bower_components`) exists **only inside the
+> `cyrale/curvytron` Docker image** (Node `v0.10.48`), which this repo's `Dockerfile`
+> builds `FROM`. The dependency versions are no longer resolvable standalone. Full details:
+> [`doc/legacy-build-notes.md`](doc/legacy-build-notes.md). Replacing this is
+> [Phase 1 of the roadmap](doc/modernization-roadmap.md).
 
-### Local (legacy path)
-
-```bash
-git clone https://github.com/tobciu/curvytron.git
-cd curvytron
-
-# with an old Node (8–10) selected:
-npm install            # also triggers "bower install"
-npm install -g gulp    # gulp 3 CLI
-gulp                   # build web/js, web/css, web/index.html, bin/curvytron.js
-
-node bin/curvytron.js  # start server
-```
-
-Then open <http://localhost:8080/>, join a room, pick a name, and play.
-
-### Docker
+### Docker (the only supported path today)
 
 ```bash
 docker compose up --build
 ```
 
-Serves on <http://localhost:8080/>. (The image builds from the prebuilt
-`cyrale/curvytron` base; see roadmap for a modern multi-stage replacement.)
+Serves on <http://localhost:8080/>. The image is `FROM cyrale/curvytron`, copies `src/` in
+and runs `gulp` inside it. A modern multi-stage `node:24-alpine` replacement is
+[planned](doc/deployment.md).
+
+Then open <http://localhost:8080/>, pick a name, create a room, and play.
 
 ## Configuration
 
@@ -235,7 +223,9 @@ Contributor-facing notes live in [`CLAUDE.md`](CLAUDE.md).
 | [`doc/game-rules.md`](doc/game-rules.md) | Movement/turn physics, trail & printing, collision & death, scoring, rounds, map sizing, the bonus system + catalogue, all constants |
 | [`doc/protocol.md`](doc/protocol.md) | The WebSocket protocol: framing, batching, compression, handshake, full event reference (lobby / room / game) |
 | [`doc/flows.md`](doc/flows.md) | Sequence diagrams: connect, create/join room, lobby config & launch, round lifecycle, spectate, leave/close |
-| [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md) | Phased modernization plan; decisions taken |
+| [`doc/pre-implementation-checklist.md`](doc/pre-implementation-checklist.md) | **Authoritative plan**: settled decisions, revised phase order, what's still to capture, test strategy |
+| [`doc/modernization-roadmap.md`](doc/modernization-roadmap.md) | Phased modernization plan (background; checklist wins on conflicts) |
+| [`doc/legacy-build-notes.md`](doc/legacy-build-notes.md) | How the frozen build + deploy work today; reference-build extraction |
 | [`doc/rewrite-plan.md`](doc/rewrite-plan.md) | Step-by-step client rewrite playbook (AngularJS → Svelte + Vite) |
 | [`doc/deployment.md`](doc/deployment.md) | Target Docker image (multi-stage) + `docker compose` deploy + CI image build |
 | [`doc/adr/`](doc/adr) | Architecture Decision Records (0001 framework, 0002 transport) |
