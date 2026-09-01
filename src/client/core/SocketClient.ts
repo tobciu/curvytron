@@ -1,9 +1,10 @@
 import { BaseSocketClient, type SocketLike } from '@shared/core/BaseSocketClient.ts';
 
-/** Browser socket client: opens a WebSocket, does the `whoami` handshake. */
+/** Browser socket client: opens a WebSocket, buffers sends until OPEN, does the `whoami` handshake. */
 export class SocketClient extends BaseSocketClient {
   connected = false;
   private readonly ws: WebSocket;
+  private pending: unknown[][] = [];
 
   constructor(url?: string) {
     const ws = new WebSocket(url ?? SocketClient.defaultUrl(), ['websocket']);
@@ -17,6 +18,15 @@ export class SocketClient extends BaseSocketClient {
     this.ws.addEventListener('close', () => this.onCloseLocal());
   }
 
+  /** Hold frames until the socket is OPEN, then flush them in order. */
+  override sendEvents(events: unknown[][]): void {
+    if (this.ws.readyState === this.ws.OPEN) {
+      super.sendEvents(events as never);
+    } else {
+      this.pending.push(...events);
+    }
+  }
+
   static defaultUrl(): string {
     const protocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
     return protocol + location.host + location.pathname;
@@ -24,7 +34,13 @@ export class SocketClient extends BaseSocketClient {
 
   private onOpen(): void {
     console.info('Socket open.');
+    // whoami first, then replay anything the app queued before OPEN.
     this.addEvent('whoami', null, (id) => this.onConnection(id));
+    if (this.pending.length) {
+      const queued = this.pending;
+      this.pending = [];
+      super.sendEvents(queued as never);
+    }
   }
 
   private onConnection(id: unknown): void {

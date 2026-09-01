@@ -98,3 +98,16 @@ off) — port them if metrics are wanted.
   — render/Canvas-bound, best done alongside the `Game.svelte` canvas component (Step 5).
 - **Steps 2–7** ⬜ typed socket layer + stores → shell + routing → screen migration →
   canvas component → lib swaps → delete AngularJS.
+
+- **Step 2** ✅ typed socket layer + first stores:
+  `lib/socket/{events.ts, client.ts}` (typed `ServerToClient`/`ClientToServer`
+  maps + a `request()` promise wrapper over the positional callback),
+  `lib/stores/{profile.ts (localStorage), rooms.ts (lobby list)}`.
+  `SocketClient` now buffers outgoing frames until the WS is OPEN.
+- **Step 3** ✅ shell + routing: `lib/router.ts` (hash routes `/`, `/about`,
+  `/room/:name`, `/game/:name`), `App.svelte` (header / footer / connection
+  banner / route switch), `routes/{RoomsList, About, Room, Game}.svelte`
+  (RoomsList wired to the store + `room:create` RPC; Room/Game are stubs).
+  Verified end to end against the modern server: connect → create room →
+  route to the lobby.
+- **Step 4** ⬜ migrate the real screens; **Step 5** ⬜ canvas component.
