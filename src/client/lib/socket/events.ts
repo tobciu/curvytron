@@ -61,6 +61,7 @@ export interface ServerToClient {
   'vote:close': { target: number | string; result: boolean };
   'room:game:start': undefined;
   // in-game
+  'ready': number | string;
   'game:start': undefined;
   'game:stop': undefined;
   'round:new': undefined;

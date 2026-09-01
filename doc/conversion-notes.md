@@ -93,11 +93,13 @@ off) — port them if metrics are wanted.
   `model/{Client, RoomListItem, PlayerControl, PlayerInput, Player}`.
   Gamepad capture is stubbed (`GamepadMapper` / `PlayerInput` gamepad branch) —
   was unfinished upstream too; keyboard + touch are live.
-- **Step 1b (rest)** ⬜ `model/{Avatar, Game, BonusStack, Room, RoomConfig}`,
-  `manager/BonusManager`, `model/bonus/{MapBonus, StackedBonus}`, `model/{message,preset}/*`
-  — render/Canvas-bound, best done alongside the `Game.svelte` canvas component (Step 5).
-- **Steps 2–7** ⬜ typed socket layer + stores → shell + routing → screen migration →
-  canvas component → lib swaps → delete AngularJS.
+- **Step 1b (rest)** ✅ (with Step 5) `model/{Avatar, Game, BonusStack}` → TS,
+  `manager/BonusManager` → TS, `model/bonus/{MapBonus, StackedBonus}` → TS.
+  The legacy `model/{Room, RoomConfig}` and `model/{message,preset}/*` are **not
+  ported** — the `room` / `game` stores replace them. `model/*.js` (AngularJS)
+  still present, deleted in Step 7.
+- **Steps 2–5** ✅ typed socket layer + stores → shell + routing → screen migration →
+  canvas game (detail below). **Steps 6–7** ⬜ lib swaps → delete AngularJS.
 
 - **Step 2** ✅ typed socket layer + first stores:
   `lib/socket/{events.ts, client.ts}` (typed `ServerToClient`/`ClientToServer`
@@ -110,4 +112,33 @@ off) — port them if metrics are wanted.
   (RoomsList wired to the store + `room:create` RPC; Room/Game are stubs).
   Verified end to end against the modern server: connect → create room →
   route to the lobby.
-- **Step 4** ⬜ migrate the real screens; **Step 5** ⬜ canvas component.
+- **Step 4** ✅ real screens:
+  - **Profile** (`e846960`) — `routes/Profile.svelte` + `components/KeyBinding.svelte`
+    + blocking onboarding modal in `App.svelte` when the profile has no name.
+  - **Room / Lobby** (`bc886bb`) — `lib/stores/room.ts` (a reactive store hydrated
+    from the `room:join` RPC snapshot, then kept in sync from every in-room
+    broadcast) + `routes/Room.svelte` (password gate, player list with
+    add/ready/remove/kick/crown, master config panel, chat, launch).
+- **Step 5** ✅ canvas game + HUD:
+  - `model/Game.ts` — `BaseGame` subclass running an rAF render loop over four
+    stacked `<canvas>` layers (trails / bonuses / heads / death particles), kept
+    out of Svelte's cycle. `model/Avatar.ts`, `model/BonusStack.ts`,
+    `manager/BonusManager.ts`, `model/bonus/{MapBonus,StackedBonus}.ts`.
+  - `lib/stores/game.ts` — builds the `Game` from the current `room` state,
+    wires every in-game wire event (position/angle/point/die/score/bonus:*/
+    round:*/clear/borderless/end/game:leave/spectate), drives the `ready`
+    handshake, and exposes reactive HUD state (scoreboard, phase, warmup
+    countdown, kill log, recap, fps/ping).
+  - `routes/Game.svelte` — the four canvases + left HUD (players, metrics, chat)
+    + overlays (waiting / warmup / round-end / game-end recap). Local
+    `PlayerInput` `move` events → `player:move`. `ResizeObserver` keeps the
+    square arena fitted. Room membership is handed off both ways via a
+    route check in `onDestroy` (no leave when navigating room ↔ its game).
+  - Verified in the browser against the modern server: create → ready →
+    warmup countdown → server-driven movement + trail → arrow-key steering
+    turns the curve → wall crash → kill log + round/game-end overlays +
+    scoreboard → "Back to the room" preserves membership.
+- **Step 6** ⬜ replace `angular-bootstrap-colorpicker` / `createjs-soundjs` (Web Audio).
+- **Step 7** ⬜ delete AngularJS (`app.js`, `controller/`, `service/`, `repository/`,
+  `views/`, `model/*.js`), `gulpfile.js`, `bower.json`, `.jshintrc`, the `web-ref`
+  fallback; modern multi-stage `node:24-alpine` Dockerfile.

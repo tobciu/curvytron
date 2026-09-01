@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import { get } from 'svelte/store';
   import { room } from '../lib/stores/room.ts';
   import { profile } from '../lib/stores/profile.ts';
   import { socket } from '../lib/socket/client.ts';
-  import { go } from '../lib/router.ts';
+  import { route } from '../lib/router.ts';
 
   let { name }: { name: string } = $props();
 
@@ -37,7 +38,13 @@
   }
 
   onMount(() => attemptJoin());
-  onDestroy(() => room.leave());
+  onDestroy(() => {
+    // keep our room membership when handing off to this room's game
+    const r = get(route);
+    if (!(r.name === 'game' && r.param === name)) {
+      room.leave();
+    }
+  });
 
   async function addLocal(e: Event) {
     e.preventDefault();
