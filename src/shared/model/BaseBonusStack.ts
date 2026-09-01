@@ -1,8 +1,13 @@
 import { EventEmitter } from 'eventemitter3';
 import { Collection } from '../Collection.ts';
 
-/** A `[property, value]` pair a bonus contributes to its target's bonus stack. */
-export type BonusEffect = [string, number];
+/**
+ * A `[property, value]` pair a bonus contributes to its target's bonus stack.
+ * Value is usually a number (summed), but game/self effects also use
+ * booleans / strings (the server `BonusStack` overrides handle those).
+ */
+export type BonusEffectValue = number | boolean | string;
+export type BonusEffect = [string, BonusEffectValue];
 
 /** What a stacked bonus must expose to the stack. */
 export interface StackableBonus {
@@ -41,7 +46,7 @@ export class BaseBonusStack<T = Record<string, number>> extends EventEmitter {
   }
 
   resolve(bonus?: StackableBonus): void {
-    const properties: Record<string, number> = {};
+    const properties: Record<string, BonusEffectValue> = {};
 
     if (typeof bonus !== 'undefined') {
       const effects = bonus.getEffects(this.target);
@@ -71,15 +76,20 @@ export class BaseBonusStack<T = Record<string, number>> extends EventEmitter {
     }
   }
 
-  apply(property: string, value: number): void {
+  apply(property: string, value: BonusEffectValue): void {
     (this.target as Record<string, unknown>)[property] = value;
   }
 
-  getDefaultProperty(_property: string): number {
+  getDefaultProperty(_property: string): BonusEffectValue {
     return 0;
   }
 
-  append(properties: Record<string, number>, property: string, value: number): void {
-    properties[property] = (properties[property] ?? 0) + value;
+  append(
+    properties: Record<string, BonusEffectValue>,
+    property: string,
+    value: BonusEffectValue,
+  ): void {
+    // legacy: numeric properties sum; booleans coerce (`false + true` → 1).
+    properties[property] = ((properties[property] as number) ?? 0) + (value as number);
   }
 }

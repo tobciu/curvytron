@@ -53,7 +53,7 @@ Living document — extended as cases come up.
 | `shared/core/BaseSocketClient` (+ `SocketLike` iface for the `ws` adapter) | ✅ |
 | `shared/model/BaseTrail` + `{client,server}/model/Trail` | ✅ (client Trail has no DOM deps) |
 | `shared/model/BaseBonusStack` (base only) | ✅ base |
-| **Bonus subsystem** — `shared/model/BaseBonus` + `shared/manager/BaseBonusManager` + `server/model/Bonus/*` (~28) + `server/manager/BonusManager` + `server/model/RoomConfig` + `{client,server}/model/BonusStack` | ⬜ (one cohesive slice — the instance-vs-prototype constant reads are entangled) |
+| **Bonus subsystem** — BaseBonus + server/model/Bonus/* (25) + server/manager/BonusManager | ✅ |
 | `shared/model/BaseAvatar` (base; injects `TrailClass`/`BonusStackClass`, default to the base classes) | ✅ base |
 | `shared/model/BasePlayer` (base; injects `AvatarClass`) | ✅ base |
 | `{client,server}/model/{Avatar,Player}` subclasses | ⬜ |
