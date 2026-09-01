@@ -41,6 +41,16 @@ describe('BaseRoomConfig', () => {
     expect(cfg.getBonus('BonusGameClear')).toBe(false);
   });
 
+  it('getBonuses returns the enabled names, sorted', () => {
+    const cfg = new BaseRoomConfig(room(2));
+    cfg.setBonus('BonusSelfSmall', false);
+    const enabled = cfg.getBonuses();
+    expect(enabled).not.toContain('BonusSelfSmall');
+    expect(enabled).not.toContain('BonusSelfRandom'); // default-off
+    expect([...enabled]).toEqual([...enabled].sort());
+    expect(enabled).toHaveLength(15);
+  });
+
   it('19 bonuses; 16 on by default, only the three *Random ones off', () => {
     const cfg = new BaseRoomConfig(room(2));
     const names = Object.keys(cfg.bonuses);

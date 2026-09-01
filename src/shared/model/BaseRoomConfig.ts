@@ -95,6 +95,20 @@ export class BaseRoomConfig extends EventEmitter {
     return this.bonuses[bonus];
   }
 
+  /**
+   * The enabled bonus names, sorted. The **server** `RoomConfig` overrides this
+   * to return the bonus classes instead (via its `bonusTypes` map).
+   */
+  getBonuses(): string[] {
+    const bonuses: string[] = [];
+    for (const bonus in this.bonuses) {
+      if (this.bonuses[bonus]) {
+        bonuses.push(bonus);
+      }
+    }
+    return bonuses.sort();
+  }
+
   setBonus(bonus: string, value: unknown): void {
     if (!this.bonusExists(bonus)) {
       return;
