@@ -123,7 +123,7 @@ describe('BaseChat', () => {
 
   it('serialize(max) returns a sparse array (legacy quirk): head slots are holes', () => {
     const chat = new BaseChat();
-    for (let i = 1; i <= 5; i++) chat.addMessage(msg(i));
+    for (let i = 1; i <= 5; i++) { chat.addMessage(msg(i)); }
     const out = chat.serialize(2);
     expect(out).toHaveLength(5);
     expect(out[3]).toBe('m4');

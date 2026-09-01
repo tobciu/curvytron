@@ -66,4 +66,5 @@ Living document — extended as cases come up.
 | `{client,server}/model/Room` subclasses | ⬜ |
 | `{client,server}/core/SocketClient` (subclasses of the converted BaseSocketClient) | ⬜ |
 | `shared/model/Preset` + client presets | ⬜ Phase 2 (client-only UI) |
-| `src/server/**` (controllers, core, managers, trackers, launcher→main.ts) | ⬜ |
+| `server/core/{Body,AvatarBody,Island,World}` (collision grid) | ✅ |
+| `src/server/**` rest (Server+ws, SocketClient, SocketGroup, PingLogger, Inspector, controllers, managers, model subclasses, repository, service, trackers, launcher→main.ts) | ⬜ |
