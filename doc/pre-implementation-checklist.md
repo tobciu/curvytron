@@ -37,7 +37,7 @@ owner has relaxed this: **the intermediate repo does not have to boot** — only
 
 | Phase | Goal | End-of-phase verification |
 | --- | --- | --- |
-| **0 — Reference capture** | Extract the frozen-toolchain build; document legacy build/deploy | artifacts in `doc/reference-build/`; [`legacy-build-notes.md`](legacy-build-notes.md) filled in |
+| **0 — Reference capture** ✅ | Extract the frozen-toolchain build; document legacy build/deploy | **done** — [`reference-build/`](reference-build/) (client 124 KB, deps 237 KB, server 177 KB, CSS 136 KB, 8 views), [`legacy-build-notes.md`](legacy-build-notes.md), locked versions captured |
 | **1 — Server + shared → ESM/TS on Node 24** | New `package.json`; convert `src/shared/**` + `src/server/**`; `faye`→`ws`; drop `usage`/`MD5`; delete `dependencies.js`, Bower | `node dist-server/main.js` on Node 24 serves the **reference-build client**; create room + 1 player + play a round manually; `npm test` (Vitest on `src/shared`) green |
 | **2 — Svelte client** | Vite + Svelte 5; typed socket layer + event map; stores; migrate screens vs. the 8 screenshots; delete AngularJS; responsive game view | each screen matches its screenshot; full round with 2 local players + a spectator tab; Playwright smoke green; no console errors; ~60 fps |
 | **3 — Docker + Compose + CI** | Multi-stage `node:24-alpine` image; compose pulls image; GH Actions builds+pushes on merge/tag | `docker compose up --build` → play a round in-container; registry pull path works |

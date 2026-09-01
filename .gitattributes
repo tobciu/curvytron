@@ -1,0 +1,17 @@
+# Normalise line endings: LF in the repo, checkout as-is per-OS.
+* text=auto eol=lf
+
+# Frozen build snapshot — store byte-exact, never touch EOLs.
+doc/reference-build/** -text
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.gif binary
+*.svg -text
+*.mp3 binary
+*.ogg binary
+*.eot binary
+*.ttf binary
+*.woff binary
+*.woff2 binary

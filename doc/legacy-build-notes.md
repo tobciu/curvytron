@@ -85,11 +85,17 @@ ng-controller="CurvytronController">`, and references exactly:
 No GA snippet (config `googleAnalyticsId` is null). Angular loads `js/views/**/*.html` at
 runtime. Full asset list: [`assets.md`](assets.md).
 
-## Reference build (Phase 0 task)
+## Reference build — ✅ done
 
-Extract the artifacts the frozen toolchain produces, once, and commit them as the parity
-reference. A modernized server (Phase 1) can serve this exact client while the client
-rewrite is still in progress.
+Extracted to [`reference-build/`](reference-build/) (see its `README.md` for file sizes and
+the full locked-version table). Built with `docker build -t curvytron-ref:legacy .` then
+`docker cp`. Key facts: Node `v0.10.48`, gulp `3.9.1`; `gulp jshint` prints ~10 errors
+(single-quote / `eqeqeq` / semicolon / constructor-case in `RoomConfigController`,
+`RandomPreset`, `stressTest.js`, server `BonusManager`) but gulp 3 does **not** fail the
+build on them. Client bundle 124 KB, deps 237 KB, server bundle 177 KB, CSS 136 KB,
+`index.html` 3.5 KB.
+
+<details><summary>Original extraction procedure (for re-running against a live container)</summary>
 
 ```bash
 # in the running container
@@ -117,5 +123,4 @@ Expected outputs (the "output contract" Phase 1 must reproduce):
 | `web/index.html` | `ga` | `src/client/views/index.html` + GA token, minified |
 | `bin/curvytron.js` | `server` | server bundle, concatenated (not minified, not wrapped) |
 
-> **Fill in after running:** exact file sizes, `gulp` output/warnings, and the `<script>` /
-> `<link>` tags in the produced `web/index.html`.
+</details>
