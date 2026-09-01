@@ -39,3 +39,7 @@ Thumbs.db
 
 # assembled by scripts/prepare-reference-web.mjs
 web-ref/
+
+# vite / svelte
+.svelte-kit/
+vite.config.ts.timestamp-*

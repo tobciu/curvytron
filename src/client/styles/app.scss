@@ -1,0 +1,8 @@
+// Phase 2 stylesheet entry. The legacy src/sass/** will be pulled in screen by
+// screen as components migrate; for now just a minimal reset + base.
+:global(body) {
+  margin: 0;
+  font-family: 'Lato', system-ui, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+}

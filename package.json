@@ -32,14 +32,17 @@
     }
   ],
   "scripts": {
-    "build": "node scripts/prepare-reference-web.mjs && npm run build:server",
+    "build": "node scripts/prepare-reference-web.mjs && npm run build:server && npm run build:client",
     "build:server": "node scripts/build-server.mjs",
     "start": "node dist-server/main.js",
     "dev": "node scripts/build-server.mjs --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest --passWithNoTests"
+    "test:watch": "vitest --passWithNoTests",
+    "build:client": "vite build",
+    "dev:client": "vite",
+    "check": "svelte-check --tsconfig ./src/client/tsconfig.json"
   },
   "dependencies": {
     "eventemitter3": "^5.0.1",
@@ -48,14 +51,19 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
     "@types/express": "^5.0.0",
     "@types/node": "^24.0.0",
     "@types/ws": "^8.5.12",
     "esbuild": "^0.25.0",
     "eslint": "^9.13.0",
     "globals": "^15.15.0",
+    "sass": "^1.103.1",
+    "svelte": "^5.57.0",
+    "svelte-check": "^4.7.6",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.10.0",
+    "vite": "^6.4.3",
     "vitest": "^3.2.4"
   }
 }
