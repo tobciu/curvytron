@@ -23,8 +23,13 @@ export default tseslint.config(
 
   {
     // Node context: server code, build scripts, config files.
-    files: ['src/server/**/*.ts', 'scripts/**/*.{js,mjs}', '*.config.{js,ts,mjs}'],
+    files: ['src/server/**/*.ts', 'scripts/**/*.{js,mjs}', '*.config.{js,ts,mjs}', 'svelte.config.js'],
     languageOptions: { globals: { ...globals.node } },
+  },
+  {
+    // Browser context: the client engine.
+    files: ['src/client/**/*.ts'],
+    languageOptions: { globals: { ...globals.browser } },
   },
 
   {

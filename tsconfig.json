@@ -25,13 +25,6 @@
       "@shared/*": ["src/shared/*"]
     }
   },
-  "include": [
-    "src/shared/**/*",
-    "src/server/**/*",
-    "src/client/core/**/*",
-    "src/client/model/**/*",
-    "src/client/animation/**/*",
-    "scripts/**/*"
-  ],
-  "exclude": ["node_modules", "dist", "dist-server", "doc/reference-build"]
+  "include": ["src/shared/**/*", "src/server/**/*", "scripts/**/*"],
+  "exclude": ["node_modules", "dist", "dist-server", "web-ref", "doc/reference-build", "src/client"]
 }
