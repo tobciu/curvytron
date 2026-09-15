@@ -172,7 +172,8 @@ off) — port them if metrics are wanted.
     dispatch — never a plain branch push) — `docker/build-push-action` to
     `ghcr.io/<owner>/curvytron` with `latest`/`<sha>`/`<semver>` tags via
     `docker/metadata-action`, `GITHUB_TOKEN` (no extra secrets), `type=gha` cache.
-  - Verified locally: ran the exact smoke-test commands against a local build —
-    title match + `images/bonus.png` + `sounds/death.mp3` both 200.
-  - Not yet exercised: an actual GitHub Actions run (needs a push to see it green),
-    and the `docker` job (needs a version tag).
+  - Verified for real: run [`34961419153`](https://github.com/tobciu/curvytron/actions/runs/34961419153)
+    on the actual `modernize` push — `build-and-test` green in 24s (typecheck,
+    svelte-check, lint, 96 tests, build, smoke test all pass on GitHub's runner);
+    `docker` correctly **skipped** (plain branch push, no tag) — the gate works.
+  - Not yet exercised: the `docker` job itself (needs a `vX.Y.Z` tag).
