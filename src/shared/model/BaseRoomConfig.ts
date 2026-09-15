@@ -130,11 +130,12 @@ export class BaseRoomConfig extends EventEmitter {
   }
 
   generatePassword(): string {
-    let password = '';
-    for (let i = 0; i < BaseRoomConfig.passwordLength; i++) {
-      password += Math.ceil(Math.random() * 9).toString();
-    }
-    return password;
+    // Gates private-room access, so use the Web Crypto CSPRNG (global in both
+    // browser and Node 24) rather than Math.random(). Same 1-9 digit format
+    // as before; the tiny modulo bias is irrelevant at this digit count.
+    const bytes = new Uint8Array(BaseRoomConfig.passwordLength);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (b) => (1 + (b % 9)).toString()).join('');
   }
 
   serialize(): {

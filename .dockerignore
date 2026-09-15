@@ -13,3 +13,6 @@ config.json
 .env
 .env.*
 .DS_Store
+.sonar-token
+.sonar
+.scannerwork
