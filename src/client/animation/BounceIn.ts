@@ -15,7 +15,7 @@ export class BounceIn {
   }
 
   start(): void {
-    this.created = new Date().getTime();
+    this.created = Date.now();
     this.timeout = setTimeout(this.end, this.duration);
   }
 
@@ -24,7 +24,7 @@ export class BounceIn {
   }
 
   getAge(): number {
-    return new Date().getTime() - (this.created as number);
+    return Date.now() - (this.created as number);
   }
 
   end(): void {

@@ -87,9 +87,7 @@ class GamePlayer implements AvatarOwner {
   }
 
   getAvatar(): Avatar {
-    if (!this.avatar) {
-      this.avatar = new Avatar(this);
-    }
+    this.avatar ??= new Avatar(this);
     return this.avatar;
   }
 }
@@ -110,8 +108,7 @@ function buildGameRoom(state: RoomState, binding: Binding[]): GameRoom {
     name: state.name,
     players: new Collection(players),
     config: {
-      getMaxScore: () =>
-        state.config.maxScore ? state.config.maxScore : Math.max(1, (players.length - 1) * 10),
+      getMaxScore: () => state.config.maxScore ?? Math.max(1, (players.length - 1) * 10),
       getBonuses: () =>
         Object.entries(state.config.bonuses)
           .filter(([, on]) => on)
@@ -238,14 +235,14 @@ function createGameStore() {
       }
       dead.die();
       sound.play('death');
-      const killer = d[1] != null ? byId(d[1]) : null;
-      const type: KillLogEntry['type'] = !killer
-        ? 'wall'
-        : killer.id === dead.id
+      const killer = d[1] == null ? null : byId(d[1]);
+      const type: KillLogEntry['type'] = killer
+        ? killer.id === dead.id
           ? 'suicide'
           : d[2]
             ? 'crash'
-            : 'kill';
+            : 'kill'
+        : 'wall';
       patch((cur) => ({
         killLog: [
           {
@@ -289,7 +286,7 @@ function createGameStore() {
     },
     'bonus:stack': (d: ServerToClient['bonus:stack']) => {
       const avatar = byId(d[0]);
-      if (avatar && avatar.local) {
+      if (avatar?.local) {
         const bonus = new StackedBonus(d[2], game?.bonusManager.assets[d[3]], d[4]);
         if (d[1] === 'add') {
           avatar.bonusStack.add(bonus);
@@ -312,7 +309,7 @@ function createGameStore() {
     },
     'round:end': (d: ServerToClient['round:end']) => {
       game?.endRound();
-      const winner = d != null ? byId(d) : null;
+      const winner = d == null ? null : byId(d);
       if (game) {
         game.roundWinner = winner;
       }
@@ -401,7 +398,7 @@ function createGameStore() {
     /** Build the game from the current room state and start listening. */
     start(name: string): boolean {
       const state = get(room);
-      if (!state || state.name !== name) {
+      if (state?.name !== name) {
         return false;
       }
 

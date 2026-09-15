@@ -29,7 +29,7 @@ export class Explode {
     this.effect = effect;
     this.particles = new Array(Explode.particleTotal);
     this.canvas = new Canvas(Explode.width, Explode.width);
-    this.created = new Date().getTime();
+    this.created = Date.now();
 
     const width = Explode.width / 2;
     this.canvas.drawCircle(width, width, width, avatar.color, avatar.color);
@@ -55,7 +55,7 @@ export class Explode {
     }
 
     this.clear();
-    this.lastRender = new Date().getTime();
+    this.lastRender = Date.now();
     this.cleared = false;
 
     const age = this.lastRender - this.created;

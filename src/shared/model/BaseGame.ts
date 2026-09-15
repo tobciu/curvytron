@@ -100,7 +100,7 @@ export class BaseGame extends EventEmitter {
   loop(): void {
     this.newFrame();
 
-    const now = new Date().getTime();
+    const now = Date.now();
     const step = now - (this.rendered as number);
 
     this.rendered = now;
@@ -110,7 +110,7 @@ export class BaseGame extends EventEmitter {
   }
 
   onStart(): void {
-    this.rendered = new Date().getTime();
+    this.rendered = Date.now();
     this.bonusManager.start();
     this.fps.start();
   }
@@ -190,7 +190,7 @@ export class BaseGame extends EventEmitter {
   }
 
   sortAvatars(avatars?: Collection<BaseAvatar>): Collection<BaseAvatar> {
-    const target = typeof avatars !== 'undefined' ? avatars : this.avatars;
+    const target = avatars ?? this.avatars;
 
     target.sort((a, b) => (a.score > b.score ? -1 : a.score < b.score ? 1 : 0));
 
@@ -219,7 +219,7 @@ export class BaseGame extends EventEmitter {
     if (!this.inRound) {
       this.inRound = true;
       this.onRoundNew();
-      setTimeout(this.start, typeof time !== 'undefined' ? time : BaseGame.warmupTime);
+      setTimeout(this.start, time ?? BaseGame.warmupTime);
     }
   }
 

@@ -68,9 +68,9 @@ export class World {
 
   getBody(body: Body): Body | null {
     return (
-      this.getBodyByPoint(body, body.x - body.radius, body.y - body.radius) ||
-      this.getBodyByPoint(body, body.x + body.radius, body.y - body.radius) ||
-      this.getBodyByPoint(body, body.x - body.radius, body.y + body.radius) ||
+      this.getBodyByPoint(body, body.x - body.radius, body.y - body.radius) ??
+      this.getBodyByPoint(body, body.x + body.radius, body.y - body.radius) ??
+      this.getBodyByPoint(body, body.x - body.radius, body.y + body.radius) ??
       this.getBodyByPoint(body, body.x + body.radius, body.y + body.radius)
     );
   }

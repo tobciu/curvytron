@@ -84,7 +84,7 @@ export class BaseSocketClient extends EventEmitter {
   addEvent(name: string, data?: unknown, callback?: (data: unknown) => void, force?: boolean): void {
     const event: WireEntry = [name];
 
-    if (typeof data !== 'undefined') {
+    if (data !== undefined) {
       event[1] = data;
     }
 
@@ -126,7 +126,7 @@ export class BaseSocketClient extends EventEmitter {
   addCallback(id: number, data?: unknown): void {
     const event: WireEntry = [id];
 
-    if (typeof data !== 'undefined') {
+    if (data !== undefined) {
       event[1] = data;
     }
 
@@ -158,13 +158,13 @@ export class BaseSocketClient extends EventEmitter {
           this.emit(name, source[1]);
         }
       } else {
-        this.playCallback(name, typeof source[1] !== 'undefined' ? source[1] : null);
+        this.playCallback(name, source[1] === undefined ? null : source[1]);
       }
     }
   }
 
   playCallback(id: number, data: unknown): void {
-    if (typeof this.callbacks[id] !== 'undefined') {
+    if (this.callbacks[id] !== undefined) {
       this.callbacks[id](data);
       delete this.callbacks[id];
     }

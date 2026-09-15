@@ -57,6 +57,7 @@
     "@types/ws": "^8.5.12",
     "esbuild": "^0.25.0",
     "eslint": "^9.13.0",
+    "eslint-plugin-unicorn": "^64.0.0",
     "globals": "^15.15.0",
     "sass": "^1.103.1",
     "svelte": "^5.57.0",

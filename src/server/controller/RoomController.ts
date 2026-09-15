@@ -305,7 +305,7 @@ export class RoomController extends EventEmitter {
 
   onPlayerAdd(client: SocketClient, data: any, callback: (r: any) => void): void {
     const name = String(data.name).substr(0, Player.maxLength).trim();
-    const color = typeof data.color !== 'undefined' ? data.color : null;
+    const color = data.color === undefined ? null : data.color;
 
     if (!name.length) {
       return callback({ success: false, error: 'Invalid name.' });

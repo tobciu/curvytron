@@ -24,9 +24,7 @@ export class BaseTickrateLogger {
   }
 
   start(): void {
-    if (!this.interval) {
-      this.interval = setInterval(this.log, 1000);
-    }
+    this.interval ??= setInterval(this.log, 1000);
   }
 
   stop(): void {

@@ -45,13 +45,13 @@ export class BaseRoomConfig extends EventEmitter {
   }
 
   setMaxScore(maxScore: number | string): boolean {
-    const parsed = parseInt(String(maxScore), 10);
+    const parsed = Number.parseInt(String(maxScore), 10);
     this.maxScore = parsed ? parsed : null;
     return true;
   }
 
   variableExists(variable: string): boolean {
-    return typeof this.variables[variable] !== 'undefined';
+    return this.variables[variable] !== undefined;
   }
 
   setVariable(variable: string, value: number | string): boolean {
@@ -59,7 +59,7 @@ export class BaseRoomConfig extends EventEmitter {
       return false;
     }
 
-    const parsed = parseFloat(String(value));
+    const parsed = Number.parseFloat(String(value));
 
     if (-1 > parsed || parsed > 1) {
       return false;
@@ -77,7 +77,7 @@ export class BaseRoomConfig extends EventEmitter {
   }
 
   bonusExists(bonus: string): boolean {
-    return typeof this.bonuses[bonus] !== 'undefined';
+    return this.bonuses[bonus] !== undefined;
   }
 
   toggleBonus(bonus: string): boolean {
@@ -117,7 +117,7 @@ export class BaseRoomConfig extends EventEmitter {
   }
 
   getMaxScore(): number {
-    return this.maxScore ? this.maxScore : this.getDefaultMaxScore();
+    return this.maxScore ?? this.getDefaultMaxScore();
   }
 
   getDefaultMaxScore(): number {

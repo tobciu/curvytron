@@ -37,9 +37,7 @@ export class TrackerGame extends Tracker {
   }
 
   onStart(): void {
-    if (!this.fpsInterval) {
-      this.fpsInterval = setInterval(this.sendFPS, TrackerGame.fpsFrequency);
-    }
+    this.fpsInterval ??= setInterval(this.sendFPS, TrackerGame.fpsFrequency);
   }
 
   onStop(): void {

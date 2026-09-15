@@ -71,11 +71,11 @@ export class PlayerInput extends EventEmitter {
   attachEvents(): void {
     for (const type of this.listeningTypes()) {
       if (type === 'keyboard') {
-        window.addEventListener('keydown', this.onKeyDown);
-        window.addEventListener('keyup', this.onKeyUp);
+        globalThis.addEventListener('keydown', this.onKeyDown);
+        globalThis.addEventListener('keyup', this.onKeyUp);
       } else if (type === 'touch') {
         for (const ev of ['touchstart', 'touchend', 'touchleave', 'touchcancel']) {
-          window.addEventListener(ev, this.onTouch as EventListener);
+          globalThis.addEventListener(ev, this.onTouch as EventListener);
         }
       }
       // gamepad bindings: deferred
@@ -85,11 +85,11 @@ export class PlayerInput extends EventEmitter {
   detachEvents(): void {
     for (const type of this.listeningTypes()) {
       if (type === 'keyboard') {
-        window.removeEventListener('keydown', this.onKeyDown);
-        window.removeEventListener('keyup', this.onKeyUp);
+        globalThis.removeEventListener('keydown', this.onKeyDown);
+        globalThis.removeEventListener('keyup', this.onKeyUp);
       } else if (type === 'touch') {
         for (const ev of ['touchstart', 'touchend', 'touchleave', 'touchcancel']) {
-          window.removeEventListener(ev, this.onTouch as EventListener);
+          globalThis.removeEventListener(ev, this.onTouch as EventListener);
         }
       }
     }
@@ -120,7 +120,7 @@ export class PlayerInput extends EventEmitter {
 
   resolve(): void {
     const move: -1 | 1 | false =
-      this.active[0] !== this.active[1] ? (this.active[0] ? -1 : 1) : false;
+      this.active[0] === this.active[1] ? false : (this.active[0] ? -1 : 1);
     if (this.move !== move) {
       this.setMove(move);
     }

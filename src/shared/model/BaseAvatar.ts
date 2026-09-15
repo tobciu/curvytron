@@ -88,7 +88,7 @@ export class BaseAvatar extends EventEmitter {
   }
 
   updateAngularVelocity(factor?: number): void {
-    if (typeof factor === 'undefined') {
+    if (factor === undefined) {
       if (this.angularVelocity === 0) {
         return;
       }

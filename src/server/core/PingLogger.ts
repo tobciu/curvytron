@@ -15,9 +15,7 @@ export class PingLogger extends EventEmitter {
   }
 
   start(): void {
-    if (!this.interval) {
-      this.interval = setInterval(this.ping, PingLogger.frequency);
-    }
+    this.interval ??= setInterval(this.ping, PingLogger.frequency);
   }
 
   stop(): void {

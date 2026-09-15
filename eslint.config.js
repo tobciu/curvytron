@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import unicorn from 'eslint-plugin-unicorn';
 import globals from 'globals';
 
 export default tseslint.config(
@@ -43,6 +44,7 @@ export default tseslint.config(
   },
 
   {
+    plugins: { unicorn },
     // Rules carried over from the legacy .jshintrc.
     rules: {
       quotes: ['warn', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
@@ -56,7 +58,14 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       // SonarQube parity — these mirror rules SonarQube's analyzer also flags.
       '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+      '@typescript-eslint/prefer-nullish-coalescing': 'warn',
+      '@typescript-eslint/prefer-optional-chain': 'warn',
       'no-unneeded-ternary': 'warn',
+      'unicorn/prefer-global-this': 'warn',
+      'unicorn/no-negated-condition': 'warn',
+      'unicorn/prefer-date-now': 'warn',
+      'unicorn/prefer-number-properties': 'warn',
+      'unicorn/no-typeof-undefined': 'warn',
     },
   },
 );

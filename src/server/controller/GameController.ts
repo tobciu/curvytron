@@ -247,7 +247,7 @@ export class GameController {
 
   onMove(client: SocketClient, data: any): void {
     const player = client.players.getById(data.avatar);
-    if (player && player.avatar) {
+    if (player?.avatar) {
       player.avatar.updateAngularVelocity(data.move);
     }
   }

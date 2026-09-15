@@ -10,7 +10,7 @@ export class Client {
 
   constructor(id: string | number, active?: boolean) {
     this.id = id;
-    this.active = typeof active === 'undefined' || active;
+    this.active = active === undefined || active;
   }
 
   setMaster(master: boolean): void {

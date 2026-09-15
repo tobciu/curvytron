@@ -96,7 +96,7 @@ export class RoomsController extends EventEmitter {
       return callback({ success: false, error: `Unknown room "${data.name}".` });
     }
 
-    const password = typeof data.password !== 'undefined' ? data.password : null;
+    const password = data.password === undefined ? null : data.password;
 
     if (!room.config.allow(password)) {
       return callback({ success: false, error: 'Wrong password.' });

@@ -193,7 +193,7 @@ function createRoomStore() {
 
     isMaster: () => {
       const r = get(store);
-      return r != null && r.master != null && r.master === clientId();
+      return r?.master != null && r.master === clientId();
     },
 
     async addPlayer(name: string, color?: string): Promise<RpcReply> {

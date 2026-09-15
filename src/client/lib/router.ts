@@ -27,8 +27,8 @@ function parse(hash: string): Route {
 /** Current route, derived from `location.hash`. */
 export const route = readable<Route>(parse(location.hash), (set) => {
   const update = () => set(parse(location.hash));
-  window.addEventListener('hashchange', update);
-  return () => window.removeEventListener('hashchange', update);
+  globalThis.addEventListener('hashchange', update);
+  return () => globalThis.removeEventListener('hashchange', update);
 });
 
 export function go(path: string): void {

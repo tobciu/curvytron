@@ -13,7 +13,7 @@ export class FloodFilter {
   isValid(message: FloodMessage): boolean {
     const history = this.getClientHistory(
       message.client.id,
-      new Date().getTime() - FloodFilter.toleranceRange,
+      Date.now() - FloodFilter.toleranceRange,
     );
     return history < FloodFilter.toleranceTotal;
   }

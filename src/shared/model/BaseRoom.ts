@@ -93,7 +93,7 @@ export class BaseRoom extends EventEmitter {
     open: boolean;
     config?: ReturnType<BaseRoomConfig['serialize']>;
   } {
-    const isFull = typeof full === 'undefined' || full;
+    const isFull = full === undefined || full;
 
     const data: {
       name: string;

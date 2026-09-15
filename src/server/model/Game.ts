@@ -134,10 +134,10 @@ export class Game extends BaseGame {
     let alive = false;
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
       if (this.avatars.items[i].alive) {
-        if (!alive) {
-          alive = true;
-        } else {
+        if (alive) {
           return;
+        } else {
+          alive = true;
         }
       }
     }

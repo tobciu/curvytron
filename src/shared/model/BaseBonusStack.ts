@@ -48,7 +48,7 @@ export class BaseBonusStack<T = any> extends EventEmitter {
   resolve(bonus?: StackableBonus): void {
     const properties: Record<string, BonusEffectValue> = {};
 
-    if (typeof bonus !== 'undefined') {
+    if (bonus !== undefined) {
       const effects = bonus.getEffects(this.target);
       for (let i = effects.length - 1; i >= 0; i--) {
         const property = effects[i][0];
@@ -61,9 +61,7 @@ export class BaseBonusStack<T = any> extends EventEmitter {
       for (let j = effects.length - 1; j >= 0; j--) {
         const property = effects[j][0];
 
-        if (typeof properties[property] === 'undefined') {
-          properties[property] = this.getDefaultProperty(property);
-        }
+        properties[property] ??= this.getDefaultProperty(property);
 
         this.append(properties, property, effects[j][1]);
       }

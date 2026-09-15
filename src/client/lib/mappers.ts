@@ -30,7 +30,7 @@ export class KeyboardMapper extends Mapper<number> {
   start(): void {
     if (!this.listening) {
       this.listening = true;
-      window.addEventListener('keydown', this.onKeyDown);
+      globalThis.addEventListener('keydown', this.onKeyDown);
       this.emit('listening:start');
     }
   }
@@ -38,7 +38,7 @@ export class KeyboardMapper extends Mapper<number> {
   stop(): void {
     if (this.listening) {
       this.listening = false;
-      window.removeEventListener('keydown', this.onKeyDown);
+      globalThis.removeEventListener('keydown', this.onKeyDown);
       this.emit('listening:stop');
     }
   }
@@ -55,7 +55,7 @@ export class TouchMapper extends Mapper<Touch> {
   start(): void {
     if (!this.listening) {
       this.listening = true;
-      window.addEventListener('touchstart', this.onTouch);
+      globalThis.addEventListener('touchstart', this.onTouch);
       this.emit('listening:start');
     }
   }
@@ -63,7 +63,7 @@ export class TouchMapper extends Mapper<Touch> {
   stop(): void {
     if (this.listening) {
       this.listening = false;
-      window.removeEventListener('touchstart', this.onTouch);
+      globalThis.removeEventListener('touchstart', this.onTouch);
       this.emit('listening:stop');
     }
   }

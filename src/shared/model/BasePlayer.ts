@@ -26,8 +26,8 @@ export class BasePlayer extends EventEmitter {
     this.client = client;
     this.name = name;
     this.color =
-      typeof color !== 'undefined' && this.validateColor(color) ? color : this.getRandomColor();
-    this.ready = typeof ready !== 'undefined' && ready;
+      color !== undefined && this.validateColor(color) ? color : this.getRandomColor();
+    this.ready = ready !== undefined && ready;
   }
 
   setName(name: string): void {
@@ -47,13 +47,11 @@ export class BasePlayer extends EventEmitter {
   }
 
   toggleReady(toggle?: boolean): void {
-    this.ready = typeof toggle !== 'undefined' ? (!!toggle) : !this.ready;
+    this.ready = toggle === undefined ? !this.ready : (!!toggle);
   }
 
   getAvatar(): BaseAvatar {
-    if (!this.avatar) {
-      this.avatar = new (this.constructor as typeof BasePlayer).AvatarClass(this);
-    }
+    this.avatar ??= new (this.constructor as typeof BasePlayer).AvatarClass(this);
     return this.avatar;
   }
 
@@ -99,9 +97,9 @@ export class BasePlayer extends EventEmitter {
 
     if (matches && yiq) {
       const ratio =
-        (parseInt(matches[1], 16) * 0.4 +
-          parseInt(matches[2], 16) * 0.5 +
-          parseInt(matches[3], 16) * 0.3) /
+        (Number.parseInt(matches[1], 16) * 0.4 +
+          Number.parseInt(matches[2], 16) * 0.5 +
+          Number.parseInt(matches[3], 16) * 0.3) /
         255;
 
       return ratio > 0.3;

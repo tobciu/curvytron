@@ -12,7 +12,7 @@ export class Collection<T = any> {
   id = 0;
 
   constructor(items?: T[] | null, key?: string, index?: boolean) {
-    this.key = key ? key : 'id';
+    this.key = key ?? 'id';
     this.index = Boolean(index);
 
     if (items) {
@@ -118,7 +118,7 @@ export class Collection<T = any> {
   }
 
   getByIndex(index: number): T | null {
-    return typeof this.items[index] !== 'undefined' ? (this.items[index]) : null;
+    return this.items[index] ?? null;
   }
 
   exists(element: T): boolean {

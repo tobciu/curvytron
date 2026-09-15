@@ -45,7 +45,7 @@ export class Canvas {
     this.element.width = width;
     this.element.height = height;
 
-    if (typeof scale !== 'undefined') {
+    if (scale !== undefined) {
       this.setScale(scale);
     }
 

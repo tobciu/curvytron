@@ -14,7 +14,7 @@ export class RoomRepository extends EventEmitter {
   }
 
   create(name?: string): Room | false {
-    const roomName = name && name.length ? name : this.getRandomRoomName();
+    const roomName = name?.length ? name : this.getRandomRoomName();
     const room = new Room(roomName);
 
     if (!this.rooms.add(room)) {

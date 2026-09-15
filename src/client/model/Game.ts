@@ -79,12 +79,12 @@ export class Game extends BaseGame {
   }
 
   override newFrame(): void {
-    this.frame = window.requestAnimationFrame(this.loop);
+    this.frame = globalThis.requestAnimationFrame(this.loop);
   }
 
   override clearFrame(): void {
     if (this.frame) {
-      window.cancelAnimationFrame(this.frame);
+      globalThis.cancelAnimationFrame(this.frame);
     }
     this.frame = null;
   }

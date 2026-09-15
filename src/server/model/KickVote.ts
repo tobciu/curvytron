@@ -17,7 +17,7 @@ export class KickVote extends EventEmitter {
     super();
     this.id = player.id;
     this.target = player;
-    this.total = parseInt(String(total), 10);
+    this.total = Number.parseInt(String(total), 10);
     this.close = this.close.bind(this);
   }
 
