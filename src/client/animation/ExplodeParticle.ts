@@ -26,6 +26,6 @@ export class ExplodeParticle {
   }
 
   round(value: number): number {
-    return (0.5 + value) | 0;
+    return Math.trunc(0.5 + value);
   }
 }

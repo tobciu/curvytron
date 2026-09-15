@@ -126,7 +126,7 @@ export class Collection<T = any> {
   }
 
   indexExists(index: string | number): boolean {
-    return this.ids.indexOf(index) >= 0;
+    return this.ids.includes(index);
   }
 
   map<R = any>(callable: (this: T) => R): Collection<R> {
@@ -182,7 +182,7 @@ export class Collection<T = any> {
   }
 
   getLast(): T | null {
-    return this.items.length > 0 ? (this.items[this.items.length - 1]) : null;
+    return this.items.at(-1) ?? null;
   }
 
   sort(callable: (a: T, b: T) => number): void {

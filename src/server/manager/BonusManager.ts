@@ -132,7 +132,9 @@ export class BonusManager extends BaseBonusManager {
 
       if (probability > 0) {
         bonuses.push(bonusType);
-        pot.push(probability + (i > 0 ? pot[pot.length - 1] : 0));
+        // preserves the original quirk: if every earlier type had probability 0,
+        // pot is still empty here and this intentionally yields NaN (never selected below).
+        pot.push(probability + (i > 0 ? (pot.at(-1) as number) : 0));
       }
     }
 
@@ -140,7 +142,7 @@ export class BonusManager extends BaseBonusManager {
       return null;
     }
 
-    const value = Math.random() * pot[pot.length - 1];
+    const value = Math.random() * pot.at(-1)!;
 
     for (let i = 0; i < pot.length; i++) {
       if (value < pot[i]) {

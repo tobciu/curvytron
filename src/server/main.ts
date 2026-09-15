@@ -60,6 +60,4 @@ console.info('Serving static files from "%s"', config.server.staticDir);
 
 export const server = new Server(config.server);
 
-if (config.inspector) {
-  new Inspector(server, config.inspector);
-}
+export const inspector = config.inspector ? new Inspector(server, config.inspector) : null;

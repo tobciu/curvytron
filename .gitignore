@@ -36,3 +36,4 @@ Thumbs.db
 vite.config.ts.timestamp-*
 
 .sonar-token
+.scannerwork/

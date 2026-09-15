@@ -5,7 +5,7 @@ import type { WebSocket } from 'ws';
 export class PingLogger extends EventEmitter {
   static readonly frequency = 1000;
 
-  private socket: WebSocket;
+  private readonly socket: WebSocket;
   private interval: ReturnType<typeof setInterval> | null = null;
 
   constructor(socket: WebSocket) {

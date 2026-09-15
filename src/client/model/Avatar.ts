@@ -179,7 +179,7 @@ export class Avatar extends BaseAvatar {
     if (typeof fn === 'function') {
       (fn as (v: unknown) => void).call(this, value);
     } else {
-      throw new Error('Unknown setter ' + method);
+      throw new TypeError('Unknown setter ' + method);
     }
   }
 

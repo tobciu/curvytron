@@ -3,6 +3,9 @@ import { EventEmitter } from 'eventemitter3';
 /** A binding is a keyCode, a `Touch`, or a `gamepad:…` string. */
 export type Binding = number | string | Touch;
 
+/** Edge-triggered turn direction: `-1` left, `1` right, `false` released. */
+export type Move = -1 | 1 | false;
+
 interface InputAvatar {
   id: string | number;
 }
@@ -17,7 +20,7 @@ export class PlayerInput extends EventEmitter {
 
   avatar: InputAvatar;
   active: [boolean, boolean] = [false, false];
-  move: -1 | 1 | false = false;
+  move: Move = false;
   width = 0;
   binding: Binding[];
 
@@ -119,18 +122,20 @@ export class PlayerInput extends EventEmitter {
   }
 
   resolve(): void {
-    const move: -1 | 1 | false =
-      this.active[0] === this.active[1] ? false : (this.active[0] ? -1 : 1);
+    let move: Move = false;
+    if (this.active[0] !== this.active[1]) {
+      move = this.active[0] ? -1 : 1;
+    }
     if (this.move !== move) {
       this.setMove(move);
     }
   }
 
   useGamepad(): boolean {
-    return this.binding.some((b) => /^gamepad:/.test(this.getBindingType(b)));
+    return this.binding.some((b) => this.getBindingType(b).startsWith('gamepad:'));
   }
 
-  setMove(move: -1 | 1 | false): void {
+  setMove(move: Move): void {
     this.move = move;
     this.emit('move', { avatar: this.avatar, move });
   }

@@ -12,7 +12,7 @@ export function keyName(code: number | null | undefined): string {
     return NAMES[code];
   }
   if (code >= 48 && code <= 90) {
-    return String.fromCharCode(code); // 0-9, A-Z
+    return String.fromCodePoint(code); // 0-9, A-Z
   }
   if (code >= 96 && code <= 105) {
     return 'Num ' + (code - 96);

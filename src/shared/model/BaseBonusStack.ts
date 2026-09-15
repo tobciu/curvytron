@@ -68,7 +68,7 @@ export class BaseBonusStack<T = any> extends EventEmitter {
     }
 
     for (const property in properties) {
-      if (Object.prototype.hasOwnProperty.call(properties, property)) {
+      if (Object.hasOwn(properties, property)) {
         this.apply(property, properties[property]);
       }
     }

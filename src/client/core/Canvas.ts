@@ -200,11 +200,11 @@ export class Canvas {
   }
 
   round(value: number): number {
-    return (0.5 + value) | 0;
+    return Math.trunc(0.5 + value);
   }
 
   roundFloat(value: number, precision = 2): number {
     const coef = Math.pow(10, precision);
-    return ((0.5 + value * coef) | 0) / coef;
+    return Math.trunc(0.5 + value * coef) / coef;
   }
 }

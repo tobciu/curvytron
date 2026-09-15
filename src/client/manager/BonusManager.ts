@@ -36,7 +36,7 @@ export class BonusManager extends BaseBonusManager {
   assets: Record<string, HTMLCanvasElement> = {};
   loaded = false;
   canvas: Canvas | null = null;
-  private sprite: SpriteAsset;
+  private readonly sprite: SpriteAsset;
 
   constructor(game: unknown, _bonuses?: unknown[], _rate?: number) {
     super(game);

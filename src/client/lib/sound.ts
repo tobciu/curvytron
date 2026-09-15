@@ -12,7 +12,7 @@ const NAMES: SoundName[] = ['death', 'bonus-pop', 'bonus-clear', 'win', 'notice'
  * Honours the profile `sound` toggle. No-ops when Audio is unavailable (SSR / tests).
  */
 class Sound {
-  private templates = new Map<SoundName, HTMLAudioElement>();
+  private readonly templates = new Map<SoundName, HTMLAudioElement>();
   private unlocked = false;
 
   constructor() {

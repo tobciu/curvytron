@@ -49,7 +49,7 @@ export class RoomRepository extends EventEmitter {
 
   getRandomRoomName(): string {
     let name = this.generator.getName();
-    while (this.rooms.ids.indexOf(name) >= 0) {
+    while (this.rooms.ids.includes(name)) {
       name = this.generator.getName();
     }
     return name;

@@ -1,11 +1,11 @@
 /** Escape a measurement/tag-key/tag-value/field-key component (commas, spaces, equals signs). */
 function escapePart(value: string): string {
-  return value.replace(/[,= ]/g, (m) => `\\${m}`);
+  return value.replaceAll(/[,= ]/g, (m) => `\\${m}`);
 }
 
 /** Measurement names only need commas and spaces escaped (`=` is fine unescaped). */
 function escapeMeasurement(value: string): string {
-  return value.replace(/[, ]/g, (m) => `\\${m}`);
+  return value.replaceAll(/[, ]/g, (m) => `\\${m}`);
 }
 
 function formatFieldValue(value: unknown): string {
@@ -15,7 +15,7 @@ function formatFieldValue(value: unknown): string {
   if (typeof value === 'boolean') {
     return value ? 'true' : 'false';
   }
-  return `"${String(value).replace(/"/g, '\\"')}"`;
+  return `"${String(value).replaceAll('"', String.raw`\"`)}"`;
 }
 
 /**

@@ -13,7 +13,7 @@ export class Compressor {
   }
 
   compress(value: number): number {
-    return (0.5 + value * this.precision) | 0;
+    return Math.trunc(0.5 + value * this.precision);
   }
 
   decompress(value: number): number {

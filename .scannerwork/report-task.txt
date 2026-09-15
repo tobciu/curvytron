@@ -1,7 +1,0 @@
-projectKey=curvytron
-serverUrl=https://sonarqube.tobciu08.de
-serverVersion=26.5.0.122743
-branch=modernize
-dashboardUrl=https://sonarqube.tobciu08.de/dashboard?id=curvytron&branch=modernize
-ceTaskId=a2626c16-251c-4a3d-885a-e1dd77053a24
-ceTaskUrl=https://sonarqube.tobciu08.de/api/ce/task?id=a2626c16-251c-4a3d-885a-e1dd77053a24
