@@ -119,6 +119,17 @@ function buildGameRoom(state: RoomState, binding: Binding[]): GameRoom {
   };
 }
 
+/** Mirrors the legacy `MessageDie.resolveType()`: wall / suicide / crash (old trail) / kill. */
+function killType(dead: Avatar, killer: Avatar | null, old: unknown): KillLogEntry['type'] {
+  if (!killer) {
+    return 'wall';
+  }
+  if (killer.id === dead.id) {
+    return 'suicide';
+  }
+  return old ? 'crash' : 'kill';
+}
+
 function toView(a: Avatar): AvatarView {
   return {
     id: a.id,
@@ -236,13 +247,7 @@ function createGameStore() {
       dead.die();
       sound.play('death');
       const killer = d[1] == null ? null : byId(d[1]);
-      const type: KillLogEntry['type'] = killer
-        ? killer.id === dead.id
-          ? 'suicide'
-          : d[2]
-            ? 'crash'
-            : 'kill'
-        : 'wall';
+      const type = killType(dead, killer, d[2]);
       patch((cur) => ({
         killLog: [
           {

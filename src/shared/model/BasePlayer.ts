@@ -93,7 +93,7 @@ export class BasePlayer extends EventEmitter {
       return false;
     }
 
-    const matches = color.match(/^#([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})$/);
+    const matches = /^#([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})$/.exec(color);
 
     if (matches && yiq) {
       const ratio =

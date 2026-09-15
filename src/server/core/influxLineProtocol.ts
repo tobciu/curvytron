@@ -8,6 +8,8 @@ function escapeMeasurement(value: string): string {
   return value.replaceAll(/[, ]/g, (m) => `\\${m}`);
 }
 
+const escapedQuote = String.raw`\"`;
+
 function formatFieldValue(value: unknown): string {
   if (typeof value === 'number') {
     return String(value);
@@ -15,7 +17,7 @@ function formatFieldValue(value: unknown): string {
   if (typeof value === 'boolean') {
     return value ? 'true' : 'false';
   }
-  return `"${String(value).replaceAll('"', String.raw`\"`)}"`;
+  return `"${String(value).replaceAll('"', escapedQuote)}"`;
 }
 
 /**

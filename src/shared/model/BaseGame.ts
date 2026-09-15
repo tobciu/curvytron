@@ -194,7 +194,7 @@ export class BaseGame extends EventEmitter {
   sortAvatars(avatars?: Collection<BaseAvatar>): Collection<BaseAvatar> {
     const target = avatars ?? this.avatars;
 
-    target.sort((a, b) => (a.score > b.score ? -1 : a.score < b.score ? 1 : 0));
+    target.sort((a, b) => b.score - a.score);
 
     return target;
   }

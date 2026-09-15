@@ -9,7 +9,8 @@ class FakeSocket implements SocketLike {
     this.sent.push(data);
   }
   addEventListener(type: 'message' | 'close', l: (e: { data?: string }) => void): void {
-    (this.listeners[type] ??= []).push(l);
+    this.listeners[type] ??= [];
+    this.listeners[type].push(l);
   }
   removeEventListener(type: 'message' | 'close', l: (e: { data?: string }) => void): void {
     this.listeners[type] = (this.listeners[type] ?? []).filter((x) => x !== l);

@@ -103,8 +103,8 @@ export class BaseSocketClient extends EventEmitter {
   addEvents(sources: WireEntry[], force?: boolean): void {
     const events: WireEntry[] = [];
 
-    for (let i = 0; i < sources.length; i++) {
-      events.push(sources[i]);
+    for (const source of sources) {
+      events.push(source);
     }
 
     if (!this.interval || force) {
@@ -147,8 +147,7 @@ export class BaseSocketClient extends EventEmitter {
   onMessage(e: { data?: string }): void {
     const data = JSON.parse(e.data ?? '[]') as WireEntry[];
 
-    for (let i = 0; i < data.length; i++) {
-      const source = data[i];
+    for (const source of data) {
       const name = source[0];
 
       if (typeof name === 'string') {
