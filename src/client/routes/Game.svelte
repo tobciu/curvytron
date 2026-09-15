@@ -197,18 +197,18 @@
 <style>
   .game {
     display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 1rem;
-    height: calc(100vh - 8rem);
+    grid-template-columns: 300px 1fr;
+    position: fixed;
+    inset: 0;
+    background: #000;
   }
   .infos {
     display: flex;
     flex-direction: column;
     background: #1c1c1c;
     color: #ddd;
-    border-radius: 6px;
     padding: 1rem;
-    overflow: hidden;
+    overflow: auto;
   }
   .logo {
     color: #ff6b6b;
@@ -313,6 +313,7 @@
     align-items: center;
     justify-content: center;
     min-width: 0;
+    min-height: 0;
   }
   .render {
     position: relative;
@@ -390,7 +391,10 @@
   @media (max-width: 720px) {
     .game {
       grid-template-columns: 1fr;
-      height: auto;
+      grid-template-rows: auto 1fr;
+    }
+    .infos {
+      max-height: 40vh;
     }
   }
 </style>

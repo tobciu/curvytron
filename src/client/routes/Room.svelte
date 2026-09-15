@@ -5,6 +5,7 @@
   import { profile } from '../lib/stores/profile.ts';
   import { socket } from '../lib/socket/client.ts';
   import { route } from '../lib/router.ts';
+  import { BonusManager } from '../manager/BonusManager.ts';
 
   let { name }: { name: string } = $props();
 
@@ -58,11 +59,12 @@
     }
   }
 
-  function bonusCategory(name: string): 'self' | 'enemy' | 'leader' | 'game' {
-    if (name.startsWith('BonusSelf')) return 'self';
-    if (name.startsWith('BonusEnemy')) return 'enemy';
-    if (name.startsWith('BonusLeader')) return 'leader';
-    return 'game';
+  /** Fixed (non-shuffled) position of a bonus's icon on `images/bonus.png`, for the settings UI. */
+  function bonusSpritePosition(bonus: string): string {
+    const i = BonusManager.spritePosition.indexOf(bonus);
+    const col = i < 0 ? 0 : i % 3;
+    const row = i < 0 ? 0 : Math.floor(i / 3);
+    return `${-col * 32}px ${-row * 32}px`;
   }
 </script>
 
@@ -85,7 +87,12 @@
     <h2>
       {$room.name}
       {#if isMaster}
-        <button class="gear" onclick={() => (showConfig = !showConfig)} title="Room settings">⚙</button>
+        <button class="gear" onclick={() => (showConfig = !showConfig)} title="Room settings">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
       {/if}
     </h2>
 
@@ -142,10 +149,13 @@
             {#each Object.entries($room.config.bonuses) as [bonus, on] (bonus)}
               <button
                 type="button"
-                class="bonus-chip {bonusCategory(bonus)}"
+                class="bonus-icon"
                 class:off={!on}
+                style="background-position: {bonusSpritePosition(bonus)}"
                 onclick={() => room.toggleBonus(bonus)}
-              >{bonus.replace('Bonus', '')}</button>
+                title={bonus.replace('Bonus', '')}
+                aria-label={bonus.replace('Bonus', '')}
+              ></button>
             {/each}
           </div>
         </div>
@@ -153,6 +163,18 @@
     {/if}
 
     <div class="cols">
+      <div class="chat">
+        <ul class="feed">
+          {#each $room.messages as m}
+            <li><span style="color:{m.color ?? '#888'}">{m.name ?? '—'}</span>: {m.content}</li>
+          {/each}
+        </ul>
+        <form onsubmit={send}>
+          <input bind:value={chatText} placeholder="Enter message…" maxlength="140" />
+          <button type="submit">→</button>
+        </form>
+      </div>
+
       <div class="players">
         <div class="players-header">
           <p class="count">{$room.players.length} player{$room.players.length === 1 ? '' : 's'}</p>
@@ -171,7 +193,12 @@
             <li>
               <span class="dot" style="background:{p.color}"></span>
               <span class="name">{p.name}</span>
-              {#if $room.master === p.client}<span class="crown" title="Room master">♛</span>{/if}
+              {#if $room.master === p.client}
+                <svg class="crown" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" role="img">
+                  <title>Room master</title>
+                  <path d="M3 8 L7 11 L12 5 L17 11 L21 8 L19 18 L5 18 Z"></path>
+                </svg>
+              {/if}
               <span class="spacer"></span>
               {#if mine.includes(p.id)}
                 <button class="ready-badge" class:ready={p.ready} onclick={() => room.toggleReady(p.id)}>
@@ -183,18 +210,6 @@
             </li>
           {/each}
         </ul>
-      </div>
-
-      <div class="chat">
-        <ul class="feed">
-          {#each $room.messages as m}
-            <li><span style="color:{m.color ?? '#888'}">{m.name ?? '—'}</span>: {m.content}</li>
-          {/each}
-        </ul>
-        <form onsubmit={send}>
-          <input bind:value={chatText} placeholder="Enter message…" maxlength="140" />
-          <button type="submit">→</button>
-        </form>
       </div>
     </div>
 
@@ -219,7 +234,8 @@
   .gear {
     border: 0;
     background: none;
-    font-size: 1.1rem;
+    padding: 0;
+    display: inline-flex;
     color: var(--color-muted);
     cursor: pointer;
     transition: color 0.15s ease;
@@ -282,22 +298,22 @@
   .password-hint { margin: 0.75rem 0 0; font-size: 0.85rem; color: var(--color-muted); }
   .range { width: 100%; accent-color: var(--color-accent); }
   .bonus-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .bonus-chip {
-    border: 0;
-    padding: 0.35rem 0.85rem;
-    font-size: 0.8rem;
-    font-weight: 600;
+  .bonus-icon {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    background-image: url('/images/bonus.png');
+    background-size: 96px 224px;
+    background-repeat: no-repeat;
+    padding: 0;
     cursor: pointer;
     opacity: 1;
     transition: opacity 0.15s ease, filter 0.15s ease;
   }
-  .bonus-chip:hover { filter: brightness(0.95); }
-  .bonus-chip.off { opacity: 0.35; }
-  .bonus-chip.self { background: #e3f9ea; color: #2f9e52; }
-  .bonus-chip.enemy { background: #fdeceb; color: #d94f43; }
-  .bonus-chip.leader { background: #fff8e1; color: #b8860b; }
-  .bonus-chip.game { background: #eef1f5; color: #5b6b7d; }
-  .cols { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; }
+  .bonus-icon:hover { filter: brightness(0.95); }
+  .bonus-icon.off { opacity: 0.3; filter: grayscale(1); }
+  .cols { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; }
   @media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
   .players-header { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 10px; }
   .count {

@@ -186,6 +186,7 @@ function createGameStore() {
     clearWarmup();
     let count = BaseGame.warmupTime / 1000;
     patch(() => ({ phase: 'warmup', warmupCount: count }));
+    sound.play('notice');
     warmupTimer = setInterval(() => {
       count -= 1;
       patch(() => ({ warmupCount: count }));
