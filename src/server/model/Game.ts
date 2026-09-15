@@ -45,38 +45,41 @@ export class Game extends BaseGame {
 
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
       const avatar = this.avatars.items[i];
-
       if (avatar.alive) {
-        avatar.update(_step);
-
-        const border = this.world.getBoundIntersect(
-          avatar.body,
-          this.borderless || avatar.ghost ? 0 : avatar.radius,
-        );
-
-        if (border) {
-          if (this.borderless || avatar.ghost) {
-            const position = this.world.getOposite(border[0], border[1]);
-            avatar.setPosition(position[0], position[1]);
-          } else {
-            this.kill(avatar, null, score);
-          }
-        } else if (!avatar.invincible) {
-          const killer = this.world.getBody(avatar.body);
-          if (killer) {
-            this.kill(avatar, killer, score);
-          }
-        }
-
-        if (avatar.alive) {
-          avatar.printManager.test();
-          (this.bonusManager as BonusManager).testCatch(avatar);
-        }
+        this.updateAvatar(avatar, _step, score);
       }
     }
 
     if (this.deathInFrame) {
       this.checkRoundEnd();
+    }
+  }
+
+  private updateAvatar(avatar: Avatar, step: number, score: number): void {
+    avatar.update(step);
+
+    const border = this.world.getBoundIntersect(
+      avatar.body,
+      this.borderless || avatar.ghost ? 0 : avatar.radius,
+    );
+
+    if (border) {
+      if (this.borderless || avatar.ghost) {
+        const position = this.world.getOposite(border[0], border[1]);
+        avatar.setPosition(position[0], position[1]);
+      } else {
+        this.kill(avatar, null, score);
+      }
+    } else if (!avatar.invincible) {
+      const killer = this.world.getBody(avatar.body);
+      if (killer) {
+        this.kill(avatar, killer, score);
+      }
+    }
+
+    if (avatar.alive) {
+      avatar.printManager.test();
+      (this.bonusManager as BonusManager).testCatch(avatar);
     }
   }
 

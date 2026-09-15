@@ -51,6 +51,14 @@ function createRoomStore() {
       return r;
     });
 
+  /** After adding a local player, the server echoes it via room:join — mark it as ours. */
+  const markLocalPlayers = () => {
+    set((r) => {
+      const mine = r.players.filter((p) => p.client === clientId());
+      r.localPlayerIds = mine.map((p) => p.id);
+    });
+  };
+
   // --- broadcast handlers -------------------------------------------------
   const h = {
     'client:add': (d: ServerToClient['client:add']) =>
@@ -198,14 +206,8 @@ function createRoomStore() {
 
     async addPlayer(name: string, color?: string): Promise<RpcReply> {
       const res = await socket.request('player:add', { name, color });
-      // the server echoes the player via a room:join broadcast; mark it local
       if (res.success) {
-        setTimeout(() => {
-          set((r) => {
-            const mine = r.players.filter((p) => p.client === clientId());
-            r.localPlayerIds = mine.map((p) => p.id);
-          });
-        }, 50);
+        setTimeout(markLocalPlayers, 50);
       }
       return res;
     },

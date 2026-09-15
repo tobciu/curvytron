@@ -74,7 +74,9 @@ export class BaseGame extends EventEmitter {
     this.onFrame = this.onFrame.bind(this);
   }
 
-  update(_step: number): void {}
+  update(_step: number): void {
+    // intentionally empty — the server subclass runs the authoritative simulation here
+  }
 
   removeAvatar(avatar: BaseAvatar): void {
     if (this.avatars.exists(avatar)) {

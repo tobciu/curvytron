@@ -113,7 +113,7 @@ function buildGameRoom(state: RoomState, binding: Binding[]): GameRoom {
         Object.entries(state.config.bonuses)
           .filter(([, on]) => on)
           .map(([name]) => name)
-          .sort(),
+          .sort((a, b) => a.localeCompare(b)),
       getVariable: (name: string) => state.config.variables[name],
     },
   };

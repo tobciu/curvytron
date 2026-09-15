@@ -304,7 +304,7 @@ export class RoomController extends EventEmitter {
   }
 
   onPlayerAdd(client: SocketClient, data: any, callback: (r: any) => void): void {
-    const name = String(data.name).substr(0, Player.maxLength).trim();
+    const name = String(data.name).slice(0, Player.maxLength).trim();
     const color = data.color === undefined ? null : data.color;
 
     if (!name.length) {
@@ -343,7 +343,7 @@ export class RoomController extends EventEmitter {
   }
 
   onTalk(client: SocketClient, content: string, callback: (r: any) => void): void {
-    const message = new Message(client as any, String(content).substr(0, Message.maxLength));
+    const message = new Message(client as any, String(content).slice(0, Message.maxLength));
     const success = this.chat.addMessage(message);
     callback({ success });
     if (success) {
@@ -366,7 +366,7 @@ export class RoomController extends EventEmitter {
 
   onName(client: SocketClient, data: any, callback: (r: any) => void): void {
     const player = client.players.getById(data.player);
-    const name = String(data.name).substr(0, Player.maxLength).trim();
+    const name = String(data.name).slice(0, Player.maxLength).trim();
     if (!player) {
       return callback({ success: false, error: `Unknown player: "${name}"` });
     }

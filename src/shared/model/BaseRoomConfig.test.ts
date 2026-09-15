@@ -47,7 +47,7 @@ describe('BaseRoomConfig', () => {
     const enabled = cfg.getBonuses();
     expect(enabled).not.toContain('BonusSelfSmall');
     expect(enabled).not.toContain('BonusSelfRandom'); // default-off
-    expect([...enabled]).toEqual([...enabled].sort());
+    expect([...enabled]).toEqual([...(enabled as string[])].sort((a, b) => a.localeCompare(b)));
     expect(enabled).toHaveLength(15);
   });
 

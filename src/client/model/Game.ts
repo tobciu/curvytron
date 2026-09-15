@@ -142,6 +142,14 @@ export class Game extends BaseGame {
       return;
     }
 
+    this.updateAnimations();
+    this.clearChangedAvatars();
+    this.drawAvatars(step);
+
+    this.bonusManager.draw();
+  }
+
+  private updateAnimations(): void {
     for (let a = this.animations.length - 1; a >= 0; a--) {
       const animation = this.animations[a];
       animation.draw();
@@ -149,7 +157,9 @@ export class Game extends BaseGame {
         this.animations.splice(a, 1);
       }
     }
+  }
 
+  private clearChangedAvatars(): void {
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
       const avatar = this.avatars.items[i];
       if (avatar.present && (avatar.alive || avatar.changed)) {
@@ -157,7 +167,9 @@ export class Game extends BaseGame {
         this.clearBonusStack(avatar);
       }
     }
+  }
 
+  private drawAvatars(step?: number): void {
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
       const avatar = this.avatars.items[i];
       if (avatar.present && (avatar.alive || avatar.changed)) {
@@ -174,8 +186,6 @@ export class Game extends BaseGame {
         }
       }
     }
-
-    this.bonusManager.draw();
   }
 
   drawTail(avatar: Avatar): void {

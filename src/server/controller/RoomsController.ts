@@ -79,7 +79,7 @@ export class RoomsController extends EventEmitter {
   }
 
   onCreateRoom(_client: SocketClient, data: any, callback: (r: any) => void): void {
-    const name = String(data.name).substr(0, Room.maxLength).trim();
+    const name = String(data.name).slice(0, Room.maxLength).trim();
     const room = this.repository.create(name);
 
     callback(room ? { success: true, room: room.serialize(false) } : { success: false });

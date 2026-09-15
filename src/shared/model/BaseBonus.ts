@@ -30,9 +30,13 @@ export class BaseBonus {
     this.y = y;
   }
 
-  clear(): void {}
+  clear(): void {
+    // intentionally empty — override to release resources (e.g. a collision body)
+  }
 
-  applyTo(_avatar: unknown, _game: unknown): void {}
+  applyTo(_avatar: unknown, _game: unknown): void {
+    // intentionally empty — override to apply the bonus's effect on pickup
+  }
 
   getEffects(_target: unknown): BonusEffect[] {
     return [];

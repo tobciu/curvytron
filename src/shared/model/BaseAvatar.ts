@@ -109,7 +109,9 @@ export class BaseAvatar extends EventEmitter {
     }
   }
 
-  update(_step: number): void {}
+  update(_step: number): void {
+    // intentionally empty — the client subclass advances position/angle here for rendering
+  }
 
   updateAngle(step: number): void {
     if (this.angularVelocity) {

@@ -46,7 +46,8 @@ export class BaseRoomConfig extends EventEmitter {
 
   setMaxScore(maxScore: number | string): boolean {
     const parsed = Number.parseInt(String(maxScore), 10);
-    this.maxScore = parsed ? parsed : null;
+    // `||` (not `??`) is deliberate: 0/NaN are invalid max scores too, both fall through to null.
+    this.maxScore = parsed || null;
     return true;
   }
 
@@ -106,7 +107,7 @@ export class BaseRoomConfig extends EventEmitter {
         bonuses.push(bonus);
       }
     }
-    return bonuses.sort();
+    return bonuses.sort((a, b) => a.localeCompare(b));
   }
 
   setBonus(bonus: string, value: unknown): void {

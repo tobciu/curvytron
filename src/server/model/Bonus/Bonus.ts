@@ -19,9 +19,15 @@ export class Bonus extends BaseBonus {
     return null;
   }
 
-  on(): void {}
+  // Lifecycle hooks: default no-ops, overridden by concrete bonus types that
+  // need to do something when the effect starts/ends (most only need getEffects).
+  on(): void {
+    // intentionally empty — override to act when the effect starts
+  }
 
-  off(): void {}
+  off(): void {
+    // intentionally empty — override to act when the effect ends
+  }
 
   applyTo(avatar: unknown, game: unknown): void {
     this.target = this.getTarget(avatar, game);
