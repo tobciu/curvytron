@@ -6,7 +6,6 @@ export interface Profile {
   /** [left, right] key codes (keyboard mapper values). */
   controls: [number, number];
   sound: boolean;
-  radio: boolean;
 }
 
 const KEY = 'curvytron.profile';
@@ -16,7 +15,6 @@ const DEFAULT: Profile = {
   color: '#ff6b6b',
   controls: [37, 39],
   sound: true,
-  radio: false,
 };
 
 function load(): Profile {
