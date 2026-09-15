@@ -101,12 +101,17 @@ Deploy = on the host: `docker compose pull && docker compose up -d` (or a webhoo
 ## Migration checklist
 
 - [x] New multi-stage `Dockerfile` builds locally: `docker build -t curvytron:local .`
-- [ ] Container starts, serves the game on `:8080`, WebSocket connects, a 2-player round
-      plays (the golden rule, in-container) — built + smoke-tested outside Docker; the
-      in-container run is still to be exercised
-- [x] Healthcheck defined (`HEALTHCHECK` in the `Dockerfile`) — not yet observed `healthy`
-      against a running container
-- [x] `docker-compose.yml` switched to a local `build:` + `restart: unless-stopped`
-      (swap to `image:` once a tag has actually been pushed once)
+- [x] Container starts, serves the game on `:8080`, WebSocket connects, a round plays —
+      verified against the actual published image (`docker pull` + `docker run` +
+      played a full round in the browser: warmup → movement → wall crash → kill log →
+      round win → scoreboard, all inside the container)
+- [x] Healthcheck reports `healthy` — observed on the running container
+      (`docker inspect --format='{{.State.Health.Status}}'`)
+- [x] `docker-compose.yml` pulls `image: ghcr.io/tobciu/curvytron:latest`
+      (local `build:` kept as a commented alternative)
 - [x] CI workflow builds, tests and smoke-tests on every push; tag → versioned image push
 - [x] Old `cyrale/curvytron` base and the `RUN gulp` line are gone
+- [x] **First release tagged and published**: `v2.0.0` →
+      [`ghcr.io/tobciu/curvytron:2.0.0`](https://github.com/tobciu/curvytron/pkgs/container/curvytron)
+      (also `:latest`, `:sha-572544c`) — public package, built by the `docker` CI job,
+      pulled and run standalone (no login needed) to verify.

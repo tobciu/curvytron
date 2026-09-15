@@ -168,11 +168,13 @@ Open the Vite URL it prints. The client hot-reloads; the server you restart.
 ### Docker
 
 ```bash
-docker compose up --build      # multi-stage node:24-alpine, serves on :8080
+docker compose up      # pulls ghcr.io/tobciu/curvytron:latest, serves on :8080
 ```
 
-`docker-compose.yml` builds from source today; switch it to `image: …` once CI publishes
-to a registry ([`doc/deployment.md`](doc/deployment.md)).
+The published image: [`ghcr.io/tobciu/curvytron`](https://github.com/tobciu/curvytron/pkgs/container/curvytron)
+(multi-stage `node:24-alpine`, built by CI from a `vX.Y.Z` tag — current: `2.0.0`).
+To build from source instead, see the commented alternative in
+[`docker-compose.yml`](docker-compose.yml) or `docker build -t curvytron:local .`.
 
 ## Configuration
 
