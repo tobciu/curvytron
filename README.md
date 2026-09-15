@@ -1,6 +1,8 @@
 Curvytron
 =========
 
+[![CI](https://github.com/tobciu/curvytron/actions/workflows/ci.yml/badge.svg?branch=modernize)](https://github.com/tobciu/curvytron/actions/workflows/ci.yml)
+
 A web multiplayer *Tron*-like game... **with curves!** Up to dozens of players share a
 room, steer a constantly-moving curve with two keys (or a gamepad / touch), try not to
 crash into a trail, and grab bonuses that speed up, shrink, invert or otherwise mess with
@@ -221,13 +223,18 @@ The modernization (roadmap phases 1–3 + the client rewrite) is **largely done*
   and the `model/*.js` are gone.
 - ✅ Deploy: multi-stage `node:24-alpine` `Dockerfile` (non-root, healthcheck).
 
+- ✅ Sound: `createjs-soundjs` → a small `HTMLAudioElement` player for the
+  death / bonus / win cues; the legacy `radio` feature is dropped.
+- ✅ CI: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — lint, typecheck,
+  `svelte-check`, tests, build, and a smoke test on every push/PR; a tagged
+  release (`vX.Y.Z`) or manual run also builds & pushes the image to GHCR.
+
 Still open:
 
-- **Sound** — `createjs-soundjs` was dropped; a Web Audio replacement for the
-  death / bonus / win cues is pending.
-- **CI** — GitHub Actions to run lint/typecheck/test/build and publish the image.
 - **InfluxDB Inspector + `trackers/*`** — still legacy `.js`, config-gated off; port when needed.
 - **Gamepad input capture** — stubbed (unfinished upstream too); keyboard + touch are live.
+- Deep refresh of `doc/architecture.md` / `rewrite-plan.md` / the roadmap docs for the
+  post-rewrite layout (they still describe the pre-rewrite state in places).
 
 Progress log: [`doc/conversion-notes.md`](doc/conversion-notes.md).
 Contributor-facing notes: [`CLAUDE.md`](CLAUDE.md).

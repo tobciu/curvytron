@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main, modernize]
+    tags: ['v*.*.*']
+  pull_request:
+    branches: [main, modernize]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+      - run: npm run check
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+      - name: Smoke test the built server
+        run: |
+          PORT=8099 node dist-server/main.js &
+          server_pid=$!
+          for i in $(seq 1 20); do
+            if curl -sf http://127.0.0.1:8099/ >/dev/null; then break; fi
+            sleep 0.5
+          done
+          curl -sf http://127.0.0.1:8099/ | grep -qi '<title>Curvytron</title>'
+          curl -sf -o /dev/null http://127.0.0.1:8099/images/bonus.png
+          curl -sf -o /dev/null http://127.0.0.1:8099/sounds/death.mp3
+          kill "$server_pid"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-output
+          path: |
+            dist/
+            dist-server/
+          retention-days: 5
+
+  docker:
+    name: Build & push Docker image
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    # Only for an explicit version tag or a manual run — never on a plain branch push.
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/curvytron
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

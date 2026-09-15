@@ -3,8 +3,10 @@
 **Target:** CI builds a versioned Docker image and pushes it to a registry; the server runs
 it via `docker compose pull && docker compose up -d`. No build toolchain on the deploy host.
 
-Today's `Dockerfile` (`FROM cyrale/curvytron`, global `gulp`) and `docker-compose.yml`
-(`build: .`) are replaced as part of roadmap Phase 1 / rewrite-plan Step 0 and Step 7.
+**Done.** The `Dockerfile` and `docker-compose.yml` below are what's actually in the repo
+(Phase 2 Step 7); CI ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) builds and
+smoke-tests every push, and pushes the image to GHCR on a `vX.Y.Z` tag or manual dispatch.
+The rest of this doc is kept as the design rationale / migration record.
 
 ## Target image — multi-stage `Dockerfile`
 
@@ -81,23 +83,30 @@ services:
 
 ## CI — build & push the image
 
-GitHub Actions (roadmap Phase 5), on push to `main`/`modernize` and on tags:
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml), two jobs:
 
-- `docker/setup-buildx-action` + `docker/build-push-action`
-- Tags: `ghcr.io/tobciu/curvytron:latest`, `:<git-sha>`, and `:<semver>` on release tags
-- Push to **GHCR** (`GITHUB_TOKEN` has package write) or Docker Hub
-- Cache via `type=gha`
-- Gate the image build on `lint` + `test` + a headless smoke test passing first
+- `build-and-test` — every push/PR to `main`/`modernize`: `npm ci`, typecheck,
+  `svelte-check`, lint, Vitest, `npm run build`, then a smoke test (start
+  `dist-server/main.js`, curl `/` for the `<title>`, an image, a sound file).
+  Uploads `dist/` + `dist-server/` as a build artifact.
+- `docker` (needs `build-and-test` to pass) — only on a `vX.Y.Z` tag push or a manual
+  `workflow_dispatch`, **not** on a plain branch push: `docker/setup-buildx-action` +
+  `docker/build-push-action`, tags `ghcr.io/tobciu/curvytron:{latest,<sha>,<semver>}`
+  (`docker/metadata-action`), push to **GHCR** with the built-in `GITHUB_TOKEN`
+  (`permissions: packages: write`), layer cache via `type=gha`.
 
 Deploy = on the host: `docker compose pull && docker compose up -d` (or a webhook /
-`watchtower` / a small deploy workflow over SSH).
+`watchtower` / a small deploy workflow over SSH) — not yet automated.
 
 ## Migration checklist
 
-- [ ] New multi-stage `Dockerfile` builds locally: `docker build -t curvytron:local .`
+- [x] New multi-stage `Dockerfile` builds locally: `docker build -t curvytron:local .`
 - [ ] Container starts, serves the game on `:8080`, WebSocket connects, a 2-player round
-      plays (the golden rule, in-container)
-- [ ] Healthcheck reports `healthy`
-- [ ] `docker-compose.yml` switched to `image:` + `restart: unless-stopped`
-- [ ] CI workflow builds and pushes on merge; tag → versioned image
-- [ ] Old `cyrale/curvytron` base and the `RUN gulp` line are gone
+      plays (the golden rule, in-container) — built + smoke-tested outside Docker; the
+      in-container run is still to be exercised
+- [x] Healthcheck defined (`HEALTHCHECK` in the `Dockerfile`) — not yet observed `healthy`
+      against a running container
+- [x] `docker-compose.yml` switched to a local `build:` + `restart: unless-stopped`
+      (swap to `image:` once a tag has actually been pushed once)
+- [x] CI workflow builds, tests and smoke-tests on every push; tag → versioned image push
+- [x] Old `cyrale/curvytron` base and the `RUN gulp` line are gone

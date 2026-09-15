@@ -47,6 +47,9 @@ Everything is npm scripts ([`package.json`](package.json)). Node **>= 24**.
 
 Local dev loop: `npm start` in one shell, `npm run dev:client` in another, open the Vite URL.
 Green gate before committing: `npm run typecheck && npm run check && npm run lint && npm test && npm run build`.
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs the same gate + a server
+smoke test on every push/PR; a `vX.Y.Z` tag or manual dispatch also builds & pushes the
+Docker image to GHCR.
 
 - **Build outputs are git-ignored** (`dist/`, `dist-server/`, `stats/`, `coverage/`). Never commit them.
 - `config.json` (git-ignored) is optional; [`src/server/main.ts`](src/server/main.ts) `loadConfig()`

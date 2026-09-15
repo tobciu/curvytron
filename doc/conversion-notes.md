@@ -100,7 +100,8 @@ off) — port them if metrics are wanted.
   still present, deleted in Step 7.
 - **Steps 2–7** ✅ typed socket layer + stores → shell + routing → screen migration →
   canvas game → sound → delete AngularJS + modern Dockerfile (detail below).
-  Remaining: CI workflow; deep `doc/*.md` refresh; the deferred trackers/Inspector.
+  **CI** ✅ ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)).
+  Remaining: deep `doc/*.md` refresh; the deferred trackers/Inspector; gamepad input.
 
 - **Step 2** ✅ typed socket layer + first stores:
   `lib/socket/{events.ts, client.ts}` (typed `ServerToClient`/`ClientToServer`
@@ -162,3 +163,16 @@ off) — port them if metrics are wanted.
     (InfluxDB, config-gated off) — ignored by tsc/eslint.
   - Verified: `npm run build` from a clean tree, then `node dist-server/main.js`
     serves the built client on `dist/` (index / assets / images all 200).
+- **CI** ✅ `.github/workflows/ci.yml`:
+  - `build-and-test` (every push/PR to `main`/`modernize`) — `npm ci`, typecheck,
+    `svelte-check`, lint, Vitest, `npm run build`, then a smoke test: boot
+    `dist-server/main.js`, curl `/` for the `<title>`, an image, a sound file.
+    Uploads `dist/`/`dist-server/` as a build artifact.
+  - `docker` (needs `build-and-test`, only on a `vX.Y.Z` tag push or manual
+    dispatch — never a plain branch push) — `docker/build-push-action` to
+    `ghcr.io/<owner>/curvytron` with `latest`/`<sha>`/`<semver>` tags via
+    `docker/metadata-action`, `GITHUB_TOKEN` (no extra secrets), `type=gha` cache.
+  - Verified locally: ran the exact smoke-test commands against a local build —
+    title match + `images/bonus.png` + `sounds/death.mp3` both 200.
+  - Not yet exercised: an actual GitHub Actions run (needs a push to see it green),
+    and the `docker` job (needs a version tag).
