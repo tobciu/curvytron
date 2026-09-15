@@ -10,6 +10,7 @@ export default tseslint.config(
       'dist-server/',
       'node_modules/',
       'web/',
+      'coverage/',
       'doc/reference-build/',
       // Svelte files — no eslint-plugin-svelte yet; type-checked by svelte-check.
       'src/client/**/*.svelte',

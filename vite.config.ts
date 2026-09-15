@@ -32,5 +32,11 @@ export default defineConfig({
     root: r('.'),
     include: ['src/{shared,server}/**/*.{test,spec}.ts'],
     environment: 'node',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['src/shared/**/*.ts', 'src/server/**/*.ts'],
+      exclude: ['**/*.test.ts'],
+    },
   },
 });
