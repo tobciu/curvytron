@@ -22,7 +22,7 @@ export class FloodFilter {
     let history = 0;
 
     for (let i = this.messages.length - 1; i >= 0; i--) {
-      const message = this.messages[i]!;
+      const message = this.messages[i];
 
       if (message.client.id === id) {
         history++;

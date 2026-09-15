@@ -1,5 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
-import { BaseAvatar, type AvatarPlayer } from './BaseAvatar.ts';
+import { BaseAvatar } from './BaseAvatar.ts';
 
 export interface PlayerClient {
   id: string | number;
@@ -47,12 +47,12 @@ export class BasePlayer extends EventEmitter {
   }
 
   toggleReady(toggle?: boolean): void {
-    this.ready = typeof toggle !== 'undefined' ? (toggle ? true : false) : !this.ready;
+    this.ready = typeof toggle !== 'undefined' ? (!!toggle) : !this.ready;
   }
 
   getAvatar(): BaseAvatar {
     if (!this.avatar) {
-      this.avatar = new (this.constructor as typeof BasePlayer).AvatarClass(this as unknown as AvatarPlayer);
+      this.avatar = new (this.constructor as typeof BasePlayer).AvatarClass(this);
     }
     return this.avatar;
   }
@@ -99,14 +99,14 @@ export class BasePlayer extends EventEmitter {
 
     if (matches && yiq) {
       const ratio =
-        (parseInt(matches[1]!, 16) * 0.4 +
-          parseInt(matches[2]!, 16) * 0.5 +
-          parseInt(matches[3]!, 16) * 0.3) /
+        (parseInt(matches[1], 16) * 0.4 +
+          parseInt(matches[2], 16) * 0.5 +
+          parseInt(matches[3], 16) * 0.3) /
         255;
 
       return ratio > 0.3;
     }
 
-    return matches ? true : false;
+    return !!matches;
   }
 }

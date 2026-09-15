@@ -159,17 +159,17 @@ export class BaseAvatar extends EventEmitter {
 
   setInverse(inverse: boolean): void {
     if (this.inverse !== inverse) {
-      this.inverse = inverse ? true : false;
+      this.inverse = !!inverse;
       this.updateAngularVelocity();
     }
   }
 
   setInvincible(invincible: boolean): void {
-    this.invincible = invincible ? true : false;
+    this.invincible = !!invincible;
   }
 
   setGhost(ghost: boolean): void {
-    this.ghost = ghost ? true : false;
+    this.ghost = !!ghost;
   }
 
   getDistance(fromX: number, fromY: number, toX: number, toY: number): number {
@@ -183,7 +183,7 @@ export class BaseAvatar extends EventEmitter {
   }
 
   setPrinting(printing: boolean): void {
-    printing = printing ? true : false;
+    printing = !!printing;
 
     if (this.printing !== printing) {
       this.printing = printing;

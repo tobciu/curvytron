@@ -49,15 +49,15 @@ export class PlayerInput extends EventEmitter {
 
     for (let i = e.touches.length - 1; i >= 0; i--) {
       for (let t = tests.length - 1; t >= 0; t--) {
-        const x = e.touches[i]!.screenX;
-        if (tests[t]!.index === 0 ? x < center : x >= center) {
-          tests[t]!.result = true;
+        const x = e.touches[i].screenX;
+        if (tests[t].index === 0 ? x < center : x >= center) {
+          tests[t].result = true;
         }
       }
     }
 
     for (let i = tests.length - 1; i >= 0; i--) {
-      this.setActive(tests[i]!.index, tests[i]!.result);
+      this.setActive(tests[i].index, tests[i].result);
     }
   };
 
@@ -108,12 +108,12 @@ export class PlayerInput extends EventEmitter {
       return 'touch';
     }
     const matches = /^(gamepad:(\d+):(button|axis):(\d+))/.exec(String(binding));
-    return matches ? matches[1]! : 'keyboard';
+    return matches ? matches[1] : 'keyboard';
   }
 
   setActive(index: number, pressed: boolean): void {
     if (this.active[index] !== pressed) {
-      this.active[index] = pressed as never;
+      this.active[index] = pressed;
       this.resolve();
     }
   }

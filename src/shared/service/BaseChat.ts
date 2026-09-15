@@ -41,7 +41,7 @@ export class BaseChat extends EventEmitter {
     const messages = new Array<unknown>(length);
 
     for (let i = length - 1; i >= min; i--) {
-      messages[i] = this.messages.items[i]!.serialize();
+      messages[i] = this.messages.items[i].serialize();
     }
 
     return messages;

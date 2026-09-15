@@ -52,7 +52,7 @@ export class BonusManager extends BaseBonusManager {
   onLoad(): void {
     const images = this.sprite.getImages();
     for (let i = BonusManager.spritePosition.length - 1; i >= 0; i--) {
-      this.assets[BonusManager.spritePosition[i]!] = images[i]!;
+      this.assets[BonusManager.spritePosition[i]] = images[i]!;
     }
     this.loaded = true;
     this.emit('load');
@@ -74,14 +74,14 @@ export class BonusManager extends BaseBonusManager {
     }
 
     for (let i = this.bonuses.items.length - 1; i >= 0; i--) {
-      const bonus = this.bonuses.items[i]!;
+      const bonus = this.bonuses.items[i];
       if (!bonus.animation.done && bonus.drawWidth) {
         this.clearBonus(bonus);
       }
     }
 
     for (let i = this.bonuses.items.length - 1; i >= 0; i--) {
-      const bonus = this.bonuses.items[i]!;
+      const bonus = this.bonuses.items[i];
       if (!bonus.animation.done) {
         bonus.update();
         this.drawBonus(bonus);

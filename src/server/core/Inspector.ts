@@ -151,7 +151,7 @@ export class Inspector {
     this.trackers.game.add(tracker);
 
     for (let i = game.avatars.items.length - 1; i >= 0; i--) {
-      const avatar = game.avatars.items[i]!;
+      const avatar = game.avatars.items[i];
       // `BaseAvatar.player` is typed narrowly (id/name/color); the server Player has `.client` too.
       const clientId = (avatar.player as any).client.id as string | number;
       const clientTracker = this.trackers.client.getById(String(clientId));

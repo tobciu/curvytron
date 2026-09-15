@@ -82,13 +82,13 @@ export class KickManager extends EventEmitter {
   updateVotes(): void {
     const total = this.getTotalClients();
     for (let i = this.votes.items.length - 1; i >= 0; i--) {
-      this.votes.items[i]!.setTotal(total);
+      this.votes.items[i].setTotal(total);
     }
   }
 
   clear(): void {
     for (let i = this.votes.items.length - 1; i >= 0; i--) {
-      this.votes.items[i]!.removeListener('close', this.onVoteClose);
+      this.votes.items[i].removeListener('close', this.onVoteClose);
     }
     this.votes.clear();
   }

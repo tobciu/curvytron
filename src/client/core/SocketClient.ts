@@ -1,4 +1,4 @@
-import { BaseSocketClient, type SocketLike } from '@shared/core/BaseSocketClient.ts';
+import { BaseSocketClient } from '@shared/core/BaseSocketClient.ts';
 
 /** Browser socket client: opens a WebSocket, buffers sends until OPEN, does the `whoami` handshake. */
 export class SocketClient extends BaseSocketClient {
@@ -8,9 +8,8 @@ export class SocketClient extends BaseSocketClient {
 
   constructor(url?: string) {
     const ws = new WebSocket(url ?? SocketClient.defaultUrl(), ['websocket']);
-    // A native WebSocket satisfies SocketLike at runtime (send / add/removeEventListener,
-    // MessageEvent.data). TS just can't line up the event types.
-    super(ws as unknown as SocketLike);
+    // A native WebSocket satisfies SocketLike structurally (send / add/removeEventListener).
+    super(ws);
     this.ws = ws;
 
     this.ws.addEventListener('open', () => this.onOpen());

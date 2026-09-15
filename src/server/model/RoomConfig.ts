@@ -43,7 +43,7 @@ export class RoomConfig extends BaseRoomConfig {
     BonusLeaderInverse,
     BonusLeaderSlow,
     BonusSelfBorderless,
-  } as unknown as Record<string, ServerBonusClass>;
+  };
 
   setOpen(open: boolean): boolean {
     if (this.open !== open) {
@@ -60,7 +60,7 @@ export class RoomConfig extends BaseRoomConfig {
     const bonuses: ServerBonusClass[] = [];
     for (const bonus in this.bonuses) {
       if (this.bonuses[bonus] && this.bonusTypes[bonus]) {
-        bonuses.push(this.bonusTypes[bonus]!);
+        bonuses.push(this.bonusTypes[bonus]);
       }
     }
     // typed as string[] on the base for BaseGame's sake; the array actually holds classes.

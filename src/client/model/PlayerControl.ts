@@ -31,7 +31,7 @@ export class PlayerControl extends EventEmitter {
     mapper.id = id;
     mapper.on('change', () => this.setMapper(mapper as Mapper & { id: string }));
     mapper.on('listening:stop', this.stop);
-    this.mappers.add(mapper as Mapper & { id: string });
+    this.mappers.add(mapper);
   }
 
   setMapper(mapper: Mapper & { id: string }): void {
@@ -47,7 +47,7 @@ export class PlayerControl extends EventEmitter {
     const mapper = this.mappers.getById(mapping.mapper);
     if (mapper) {
       this.setMapper(mapper);
-      this.mapper.setValue(mapping.value as never);
+      this.mapper.setValue(mapping.value);
     }
   }
 
@@ -61,13 +61,13 @@ export class PlayerControl extends EventEmitter {
 
   start(): void {
     for (let i = this.mappers.items.length - 1; i >= 0; i--) {
-      this.mappers.items[i]!.start();
+      this.mappers.items[i].start();
     }
   }
 
   stop(): void {
     for (let i = this.mappers.items.length - 1; i >= 0; i--) {
-      this.mappers.items[i]!.stop();
+      this.mappers.items[i].stop();
     }
   }
 }

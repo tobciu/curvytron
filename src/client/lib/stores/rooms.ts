@@ -1,4 +1,4 @@
-import { writable, type Readable } from 'svelte/store';
+import { writable } from 'svelte/store';
 import { RoomListItem } from '../../model/RoomListItem.ts';
 import { socket } from '../socket/client.ts';
 import type { ServerToClient } from '../socket/events.ts';
@@ -38,7 +38,7 @@ function createRoomsStore() {
   };
 
   return {
-    subscribe: store.subscribe as Readable<RoomListItem[]>['subscribe'],
+    subscribe: store.subscribe,
     /** Start syncing + ask the server for the current list. */
     start() {
       if (attached) {

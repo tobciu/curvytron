@@ -73,7 +73,7 @@ export class RoomsController extends EventEmitter {
   emitAllRooms(client: SocketClient): void {
     const events: any[] = [];
     for (let i = this.repository.rooms.items.length - 1; i >= 0; i--) {
-      events.push(['room:open', this.repository.rooms.items[i]!.serialize(false)]);
+      events.push(['room:open', this.repository.rooms.items[i].serialize(false)]);
     }
     client.addEvents(events);
   }

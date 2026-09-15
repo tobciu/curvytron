@@ -42,7 +42,7 @@ export class BonusStack extends BaseBonusStack {
 
   override clear(): void {
     for (let i = this.bonuses.items.length - 1; i >= 0; i--) {
-      this.bonuses.items[i]!.clear();
+      this.bonuses.items[i].clear();
     }
     super.clear();
     this.updateDimensions();
@@ -65,7 +65,7 @@ export class BonusStack extends BaseBonusStack {
     const w = BonusStack.bonusWidth;
 
     for (let i = this.bonuses.items.length - 1; i >= 0; i--) {
-      const bonus = this.bonuses.items[i]!;
+      const bonus = this.bonuses.items[i];
       if (this.changed || bonus.changed) {
         const x = i * w;
         if (!this.changed) {

@@ -4,7 +4,7 @@ import { BaseBonusStack, type BonusEffectValue } from '@shared/model/BaseBonusSt
 export class GameBonusStack extends BaseBonusStack<any> {
   override apply(property: string, value: BonusEffectValue): void {
     if (property === 'borderless') {
-      this.target.setBorderless(value ? true : false);
+      this.target.setBorderless(!!value);
     } else {
       super.apply(property, value);
     }

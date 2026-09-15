@@ -42,7 +42,7 @@ export class Game extends BaseGame {
     this.draw = this.draw.bind(this);
 
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
-      this.avatars.items[i]!.on('die', this.onDie);
+      this.avatars.items[i].on('die', this.onDie);
     }
   }
 
@@ -69,7 +69,7 @@ export class Game extends BaseGame {
     this.bonusManager.setDimension(width, scale);
 
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
-      const avatar = this.avatars.items[i]!;
+      const avatar = this.avatars.items[i];
       avatar.setScale(scale);
       avatar.input?.setWidth(window.innerWidth);
     }
@@ -79,14 +79,12 @@ export class Game extends BaseGame {
   }
 
   override newFrame(): void {
-    this.frame = window.requestAnimationFrame(this.loop) as unknown as ReturnType<
-      typeof setTimeout
-    >;
+    this.frame = window.requestAnimationFrame(this.loop);
   }
 
   override clearFrame(): void {
     if (this.frame) {
-      window.cancelAnimationFrame(this.frame as unknown as number);
+      window.cancelAnimationFrame(this.frame);
     }
     this.frame = null;
   }
@@ -145,7 +143,7 @@ export class Game extends BaseGame {
     }
 
     for (let a = this.animations.length - 1; a >= 0; a--) {
-      const animation = this.animations[a]!;
+      const animation = this.animations[a];
       animation.draw();
       if (animation.done && animation.cleared) {
         this.animations.splice(a, 1);
@@ -153,7 +151,7 @@ export class Game extends BaseGame {
     }
 
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
-      const avatar = this.avatars.items[i]!;
+      const avatar = this.avatars.items[i];
       if (avatar.present && (avatar.alive || avatar.changed)) {
         this.clearAvatar(avatar);
         this.clearBonusStack(avatar);
@@ -161,7 +159,7 @@ export class Game extends BaseGame {
     }
 
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
-      const avatar = this.avatars.items[i]!;
+      const avatar = this.avatars.items[i];
       if (avatar.present && (avatar.alive || avatar.changed)) {
         if (avatar.alive) {
           avatar.update(this.frame ? (step ?? 0) : 0);

@@ -11,25 +11,25 @@ export class SocketGroup {
 
   on(name: string, callback: (...args: any[]) => void): void {
     for (let i = this.clients.items.length - 1; i >= 0; i--) {
-      this.clients.items[i]!.on(name, callback);
+      this.clients.items[i].on(name, callback);
     }
   }
 
   removeListener(name: string, callback: (...args: any[]) => void): void {
     for (let i = this.clients.items.length - 1; i >= 0; i--) {
-      this.clients.items[i]!.removeListener(name, callback);
+      this.clients.items[i].removeListener(name, callback);
     }
   }
 
   addEvents(events: any[], force?: boolean): void {
     for (let i = this.clients.items.length - 1; i >= 0; i--) {
-      this.clients.items[i]!.addEvents(events, force);
+      this.clients.items[i].addEvents(events, force);
     }
   }
 
   addEvent(name: string, data?: any, callback?: any, force?: boolean): void {
     for (let i = this.clients.items.length - 1; i >= 0; i--) {
-      this.clients.items[i]!.addEvent(name, data, callback, force);
+      this.clients.items[i].addEvent(name, data, callback, force);
     }
   }
 }

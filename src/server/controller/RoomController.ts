@@ -152,30 +152,30 @@ export class RoomController extends EventEmitter {
   }
 
   attachEvents(client: SocketClient): void {
-    client.on('close', this.callbacks.onLeave!);
-    client.on('activity', this.callbacks.onActivity!);
-    client.on('room:leave', this.callbacks.onLeave!);
-    client.on('room:talk', this.callbacks.onTalk!);
-    client.on('player:add', this.callbacks.onPlayerAdd!);
-    client.on('player:remove', this.callbacks.onPlayerRemove!);
-    client.on('player:kick', this.callbacks.onKickVote!);
-    client.on('room:ready', this.callbacks.onReady!);
-    client.on('room:color', this.callbacks.onColor!);
-    client.on('room:name', this.callbacks.onName!);
+    client.on('close', this.callbacks.onLeave);
+    client.on('activity', this.callbacks.onActivity);
+    client.on('room:leave', this.callbacks.onLeave);
+    client.on('room:talk', this.callbacks.onTalk);
+    client.on('player:add', this.callbacks.onPlayerAdd);
+    client.on('player:remove', this.callbacks.onPlayerRemove);
+    client.on('player:kick', this.callbacks.onKickVote);
+    client.on('room:ready', this.callbacks.onReady);
+    client.on('room:color', this.callbacks.onColor);
+    client.on('room:name', this.callbacks.onName);
     client.on('players:clear', this.onPlayersClear);
   }
 
   detachEvents(client: SocketClient): void {
-    client.removeListener('close', this.callbacks.onLeave!);
-    client.removeListener('activity', this.callbacks.onActivity!);
-    client.removeListener('room:leave', this.callbacks.onLeave!);
-    client.removeListener('room:talk', this.callbacks.onTalk!);
-    client.removeListener('player:add', this.callbacks.onPlayerAdd!);
-    client.removeListener('player:remove', this.callbacks.onPlayerRemove!);
-    client.removeListener('player:kick', this.callbacks.onKickVote!);
-    client.removeListener('room:ready', this.callbacks.onReady!);
-    client.removeListener('room:color', this.callbacks.onColor!);
-    client.removeListener('room:name', this.callbacks.onName!);
+    client.removeListener('close', this.callbacks.onLeave);
+    client.removeListener('activity', this.callbacks.onActivity);
+    client.removeListener('room:leave', this.callbacks.onLeave);
+    client.removeListener('room:talk', this.callbacks.onTalk);
+    client.removeListener('player:add', this.callbacks.onPlayerAdd);
+    client.removeListener('player:remove', this.callbacks.onPlayerRemove);
+    client.removeListener('player:kick', this.callbacks.onKickVote);
+    client.removeListener('room:ready', this.callbacks.onReady);
+    client.removeListener('room:color', this.callbacks.onColor);
+    client.removeListener('room:name', this.callbacks.onName);
     client.removeListener('players:clear', this.onPlayersClear);
   }
 
@@ -207,11 +207,11 @@ export class RoomController extends EventEmitter {
       this.roomMaster = client;
       this.roomMaster.on('close', this.removeRoomMaster);
       this.roomMaster.on('room:leave', this.removeRoomMaster);
-      this.roomMaster.on('room:config:open', this.callbacks.onConfigOpen!);
-      this.roomMaster.on('room:config:max-score', this.callbacks.onConfigMaxScore!);
-      this.roomMaster.on('room:config:variable', this.callbacks.onConfigVariable!);
-      this.roomMaster.on('room:config:bonus', this.callbacks.onConfigBonus!);
-      this.roomMaster.on('room:launch', this.callbacks.onLaunch!);
+      this.roomMaster.on('room:config:open', this.callbacks.onConfigOpen);
+      this.roomMaster.on('room:config:max-score', this.callbacks.onConfigMaxScore);
+      this.roomMaster.on('room:config:variable', this.callbacks.onConfigVariable);
+      this.roomMaster.on('room:config:bonus', this.callbacks.onConfigBonus);
+      this.roomMaster.on('room:launch', this.callbacks.onLaunch);
       this.socketGroup.addEvent('room:master', { client: client.id });
     }
   }
@@ -220,11 +220,11 @@ export class RoomController extends EventEmitter {
     if (this.roomMaster) {
       this.roomMaster.removeListener('close', this.removeRoomMaster);
       this.roomMaster.removeListener('room:leave', this.removeRoomMaster);
-      this.roomMaster.removeListener('room:config:open', this.callbacks.onConfigOpen!);
-      this.roomMaster.removeListener('room:config:max-score', this.callbacks.onConfigMaxScore!);
-      this.roomMaster.removeListener('room:config:variable', this.callbacks.onConfigVariable!);
-      this.roomMaster.removeListener('room:config:bonus', this.callbacks.onConfigBonus!);
-      this.roomMaster.removeListener('room:launch', this.callbacks.onLaunch!);
+      this.roomMaster.removeListener('room:config:open', this.callbacks.onConfigOpen);
+      this.roomMaster.removeListener('room:config:max-score', this.callbacks.onConfigMaxScore);
+      this.roomMaster.removeListener('room:config:variable', this.callbacks.onConfigVariable);
+      this.roomMaster.removeListener('room:config:bonus', this.callbacks.onConfigBonus);
+      this.roomMaster.removeListener('room:launch', this.callbacks.onLaunch);
       this.roomMaster = null;
       this.nominateRoomMaster();
     }
@@ -339,7 +339,7 @@ export class RoomController extends EventEmitter {
       this.removePlayer(player);
       this.emit('player:remove', { room: this.room, player });
     }
-    callback({ success: player ? true : false });
+    callback({ success: !!player });
   }
 
   onTalk(client: SocketClient, content: string, callback: (r: any) => void): void {

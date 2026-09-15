@@ -33,7 +33,7 @@ export class Game extends BaseGame {
     this.onPoint = this.onPoint.bind(this);
 
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
-      const avatar = this.avatars.items[i]!;
+      const avatar = this.avatars.items[i];
       avatar.clear();
       avatar.on('point', this.onPoint);
     }
@@ -44,7 +44,7 @@ export class Game extends BaseGame {
     this.deathInFrame = false;
 
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
-      const avatar = this.avatars.items[i]!;
+      const avatar = this.avatars.items[i];
 
       if (avatar.alive) {
         avatar.update(_step);
@@ -123,7 +123,7 @@ export class Game extends BaseGame {
 
     this.sortAvatars(players);
 
-    return players.items[0]!.score === players.items[1]!.score ? null : players.getFirst();
+    return players.items[0].score === players.items[1].score ? null : players.getFirst();
   }
 
   checkRoundEnd(): void {
@@ -133,7 +133,7 @@ export class Game extends BaseGame {
 
     let alive = false;
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
-      if (this.avatars.items[i]!.alive) {
+      if (this.avatars.items[i].alive) {
         if (!alive) {
           alive = true;
         } else {
@@ -162,7 +162,7 @@ export class Game extends BaseGame {
     }
 
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
-      this.avatars.items[i]!.resolveScore();
+      this.avatars.items[i].resolveScore();
     }
   }
 
@@ -196,7 +196,7 @@ export class Game extends BaseGame {
     const scoreLeader = this.sortAvatars(this.avatars).getFirst()!.score;
 
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
-      const avatar = this.avatars.items[i]!;
+      const avatar = this.avatars.items[i];
       if (avatar.present) {
         const position = this.world.getRandomPosition(avatar.radius, BaseGame.spawnMargin);
         avatar.setPosition(position[0], position[1]);
@@ -216,7 +216,7 @@ export class Game extends BaseGame {
     this.emit('game:start', { game: this });
 
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
-      setTimeout(this.avatars.items[i]!.printManager.start, 3000);
+      setTimeout(this.avatars.items[i].printManager.start, 3000);
     }
 
     this.world.activate();

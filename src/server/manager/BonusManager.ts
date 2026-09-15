@@ -127,12 +127,12 @@ export class BonusManager extends BaseBonusManager {
     const bonuses: ServerBonusClass[] = [];
 
     for (let i = 0; i < total; i++) {
-      const bonusType = this.bonusTypes[i]!;
+      const bonusType = this.bonusTypes[i];
       const probability = bonusType.getProbability(this.game);
 
       if (probability > 0) {
         bonuses.push(bonusType);
-        pot.push(probability + (i > 0 ? pot[pot.length - 1]! : 0));
+        pot.push(probability + (i > 0 ? pot[pot.length - 1] : 0));
       }
     }
 
@@ -140,11 +140,11 @@ export class BonusManager extends BaseBonusManager {
       return null;
     }
 
-    const value = Math.random() * pot[pot.length - 1]!;
+    const value = Math.random() * pot[pot.length - 1];
 
     for (let i = 0; i < pot.length; i++) {
-      if (value < pot[i]!) {
-        return bonuses[i]!;
+      if (value < pot[i]) {
+        return bonuses[i];
       }
     }
 

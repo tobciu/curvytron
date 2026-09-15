@@ -17,7 +17,7 @@ export class Collection<T = any> {
 
     if (items) {
       for (let i = items.length - 1; i >= 0; i--) {
-        this.add(items[i] as T);
+        this.add(items[i]);
       }
     }
   }
@@ -114,11 +114,11 @@ export class Collection<T = any> {
   getById(id: string | number): T | null {
     const index = this.ids.indexOf(id);
 
-    return index >= 0 ? (this.items[index] as T) : null;
+    return index >= 0 ? (this.items[index]) : null;
   }
 
   getByIndex(index: number): T | null {
-    return typeof this.items[index] !== 'undefined' ? (this.items[index] as T) : null;
+    return typeof this.items[index] !== 'undefined' ? (this.items[index]) : null;
   }
 
   exists(element: T): boolean {
@@ -133,7 +133,7 @@ export class Collection<T = any> {
     const elements: R[] = [];
 
     for (let i = this.items.length - 1; i >= 0; i--) {
-      elements.push(callable.call(this.items[i] as T));
+      elements.push(callable.call(this.items[i]));
     }
 
     return new Collection<R>(elements, this.key, this.index);
@@ -143,8 +143,8 @@ export class Collection<T = any> {
     const elements: T[] = [];
 
     for (let i = this.items.length - 1; i >= 0; i--) {
-      if (callable.call(this.items[i] as T)) {
-        elements.push(this.items[i] as T);
+      if (callable.call(this.items[i])) {
+        elements.push(this.items[i]);
       }
     }
 
@@ -155,8 +155,8 @@ export class Collection<T = any> {
     const length = this.items.length;
 
     for (let i = 0; i < length; i++) {
-      if (callable.call(this.items[i] as T)) {
-        return this.items[i] as T;
+      if (callable.call(this.items[i])) {
+        return this.items[i];
       }
     }
 
@@ -165,7 +165,7 @@ export class Collection<T = any> {
 
   walk(callable: (this: T) => void): void {
     for (let i = this.items.length - 1; i >= 0; i--) {
-      callable.call(this.items[i] as T);
+      callable.call(this.items[i]);
     }
   }
 
@@ -174,15 +174,15 @@ export class Collection<T = any> {
       return null;
     }
 
-    return this.items[Math.floor(Math.random() * this.items.length)] as T;
+    return this.items[Math.floor(Math.random() * this.items.length)];
   }
 
   getFirst(): T | null {
-    return this.items.length > 0 ? (this.items[0] as T) : null;
+    return this.items.length > 0 ? (this.items[0]) : null;
   }
 
   getLast(): T | null {
-    return this.items.length > 0 ? (this.items[this.items.length - 1] as T) : null;
+    return this.items.length > 0 ? (this.items[this.items.length - 1]) : null;
   }
 
   sort(callable: (a: T, b: T) => number): void {
@@ -194,7 +194,7 @@ export class Collection<T = any> {
     const ids = new Array(this.items.length);
 
     for (let i = this.items.length - 1; i >= 0; i--) {
-      ids[i] = this.prop(this.items[i] as T);
+      ids[i] = this.prop(this.items[i]);
     }
 
     this.ids = ids;

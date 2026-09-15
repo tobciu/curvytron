@@ -10,13 +10,26 @@ export default tseslint.config(
       'node_modules/',
       'web/',
       'doc/reference-build/',
-      // Svelte client — type-checked by svelte-check (no eslint-plugin-svelte yet).
-      'src/client/',
+      // Svelte files — no eslint-plugin-svelte yet; type-checked by svelte-check.
+      'src/client/**/*.svelte',
     ],
   },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,
+
+  {
+    // Type-aware linting (needed for rules like no-unnecessary-type-assertion).
+    // projectService auto-discovers the nearest tsconfig.json per file.
+    languageOptions: {
+      parserOptions: {
+        projectService: {
+          allowDefaultProject: ['*.config.{js,ts,mjs}', 'svelte.config.js'],
+        },
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
 
   {
     // Node context: server code, build scripts, config files.
@@ -33,7 +46,7 @@ export default tseslint.config(
     // Rules carried over from the legacy .jshintrc.
     rules: {
       quotes: ['warn', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
-      eqeqeq: ['warn', 'always'],
+      eqeqeq: ['warn', 'always', { null: 'ignore' }], // `x == null` / `x != null` (null-or-undefined) stays
       curly: ['warn', 'all'],
       camelcase: ['warn', { properties: 'never' }],
       'no-var': 'warn',
@@ -41,6 +54,9 @@ export default tseslint.config(
       'prefer-const': 'warn',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      // SonarQube parity — these mirror rules SonarQube's analyzer also flags.
+      '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+      'no-unneeded-ternary': 'warn',
     },
   },
 );

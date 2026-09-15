@@ -57,7 +57,7 @@ export class GameController {
     this.game.bonusManager.on('bonus:clear', this.onBonusClear);
 
     for (let i = (this.game.room as any).controller.clients.items.length - 1; i >= 0; i--) {
-      this.attach((this.game.room as any).controller.clients.items[i]!);
+      this.attach((this.game.room as any).controller.clients.items[i]);
     }
 
     this.waiting = setTimeout(this.stopWaiting, GameController.waitingTime);
@@ -76,7 +76,7 @@ export class GameController {
     this.game.bonusManager.removeListener('bonus:clear', this.onBonusClear);
 
     for (let i = this.clients.items.length - 1; i >= 0; i--) {
-      this.detach(this.clients.items[i]!);
+      this.detach(this.clients.items[i]);
     }
   }
 
@@ -159,7 +159,7 @@ export class GameController {
         'spectate',
         {
           inRound: this.game.inRound,
-          rendered: this.game.rendered ? true : false,
+          rendered: !!this.game.rendered,
           maxScore: this.game.maxScore,
         },
       ],
@@ -174,7 +174,7 @@ export class GameController {
       for (const property in properties) {
         events.push([
           'property',
-          { avatar: avatar.id, property, value: avatar[properties[property]!] },
+          { avatar: avatar.id, property, value: avatar[properties[property]] },
         ]);
       }
       if (!avatar.alive) {

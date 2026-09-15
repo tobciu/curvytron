@@ -173,9 +173,9 @@ export class Canvas {
       this.context.strokeStyle = color;
       this.context.lineWidth = width;
       this.context.beginPath();
-      this.context.moveTo(points[0]![0], points[0]![1]);
+      this.context.moveTo(points[0][0], points[0][1]);
       for (let i = 1; i < points.length; i++) {
-        this.context.lineTo(points[i]![0], points[i]![1]);
+        this.context.lineTo(points[i][0], points[i][1]);
       }
       this.context.stroke();
     }
@@ -187,9 +187,9 @@ export class Canvas {
       this.context.strokeStyle = color;
       this.context.lineWidth = width * this.scale;
       this.context.beginPath();
-      this.context.moveTo(points[0]![0] * this.scale, points[0]![1] * this.scale);
+      this.context.moveTo(points[0][0] * this.scale, points[0][1] * this.scale);
       for (let i = 1; i < points.length; i++) {
-        this.context.lineTo(points[i]![0] * this.scale, points[i]![1] * this.scale);
+        this.context.lineTo(points[i][0] * this.scale, points[i][1] * this.scale);
       }
       this.context.stroke();
     }

@@ -144,7 +144,7 @@ export class Avatar extends BaseAvatar {
     this.arrow.clear();
 
     for (let i = arrowLines.length - 1; i >= 0; i--) {
-      this.arrow.drawLine(arrowLines[i]!, (s * Avatar.arrowWidth) / 100, this.color, 'round');
+      this.arrow.drawLine(arrowLines[i], (s * Avatar.arrowWidth) / 100, this.color, 'round');
     }
   }
 
@@ -174,7 +174,7 @@ export class Avatar extends BaseAvatar {
 
   /** Generic `set<Property>` dispatch used by the `property` wire event. */
   set(property: string, value: unknown): void {
-    const method = 'set' + property[0]!.toUpperCase() + property.slice(1);
+    const method = 'set' + property[0].toUpperCase() + property.slice(1);
     const fn = (this as unknown as Record<string, unknown>)[method];
     if (typeof fn === 'function') {
       (fn as (v: unknown) => void).call(this, value);

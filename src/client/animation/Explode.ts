@@ -65,7 +65,7 @@ export class Explode {
       this.effect.setOpacity(ExplodeParticle.opacity * (1.2 - step));
 
       for (let i = this.particles.length - 1; i >= 0; i--) {
-        const particle = this.particles[i]!;
+        const particle = this.particles[i];
         particle.update(age);
         this.effect.drawImage(
           this.canvas.element,
@@ -88,7 +88,7 @@ export class Explode {
       return;
     }
     for (let i = this.particles.length - 1; i >= 0; i--) {
-      const particle = this.particles[i]!;
+      const particle = this.particles[i];
       this.effect.clearZone(particle.x, particle.y, particle.radius, particle.radius);
     }
     this.cleared = true;

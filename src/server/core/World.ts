@@ -204,7 +204,7 @@ export class World {
     this.bodyCount = 0;
 
     for (let i = this.islands.items.length - 1; i >= 0; i--) {
-      this.islands.items[i]!.clear();
+      this.islands.items[i].clear();
     }
   }
 

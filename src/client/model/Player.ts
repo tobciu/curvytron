@@ -21,7 +21,7 @@ export class Player extends BasePlayer {
     this.position = `${this.client.id}-${this.id}`;
 
     this.onControlChange = this.onControlChange.bind(this);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (this.client as any).players.add(this);
   }
 
@@ -55,7 +55,7 @@ export class Player extends BasePlayer {
   }
 
   isMaster(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const client = this.client as any;
     return client.master && client.players.getIdIndex(this.id) === 0;
   }

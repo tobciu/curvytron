@@ -21,7 +21,7 @@ class FakeSocket implements SocketLike {
     }
   }
   get lastFrame(): unknown[] {
-    return JSON.parse(this.sent[this.sent.length - 1]!) as unknown[];
+    return JSON.parse(this.sent[this.sent.length - 1]) as unknown[];
   }
 }
 

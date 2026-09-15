@@ -30,7 +30,7 @@ export class StackedBonus extends EventEmitter {
 
   clear(): void {
     if (this.timeout) {
-      clearInterval(this.timeout as ReturnType<typeof setInterval>);
+      clearInterval(this.timeout);
       this.timeout = null;
     }
   }

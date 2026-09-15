@@ -81,7 +81,7 @@ export class BaseRoom extends EventEmitter {
       });
 
       for (let i = this.players.items.length - 1; i >= 0; i--) {
-        this.players.items[i]!.reset();
+        this.players.items[i].reset();
       }
     }
   }
@@ -110,7 +110,7 @@ export class BaseRoom extends EventEmitter {
             })
             .items
         : this.players.count(),
-      game: this.game ? true : false,
+      game: !!this.game,
       open: this.config.open,
     };
 

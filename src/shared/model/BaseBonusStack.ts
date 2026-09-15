@@ -51,27 +51,27 @@ export class BaseBonusStack<T = any> extends EventEmitter {
     if (typeof bonus !== 'undefined') {
       const effects = bonus.getEffects(this.target);
       for (let i = effects.length - 1; i >= 0; i--) {
-        const property = effects[i]![0];
+        const property = effects[i][0];
         properties[property] = this.getDefaultProperty(property);
       }
     }
 
     for (let i = this.bonuses.items.length - 1; i >= 0; i--) {
-      const effects = this.bonuses.items[i]!.getEffects(this.target);
+      const effects = this.bonuses.items[i].getEffects(this.target);
       for (let j = effects.length - 1; j >= 0; j--) {
-        const property = effects[j]![0];
+        const property = effects[j][0];
 
         if (typeof properties[property] === 'undefined') {
           properties[property] = this.getDefaultProperty(property);
         }
 
-        this.append(properties, property, effects[j]![1]);
+        this.append(properties, property, effects[j][1]);
       }
     }
 
     for (const property in properties) {
       if (Object.prototype.hasOwnProperty.call(properties, property)) {
-        this.apply(property, properties[property]!);
+        this.apply(property, properties[property]);
       }
     }
   }

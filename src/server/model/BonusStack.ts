@@ -29,10 +29,10 @@ export class BonusStack extends BaseBonusStack<Avatar> {
         this.target.setInverse((value as number) % 2 !== 0);
         break;
       case 'invincible':
-        this.target.setInvincible(value ? true : false);
+        this.target.setInvincible(!!value);
         break;
       case 'ghost':
-        this.target.setGhost(value ? true : false);
+        this.target.setGhost(!!value);
         break;
       case 'printing':
         this.target.printManager[(value as number) > 0 ? 'start' : 'stop']();

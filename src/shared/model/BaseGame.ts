@@ -133,8 +133,8 @@ export class BaseGame extends EventEmitter {
     this.bonusManager.clear();
 
     for (let i = this.avatars.items.length - 1; i >= 0; i--) {
-      if (this.avatars.items[i]!.present) {
-        this.avatars.items[i]!.clear();
+      if (this.avatars.items[i].present) {
+        this.avatars.items[i].clear();
       }
     }
   }
@@ -198,7 +198,7 @@ export class BaseGame extends EventEmitter {
   }
 
   setBorderless(borderless: boolean): void {
-    this.borderless = borderless ? true : false;
+    this.borderless = !!borderless;
   }
 
   serialize(): { name: string; players: unknown[]; maxScore: number } {

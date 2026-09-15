@@ -89,13 +89,13 @@ describe('AvatarBody.match — trail latency', () => {
   it("an avatar's own recent points don't kill it, older ones do", () => {
     const a = owner();
     const points = Array.from({ length: 6 }, () => new AvatarBody(0, 0, a)); // num 0..5
-    const head = points[5]!; // newest
+    const head = points[5]; // newest
 
     // storedPoint.match(head): head.num - storedPoint.num > trailLatency(3)
-    expect(points[0]!.match(head)).toBe(true); // 5 - 0 = 5  > 3  → collide
-    expect(points[1]!.match(head)).toBe(true); // 5 - 1 = 4  > 3
-    expect(points[2]!.match(head)).toBe(false); // 5 - 2 = 3  !> 3 → too recent
-    expect(points[4]!.match(head)).toBe(false); // 5 - 4 = 1
+    expect(points[0].match(head)).toBe(true); // 5 - 0 = 5  > 3  → collide
+    expect(points[1].match(head)).toBe(true); // 5 - 1 = 4  > 3
+    expect(points[2].match(head)).toBe(false); // 5 - 2 = 3  !> 3 → too recent
+    expect(points[4].match(head)).toBe(false); // 5 - 4 = 1
   });
 
   it('different avatars always collide', () => {

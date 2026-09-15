@@ -17,10 +17,10 @@ export class RoomNameGenerator {
   }
 
   getAdjective(): string {
-    return this.adjectives[Math.floor(Math.random() * this.adjectives.length)]!;
+    return this.adjectives[Math.floor(Math.random() * this.adjectives.length)];
   }
 
   getNoun(): string {
-    return this.nouns[Math.floor(Math.random() * this.nouns.length)]!;
+    return this.nouns[Math.floor(Math.random() * this.nouns.length)];
   }
 }

@@ -38,8 +38,8 @@ export class Island {
   getBody(body: Body): Body | null {
     if (this.bodyInBound(body, this.fromX, this.fromY, this.toX, this.toY)) {
       for (let i = this.bodies.items.length - 1; i >= 0; i--) {
-        if (this.bodiesTouch(this.bodies.items[i]!, body)) {
-          return this.bodies.items[i]!;
+        if (this.bodiesTouch(this.bodies.items[i], body)) {
+          return this.bodies.items[i];
         }
       }
     }

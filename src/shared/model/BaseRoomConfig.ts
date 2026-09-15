@@ -113,7 +113,7 @@ export class BaseRoomConfig extends EventEmitter {
     if (!this.bonusExists(bonus)) {
       return;
     }
-    this.bonuses[bonus] = value ? true : false;
+    this.bonuses[bonus] = !!value;
   }
 
   getMaxScore(): number {

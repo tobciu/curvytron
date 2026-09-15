@@ -28,6 +28,6 @@ export class BonusAllColor extends BonusAll {
 
   getColor(avatar: any): string {
     const index = this.avatars.indexOf(avatar.id);
-    return this.colors[(index + 1) % this.colors.length]!;
+    return this.colors[(index + 1) % this.colors.length];
   }
 }

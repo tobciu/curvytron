@@ -15,11 +15,11 @@ function parse(hash: string): Route {
   }
   const room = /^\/room\/(.+)$/.exec(path);
   if (room) {
-    return { name: 'room', param: decodeURIComponent(room[1]!) };
+    return { name: 'room', param: decodeURIComponent(room[1]) };
   }
   const game = /^\/game\/(.+)$/.exec(path);
   if (game) {
-    return { name: 'game', param: decodeURIComponent(game[1]!) };
+    return { name: 'game', param: decodeURIComponent(game[1]) };
   }
   return { name: 'notfound', param: null };
 }
