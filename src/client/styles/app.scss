@@ -1,8 +1,38 @@
-// Phase 2 stylesheet entry. The legacy src/sass/** will be pulled in screen by
-// screen as components migrate; for now just a minimal reset + base.
-:global(body) {
+// Design tokens matched against the original Curvytron (Elao) look & feel:
+// flat, sharp-edged, muted-gray body copy, salmon-to-rose brand gradient.
+:root {
+  --brand-a: #ff8069;
+  --brand-b: #ff6e90;
+  --gradient-header: linear-gradient(to bottom, var(--brand-a), var(--brand-b));
+  --gradient-button: linear-gradient(to right, var(--brand-a), var(--brand-b));
+  --color-accent: var(--brand-a);
+  --color-accent-dark: #e8654f;
+  --color-ink: #666;
+  --color-muted: #999;
+  --color-faded: rgba(102, 102, 102, 0.5);
+  --color-surface: #fff;
+  --color-page: #f3f3f3;
+  --color-label-bg: #444;
+  --color-border: #666;
+  --color-footer-bg: #e1e1e1;
+  --color-footer-text: #8d8d8d;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
   margin: 0;
-  font-family: 'Lato', system-ui, sans-serif;
-  background: #f5f5f5;
-  color: #333;
+  font-family: 'Lato', 'Helvetica Neue', Helvetica, system-ui, sans-serif;
+  font-size: 18px;
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+button,
+input {
+  font-family: inherit;
 }

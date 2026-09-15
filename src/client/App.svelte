@@ -15,8 +15,12 @@
 </script>
 
 <header>
-  <a href="#/" class="logo"><img src="images/logo.svg" alt="Curvytron" /> <span>curvytron</span></a>
+  <a href="#/" class="logo">
+    <img src="images/logo.svg" alt="Curvytron" />
+    <span class="brand">curvytron</span>
+  </a>
   <button class="profile-btn" onclick={() => (panelOpen = true)}>
+    {#if $profile.name}<span class="swatch" style="background:{$profile.color}"></span>{/if}
     {$profile.name || "What's your name?"}
   </button>
 </header>
@@ -40,53 +44,87 @@
 </main>
 
 <footer>
-  <a href="https://github.com/Elao/curvytron" target="_blank" rel="noreferrer">GitHub</a>
-  <a href="#/about">About</a>
+  <div class="links">
+    <a href="https://github.com/Elao/curvytron" target="_blank" rel="noreferrer">GitHub</a>
+    <a href="#/about">About</a>
+  </div>
 </footer>
 
 {#if panelOpen || needsProfile}
   <div class="overlay" class:blocking={needsProfile}>
     <div class="panel">
-      {#if !needsProfile}
-        <button class="close" onclick={() => (panelOpen = false)} aria-label="Close">×</button>
-      {/if}
-      {#if needsProfile}
-        <p class="hi">Hi there! We just need to know a few things before you start playing.</p>
-      {/if}
-      <Profile ondone={() => (panelOpen = false)} />
+      <div class="panel-title">
+        <span>My profile</span>
+        {#if !needsProfile}
+          <button class="close" onclick={() => (panelOpen = false)} aria-label="Close">×</button>
+        {/if}
+      </div>
+      <div class="panel-body">
+        {#if needsProfile}
+          <p class="hi">Hi there! We just need to know a few things before you start playing.</p>
+        {/if}
+        <Profile ondone={() => (panelOpen = false)} />
+      </div>
     </div>
   </div>
 {/if}
 
 <style>
   header {
-    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
-    padding: 1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background: var(--gradient-header);
+    padding: 20px;
+    text-align: center;
+    position: relative;
   }
   .logo {
     color: #fff;
     text-decoration: none;
-    font-weight: 300;
-    letter-spacing: 0.15em;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1.5rem;
+    display: inline-block;
+    transition: opacity 0.15s ease;
+  }
+  .logo:hover {
+    opacity: 0.9;
   }
   .logo img {
-    height: 2rem;
+    display: block;
+    width: 130px;
+    height: 130px;
+    margin: 0 auto;
+  }
+  .brand {
+    display: block;
+    margin-top: 13px;
+    font-size: 26px;
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 46px;
   }
   .profile-btn {
-    background: rgba(0, 0, 0, 0.25);
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #222;
     color: #fff;
     border: 0;
-    border-radius: 999px;
-    padding: 0.4rem 1rem;
+    border-radius: 40px;
+    padding: 8px 16px;
     cursor: pointer;
     font: inherit;
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s ease;
+  }
+  .profile-btn:hover {
+    background: #333;
+  }
+  .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    flex: 0 0 auto;
   }
   .banner {
     background: #ffe08a;
@@ -94,17 +132,26 @@
     padding: 0.5rem;
   }
   main {
-    padding: 1.5rem;
+    padding: 2rem 1.5rem;
     min-height: 60vh;
   }
   footer {
-    padding: 1rem 1.5rem;
-    background: #eee;
+    padding: 30px 1.75rem;
+    background: var(--color-footer-bg);
+    font-weight: 300;
+  }
+  .links {
     display: flex;
-    gap: 1rem;
+    gap: 1.25rem;
   }
   footer a {
-    color: #666;
+    color: var(--color-footer-text);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  footer a:hover {
+    color: var(--color-ink);
+    text-decoration: underline;
   }
   .overlay {
     position: fixed;
@@ -119,27 +166,39 @@
     padding-top: 4rem;
   }
   .panel {
-    background: #fff;
-    padding: 1.5rem 2rem;
-    width: min(28rem, 100%);
+    background: var(--color-page);
+    width: min(30rem, 100%);
     height: 100%;
     overflow: auto;
     position: relative;
   }
   .overlay.blocking .panel {
     height: auto;
-    border-radius: 6px;
+    max-height: 90vh;
+  }
+  .panel-title {
+    background: var(--color-label-bg);
+    color: #fff;
+    font-size: 30px;
+    font-weight: 300;
+    text-transform: uppercase;
+    padding: 0 20px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-body {
+    padding: 1.5rem 2rem;
   }
   .close {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.75rem;
     border: 0;
     background: none;
+    color: #fff;
     font-size: 1.5rem;
     cursor: pointer;
   }
   .hi {
-    color: #666;
+    color: var(--color-ink);
   }
 </style>
