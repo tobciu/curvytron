@@ -230,13 +230,20 @@ The modernization (roadmap phases 1–3 + the client rewrite) is **largely done*
 - ✅ CI: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — lint, typecheck,
   `svelte-check`, tests, build, and a smoke test on every push/PR; a tagged
   release (`vX.Y.Z`) or manual run also builds & pushes the image to GHCR.
+- ✅ First release: [`v2.0.0`](https://github.com/tobciu/curvytron/releases/tag/v2.0.0) →
+  [`ghcr.io/tobciu/curvytron`](https://github.com/tobciu/curvytron/pkgs/container/curvytron),
+  verified by pulling and running the published image (healthcheck `healthy`, a full round
+  played through the browser inside the container).
+- ✅ Metrics: the InfluxDB `Inspector` + `trackers/*` are ported to TS (config-gated off by
+  default) — no `influx`/`usage`/`md5` dependency; `fetch()` + a hand-rolled, tested
+  line-protocol writer, `process.cpuUsage()`/`memoryUsage()` for CPU/mem. Verified against a
+  local InfluxDB-compatible HTTP receiver through a full room → game → round lifecycle.
 
-Still open:
+Not planned: **gamepad input capture** — stubbed upstream too, and out of scope for this
+fork (keyboard + touch cover the game).
 
-- **InfluxDB Inspector + `trackers/*`** — still legacy `.js`, config-gated off; port when needed.
-- **Gamepad input capture** — stubbed (unfinished upstream too); keyboard + touch are live.
-- Deep refresh of `doc/architecture.md` / `rewrite-plan.md` / the roadmap docs for the
-  post-rewrite layout (they still describe the pre-rewrite state in places).
+Still open: a deeper refresh of `doc/architecture.md` / `rewrite-plan.md` / the roadmap docs
+for the post-rewrite layout (they still describe the pre-rewrite state in places).
 
 Progress log: [`doc/conversion-notes.md`](doc/conversion-notes.md).
 Contributor-facing notes: [`CLAUDE.md`](CLAUDE.md).

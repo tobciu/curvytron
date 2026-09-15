@@ -32,9 +32,9 @@ deleted.
 | --- | --- | --- |
 | `express@^4.13.3` | `Server.js` — only `express.static` + an `http.Server` | **`express@5`** (or drop for a ~20-line static handler; Express earns little here) |
 | `faye-websocket@^0.10` | `dependencies.js`, `Server.js` upgrade handler | **`ws`** ([ADR 0002](adr/0002-websocket-transport.md)) |
-| `influx@^4.0.1` | `Inspector` / trackers, only when `inspector.enabled` | **`@influxdata/influxdb-client`**, dynamic `import()` inside the Inspector only |
-| `usage@^0.7` *(optional)* | `Inspector` CPU/mem | **dropped** → `process.resourceUsage()` / `process.memoryUsage()` / `os.loadavg()` |
-| `MD5@^1.3` *(optional)* | (hashing — grep: only referenced in `dependencies.js` `try/catch`, no real call site found) | **dropped** → `node:crypto` `createHash('md5')` if a use surfaces |
+| `influx@^4.0.1` | `Inspector` / trackers, only when `inspector.enabled` | **dropped** — ported: `core/influxLineProtocol.ts` (hand-rolled, tested line-protocol formatter) + a `fetch()` POST to InfluxDB 1.x's HTTP `/write` endpoint in `core/Inspector.ts`. No dependency at all (Node 24 has global `fetch`); avoided `@influxdata/influxdb-client` (InfluxDB 2.x/Cloud token+org+bucket model — a different auth shape than the 1.x host/user/pass/db config this repo already documents). |
+| `usage@^0.7` *(optional)* | `Inspector` CPU/mem | **dropped** — ported: `process.cpuUsage()` delta over the sample window (%) + `process.memoryUsage().rss`, in `Inspector.sampleUsage()`. No native bindings needed. |
+| `MD5@^1.3` *(optional)* | `Tracker`/`Inspector` — pseudonymises IPs, names, tracker ids before they leave the process | **dropped** — ported: `node:crypto` `createHash('md5')` in `trackers/md5.ts`. |
 | `node` built-ins: `events`, `http` | shared + `Server.js` | `node:events` (or `eventemitter3` shared with the client), `node:http` |
 
 `src/server/dependencies.js` (the sole `require` site + the optional-dep `try/catch`) is

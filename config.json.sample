@@ -3,6 +3,7 @@
     "inspector": {
         "enabled": false,
         "host": "localhost",
+        "port": 8086,
         "username": "curvytron",
         "password": "curvytron",
         "database": "curvytron"

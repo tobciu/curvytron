@@ -96,8 +96,12 @@ Docker image to GHCR.
 9. **Client canvas stays out of Svelte.** `Game`/`Avatar`/`BonusManager` are plain
    classes owning `<canvas>` elements; `Game.svelte` hands them the DOM nodes and the
    `game` store bridges wire events ↔ reactive HUD state. Do not put per-frame state in runes.
-10. **Deferred legacy (still `.js`, not wired up):** `src/server/trackers/*.js`,
-    server `Inspector` — InfluxDB metrics, config-gated off. Ignored by tsc/eslint.
+10. **Metrics (Inspector).** `src/server/core/Inspector.ts` + `src/server/trackers/*.ts` —
+    optional, config-gated by `inspector.enabled` (off by default). Writes InfluxDB 1.x
+    line-protocol points via `fetch()` — no dependency (`influx`/`usage`/`md5` npm packages
+    were dropped: `node:crypto` for hashing, `process.cpuUsage()`/`memoryUsage()` for CPU/mem).
+    Writes are fire-and-forget; a failure never touches gameplay. Formatter tested in
+    `core/influxLineProtocol.test.ts`.
 
 ## Conventions / constraints
 

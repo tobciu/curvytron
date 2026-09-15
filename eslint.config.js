@@ -12,8 +12,6 @@ export default tseslint.config(
       'doc/reference-build/',
       // Svelte client — type-checked by svelte-check (no eslint-plugin-svelte yet).
       'src/client/',
-      // Deferred legacy CommonJS (server trackers — not yet ported to ESM/TS).
-      'src/**/*.js',
     ],
   },
 

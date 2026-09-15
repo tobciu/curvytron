@@ -1,6 +1,7 @@
 ## Configuration
 
-To setup a custom configuration, duplicate `config.json.sample` to `config.json`:
+`config.json` is **optional** — without it the server runs on port 8080 with the Inspector
+off. To customise, duplicate `config.json.sample` to `config.json` (git-ignored):
 
     cp config.json.sample config.json
 
@@ -9,39 +10,39 @@ Details of `config.json`:
 ```json
 {
     "port": 8080,
-    "googleAnalyticsId": null,
     "inspector": {
         "enabled": false,
-        "host": "127.0.0.1",
+        "host": "localhost",
         "port": 8086,
-        "username": "root",
-        "password": "root",
+        "username": "curvytron",
+        "password": "curvytron",
         "database": "curvytron"
     }
 }
 ```
 
+Every value can also be set via an environment variable — env wins over `config.json`
+(see [`src/server/main.ts`](../src/server/main.ts) `loadConfig()`).
+
 ## Configuration reference
 
-| Variable | Description | Default value | Type | Required |
-| -------- | ----------- | ------------- | ---- | -------- |
-| port | The port on which Curvytron server will run | 8080 | Number | Required |
-| googleAnalyticsId | Google Analytics Identifier | null | String | Optional |
+| Variable | Env var | Description | Default | Type |
+| -------- | ------- | ----------- | ------- | ---- |
+| `port` | `PORT` | HTTP + WebSocket port | `8080` | Number |
+| — | `STATIC_DIR` | Directory served as the client | `dist` if built, else `web` | String |
 
-__Inspector:__
+__Inspector__ (optional metrics reporter — see [`architecture.md`](architecture.md) and
+[`../CLAUDE.md`](../CLAUDE.md)): writes counters/gauges to an InfluxDB **1.x** HTTP
+`/write` endpoint (line protocol) via `fetch()`. Reports totals of connected clients / open
+rooms, per-game round count and duration, per-client latency samples, and CPU/memory usage —
+all pseudonymised (IPs/names hashed with MD5) and fire-and-forget (a write failure is logged
+once and otherwise ignored; it never affects gameplay).
 
-The inspector watch the server to provides statistics like:
-* Total of played games
-* Number of players per game
-* Game duration
-* CPU / Memory usage of the server
-* ...
-
-| Variable | Description | Default value | Type | Required |
-| -------- | ----------- | ------------- | ---- | -------- |
-| enabled | Enable/Disable the Inspector | false | Boolean | Required |
-| host | InfluxDb host | 127.0.0.1 | String | Required |
-| port | InfluxDb port | 8086 | Number | Required |
-| username | InfluxDb username | root | String | Required |
-| password | InfluxDb password | root | String | Required |
-| database | InfluxDb database | curvytorn | String | Required |
+| Variable | Env var | Description | Default | Type |
+| -------- | ------- | ----------- | ------- | ---- |
+| `inspector.enabled` | `INSPECTOR_ENABLED` | Enable/disable the Inspector | `false` | Boolean |
+| `inspector.host` | `INSPECTOR_HOST` | InfluxDB host | `127.0.0.1` | String |
+| `inspector.port` | `INSPECTOR_PORT` | InfluxDB HTTP API port | `8086` | Number |
+| `inspector.username` | `INSPECTOR_USERNAME` | InfluxDB username | `root` | String |
+| `inspector.password` | `INSPECTOR_PASSWORD` | InfluxDB password | `root` | String |
+| `inspector.database` | `INSPECTOR_DATABASE` | InfluxDB database name | `curvytron` | String |

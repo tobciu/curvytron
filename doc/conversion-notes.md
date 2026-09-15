@@ -63,7 +63,7 @@ Living document — extended as cases come up.
 | `shared/service/BaseChat` (base) | ✅ base |
 | `server/{core,controller,manager,repository,service}/*` + `main.ts` (ws) | ✅ `94e95a4` |
 | `shared/model/BaseRoom` (base; injects RoomConfigClass/GameClass) | ✅ base |
-| `server/core/Inspector` + `server/trackers/*` (InfluxDB) | ⬜ deferred (config-gated off) |
+| `server/core/Inspector` + `server/trackers/*` (InfluxDB) | ✅ (see Phase 2 "Inspector" entry below) |
 | **client** `src/client/**` (engine → ESM/TS, then Svelte shell) | ⬜ Phase 2 |
 | `shared/model/Preset` + client presets | ⬜ Phase 2 (client-only UI) |
 | `server/core/{Body,AvatarBody,Island,World}` (collision grid) | ✅ |
@@ -80,8 +80,8 @@ Living document — extended as cases come up.
   frames → bonus spawn → deaths → `round:end`
 
 Server is fully ESM/TS on `ws` (no `faye-websocket`, no `dependencies.js`,
-no gulp). Inspector + trackers are stubbed out (deployed config has them
-off) — port them if metrics are wanted.
+no gulp). Inspector + trackers were stubbed out at this point in Phase 1
+(deployed config has them off) — ported in Phase 2, see below.
 
 ## Phase 2 progress
 
@@ -101,7 +101,9 @@ off) — port them if metrics are wanted.
 - **Steps 2–7** ✅ typed socket layer + stores → shell + routing → screen migration →
   canvas game → sound → delete AngularJS + modern Dockerfile (detail below).
   **CI** ✅ ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)).
-  Remaining: deep `doc/*.md` refresh; the deferred trackers/Inspector; gamepad input.
+  **Inspector/trackers** ✅ (detail below). **First release** ✅ `v2.0.0` on GHCR.
+  Remaining: a deeper `doc/*.md` refresh. Gamepad input capture: **not planned**
+  (stubbed upstream too, out of scope for this fork).
 
 - **Step 2** ✅ typed socket layer + first stores:
   `lib/socket/{events.ts, client.ts}` (typed `ServerToClient`/`ClientToServer`
@@ -159,8 +161,9 @@ off) — port them if metrics are wanted.
     `node:24-alpine` (non-root, `--omit=dev`, healthcheck) + `.dockerignore`;
     `docker-compose.yml` builds `target: runtime`.
   - `README.md` + `CLAUDE.md` rewritten for the post-rewrite state.
-  - Still `.js` and deferred: `src/server/trackers/*.js`, server `Inspector`
-    (InfluxDB, config-gated off) — ignored by tsc/eslint.
+  - Still deferred at this point: `src/server/trackers/*.js`, server `Inspector`
+    (InfluxDB, config-gated off) — ported right after, see the "Inspector /
+    trackers" entry below (by then, zero `.js` remained under `src/`).
   - Verified: `npm run build` from a clean tree, then `node dist-server/main.js`
     serves the built client on `dist/` (index / assets / images all 200).
 - **CI** ✅ `.github/workflows/ci.yml`:
@@ -177,3 +180,40 @@ off) — port them if metrics are wanted.
     svelte-check, lint, 96 tests, build, smoke test all pass on GitHub's runner);
     `docker` correctly **skipped** (plain branch push, no tag) — the gate works.
   - Not yet exercised: the `docker` job itself (needs a `vX.Y.Z` tag).
+- **First release** ✅ `v2.0.0` — the `docker` job ran for real (tag push):
+  [run `34963788230`](https://github.com/tobciu/curvytron/actions/runs/34963788230),
+  published `ghcr.io/tobciu/curvytron:{2.0.0,latest,sha-572544c}` (public package,
+  `version_count: 3`). Pulled it standalone (no login) and ran it: healthcheck
+  `healthy`, played a full round through the browser inside the container.
+  `docker-compose.yml` now pulls `image: ghcr.io/tobciu/curvytron:latest`.
+- **Inspector / trackers** ✅ ported to TS, dependency-free:
+  - `trackers/{md5,Tracker,TrackerClient,TrackerGame,TrackerRoom}.ts` — same
+    shape as the legacy `.js` (duration + hashed id per tracked entity; client
+    latency, game rounds/FPS/finished, room game-count), minus the unused
+    `inspector` back-reference each constructor took but never read.
+  - `core/influxLineProtocol.ts` — a small, **tested** InfluxDB line-protocol
+    formatter (`measurement,tag=val field=val`, proper escaping/quoting).
+  - `core/Inspector.ts` — same event wiring as the legacy `Inspector.js`
+    (`server.on('client', …)`, `roomRepository.on('room:open'/'room:close', …)`,
+    `room.on('game:new', …)`, `game.on('round:new'/'game:start'/'game:stop'/'end', …)`),
+    writing via `fetch()` POST to InfluxDB 1.x's `/write` HTTP endpoint —
+    **no new dependency** (replaces `influx`, which used the old `writePoint()`
+    factory API; `usage` → `process.cpuUsage()` delta + `process.memoryUsage().rss`,
+    no native bindings; `md5` → `node:crypto`). Writes are fire-and-forget
+    (`.catch()`, first failure logged once) so a metrics outage can't touch gameplay.
+  - `main.ts`: `loadConfig()` now also resolves `InspectorConfig | null` from
+    `config.json`'s `inspector` block or `INSPECTOR_*` env vars (host/port/
+    username/password/database — env wins); `new Inspector(server, config)` only
+    when enabled. `config.json.sample` + `doc/configuration.md` updated with the
+    full shape (added `inspector.port`, dropped the dead `googleAnalyticsId`).
+  - Legacy `src/server/trackers/*.js` deleted — **zero `.js` files remain under
+    `src/`**; the `src/**/*.js` eslint ignore (no longer needed) is gone too.
+  - Verified for real, not just compiled: wrote a throwaway fake-InfluxDB HTTP
+    receiver, ran the server with `INSPECTOR_ENABLED=true` against it, and played
+    a full room → game → round → end cycle through the browser. Captured writes
+    matched the legacy shape exactly: `deploy version="2.0.0"`, `client.total`/
+    `room.total` counters, `usage.cpu`/`usage.memory` every second,
+    `client.game.player` (color + hashed player/game/client tags), a stream of
+    `client.latency` samples, `game.fps`, and the final `game`/`client` summary
+    points (`rounds=1,finished=true`, hashed `ip`) on room/game/client teardown.
+    4 unit tests on the line-protocol formatter; full local + CI gate green.
