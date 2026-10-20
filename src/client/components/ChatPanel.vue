@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /** Messages of the room and the form to talk. */
 import { computed, onMounted, ref } from 'vue';
-import { MessageMute } from '../model/message/MessageMute.js';
+import { MessageMute } from '../model/message/MessageMute.ts';
 import { useServices } from '../services';
 import { useEmitterVersion } from '../composables/useEmitter';
 import type { ChatMessage, Player } from '../types';

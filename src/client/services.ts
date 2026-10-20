@@ -1,12 +1,12 @@
 import { inject, type App, type InjectionKey } from 'vue';
-import { SocketClient } from './core/SocketClient.js';
-import { Profile } from './service/Profile.js';
-import { SoundManager } from './service/SoundManager.js';
-import { ActivityWatcher } from './service/ActivityWatcher.js';
-import { RoomRepository } from './repository/RoomRepository.js';
-import { GameRepository } from './repository/GameRepository.js';
-import { Chat } from './service/Chat.js';
-import { Notifier } from './service/Notifier.js';
+import { SocketClient } from './core/SocketClient.ts';
+import { Profile } from './service/Profile.ts';
+import { SoundManager } from './service/SoundManager.ts';
+import { ActivityWatcher } from './service/ActivityWatcher.ts';
+import { RoomRepository } from './repository/RoomRepository.ts';
+import { GameRepository } from './repository/GameRepository.ts';
+import { Chat } from './service/Chat.ts';
+import { Notifier } from './service/Notifier.ts';
 import { ProfilePanel } from './service/ProfilePanel';
 import type * as T from './types';
 

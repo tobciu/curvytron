@@ -7,6 +7,11 @@ export class Preset {
      */
     bonuses: string[] = [];
 
+    name: string = '';
+
+    /** Only presets that pick their bonuses randomly */
+    calculateRandom?(): void;
+
     /**
      * Has onus
      */

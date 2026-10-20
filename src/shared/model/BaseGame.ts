@@ -11,7 +11,7 @@ import type { BaseRoom } from './BaseRoom.ts';
 export abstract class BaseGame extends EventEmitter {
     room: BaseRoom;
     name: string;
-    frame: ReturnType<typeof setTimeout> | null;
+    frame: ReturnType<typeof setTimeout> | number | null;
     avatars: Collection<BaseAvatar>;
     size: number;
     rendered: number | null;

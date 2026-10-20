@@ -15,7 +15,7 @@ export abstract class BaseAvatar extends EventEmitter {
     x: number;
     y: number;
     trail: BaseTrail;
-    bonusStack: BaseBonusStack;
+    bonusStack: BaseBonusStack<any>;
     /** Collision body of the avatar, only used by the server */
     body: { radius: number } | null = null;
     angle: number;
@@ -67,7 +67,7 @@ export abstract class BaseAvatar extends EventEmitter {
     abstract createTrail(): BaseTrail;
 
     /** Create the stack of bonuses of the avatar */
-    abstract createBonusStack(): BaseBonusStack;
+    abstract createBonusStack(): BaseBonusStack<any>;
 
     constructor(player: BasePlayer) {
         super();

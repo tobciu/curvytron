@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /** The profile link in the header and the side panel to edit the profile (name, color, controls, options). */
 import { onBeforeUnmount, ref } from 'vue';
-import { BasePlayer } from '../../shared/model/BasePlayer.js';
+import { BasePlayer } from '../../shared/model/BasePlayer.ts';
 import { useServices } from '../services';
 import { useLive } from '../composables/useEmitter';
 import ColorPicker from './ColorPicker.vue';

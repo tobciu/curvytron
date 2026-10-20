@@ -5,10 +5,10 @@ import type { BaseBonus } from './BaseBonus.ts';
 /**
  * Base Bonus Stack
  */
-export class BaseBonusStack extends EventEmitter {
+export class BaseBonusStack<B = BaseBonus> extends EventEmitter {
     /** What the bonuses change: an avatar or a game. Its properties are set by name. */
     target: any;
-    bonuses: Collection<BaseBonus>;
+    bonuses: Collection<B>;
 
     constructor(target: any) {
         super();
@@ -20,7 +20,7 @@ export class BaseBonusStack extends EventEmitter {
     /**
      * Add bonus to the stack
      */
-    add(bonus: BaseBonus) {
+    add(bonus: B) {
         if (this.bonuses.add(bonus)) {
             this.resolve();
         }
@@ -29,7 +29,7 @@ export class BaseBonusStack extends EventEmitter {
     /**
      * Remove bonus from the stack
      */
-    remove(bonus: BaseBonus) {
+    remove(bonus: B) {
         if (this.bonuses.remove(bonus)) {
             this.resolve(bonus);
         }
@@ -45,7 +45,7 @@ export class BaseBonusStack extends EventEmitter {
     /**
      * Resolve
      */
-    resolve(bonus?: BaseBonus) {
+    resolve(bonus?: B) {
         const properties: Record<string, any> = {};
         let effects: Array<[string, any]>;
         let property: string;
@@ -53,7 +53,7 @@ export class BaseBonusStack extends EventEmitter {
         let j: number;
 
         if (typeof bonus !== 'undefined') {
-            effects = bonus.getEffects(this.target);
+            effects = (bonus as BaseBonus).getEffects(this.target);
             for (i = effects.length - 1; i >= 0; i--) {
                 property = effects[i][0];
                 properties[property] = this.getDefaultProperty(property);
@@ -61,7 +61,7 @@ export class BaseBonusStack extends EventEmitter {
         }
 
         for (i = this.bonuses.items.length - 1; i >= 0; i--) {
-            effects = this.bonuses.items[i].getEffects(this.target);
+            effects = (this.bonuses.items[i] as BaseBonus).getEffects(this.target);
             for (j = effects.length - 1; j >= 0; j--) {
                 property = effects[j][0];
 

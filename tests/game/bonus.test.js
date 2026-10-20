@@ -66,7 +66,7 @@ describe('bonus list', () => {
     });
 
     it('knows the name of every bonus on the client side too', async () => {
-        const { RoomConfig: ClientRoomConfig } = await import('../../src/client/model/RoomConfig.js');
+        const { RoomConfig: ClientRoomConfig } = await import('../../src/client/model/RoomConfig.ts');
 
         expect(Object.keys(new ClientRoomConfig({ players: { count: () => 0 } }).bonusClasses).sort()).toEqual(
             bonusTypes.map(([name]) => name).sort()

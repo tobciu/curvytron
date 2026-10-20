@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EventEmitter } from '#event-emitter';
-import { Profile } from '../../src/client/service/Profile.js';
-import { Chat } from '../../src/client/service/Chat.js';
-import { Room } from '../../src/client/model/Room.js';
-import { MessagePlayer } from '../../src/client/model/message/MessagePlayer.js';
-import { Message } from '../../src/client/model/message/Message.js';
-import { MessageDie } from '../../src/client/model/message/MessageDie.js';
+import { Profile } from '../../src/client/service/Profile.ts';
+import { Chat } from '../../src/client/service/Chat.ts';
+import { Room } from '../../src/client/model/Room.ts';
+import { MessagePlayer } from '../../src/client/model/message/MessagePlayer.ts';
+import { Message } from '../../src/client/model/message/Message.ts';
+import { MessageDie } from '../../src/client/model/message/MessageDie.ts';
 
 beforeEach(() => window.localStorage.clear());
 afterEach(() => vi.useRealTimers());

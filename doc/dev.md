@@ -18,14 +18,14 @@
      |- composables/                  # Bridge between the game model and Vue
      |- services.ts                   # Creates the services (socket, profile, chat...) and provides them to the components
      |- styles/                       # SCSS, imported by main.ts
-     |- core, model, repository,      # The game itself: plain JavaScript classes (socket client, canvas rendering,
+     |- core, model, repository,      # The game itself: TypeScript classes (socket client, canvas rendering,
         service, manager, animation   # rooms, games, avatars...), not tied to Vue
-     |- lib                           # Small libraries: gamepad, key mapper, sprite loader
+     |- lib                           # Small libraries (plain JavaScript): gamepad, key mapper, sprite loader
 
 The model is made of mutable objects that emit events. Vue can not see changes in them, so components use
 `useLive(model, emitter, events)` (see `composables/useEmitter.ts`): the returned ref makes the template render again
 each time one of the events is emitted (or `bump()` is called).
-`types.ts` describes the part of the model the components rely on.
+`types.ts` re-exports the model classes as types for the components.
 
 ### Defaults and constants
 

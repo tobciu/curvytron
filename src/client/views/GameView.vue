@@ -2,7 +2,7 @@
 /** A running game: players, chat and the canvases the game is drawn on. */
 import { onBeforeUnmount, onMounted, ref, shallowRef, triggerRef } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
-import { gamepadListener } from '../gamepadListener.js';
+import { gamepadListener } from '../gamepadListener.ts';
 import { asset } from '../assets';
 import { useServices } from '../services';
 import { useEvents } from '../composables/useEmitter';

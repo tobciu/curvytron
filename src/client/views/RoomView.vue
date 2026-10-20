@@ -2,8 +2,8 @@
 /** A room: players, parameters and chat, until the master starts the game. */
 import { computed, onBeforeUnmount, ref, shallowRef, triggerRef } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
-import { BasePlayer } from '../../shared/model/BasePlayer.js';
-import { gamepadListener } from '../gamepadListener.js';
+import { BasePlayer } from '../../shared/model/BasePlayer.ts';
+import { gamepadListener } from '../gamepadListener.ts';
 import { useServices } from '../services';
 import { useEvents } from '../composables/useEmitter';
 import { pluralizePlayers } from '../utils';

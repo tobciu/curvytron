@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Room } from '../model/Room.js';
-import { RoomsRepository } from '../repository/RoomsRepository.js';
+import { Room } from '../model/Room.ts';
+import { RoomsRepository } from '../repository/RoomsRepository.ts';
 import { asset } from '../assets';
 import { useServices } from '../services';
 import { useEmitterVersion } from '../composables/useEmitter';

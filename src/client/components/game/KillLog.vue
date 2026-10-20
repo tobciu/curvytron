@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /** The last deaths, newest at the bottom. */
 import { ref } from 'vue';
-import { MessageDie } from '../../model/message/MessageDie.js';
+import { MessageDie } from '../../model/message/MessageDie.ts';
 import { useServices } from '../../services';
 import { useEvents } from '../../composables/useEmitter';
 import type { Avatar, Game } from '../../types';
