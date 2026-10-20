@@ -29,6 +29,7 @@ test('about', async ({ browser }) => {
 
     await page.goto('/#/about');
     await expect(page.locator('#about')).toBeVisible();
+    await page.waitForFunction(() => [...document.images].every((image) => image.complete && image.naturalWidth > 0));
 
     await expect(page).toHaveScreenshot('about.png', snapshotOptions(page, ['#about img']));
 });
