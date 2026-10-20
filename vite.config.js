@@ -44,7 +44,23 @@ export default defineConfig({
     },
     test: {
         root: path.resolve(root, '../..'),
-        include: ['tests/**/*.test.{js,ts}']
+        projects: [
+            {
+                extends: true,
+                test: {
+                    name: 'server',
+                    environment: 'node',
+                    include: ['tests/**/*.test.{js,ts}'],
+                    exclude: ['tests/client/**']
+                }
+            },
+            {
+                // The browser flavor of the shared code: DOM, and the client event emitter (`{ type, detail }` events)
+                extends: true,
+                resolve: { alias: { '#event-emitter': path.resolve(root, 'EventEmitter.js') } },
+                test: { name: 'client', environment: 'jsdom', include: ['tests/client/**/*.test.{js,ts}'] }
+            }
+        ]
     },
     css: {
         preprocessorOptions: {

@@ -137,7 +137,7 @@ export class Chat extends BaseChat {
     talk() {
         const chat = this;
 
-        if (this.message.content.length) {
+        if (this.message.content && this.message.content.length) {
             this.client.addEvent(
                 'room:talk',
                 this.message.content.substr(0, Message.prototype.maxLength),
