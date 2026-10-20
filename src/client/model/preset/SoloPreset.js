@@ -1,13 +1,13 @@
+import { Preset } from '../../../shared/model/Preset.js';
+
 /**
  * Solo Preset
  */
-function SoloPreset ()
-{
-    Preset.call(this);
+export class SoloPreset extends Preset {
+    constructor() {
+        super();
+    }
 }
-
-SoloPreset.prototype = Object.create(Preset.prototype);
-SoloPreset.prototype.constructor = SoloPreset;
 
 /**
  * Name

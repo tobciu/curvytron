@@ -1,19 +1,19 @@
+import { Message } from './Message.js';
+
 /**
  * Mute message
  *
  * @param {Number} client
  * @param {Player} player
  */
-function MessageMute(client, player)
-{
-    Message.call(this);
+export class MessageMute extends Message {
+    constructor(client, player) {
+        super();
 
-    this.client = client;
-    this.player = player;
+        this.client = client;
+        this.player = player;
+    }
 }
-
-MessageMute.prototype = Object.create(Message.prototype);
-MessageMute.prototype.constructor = MessageMute;
 
 /**
  * Message type

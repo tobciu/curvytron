@@ -1,13 +1,21 @@
+import { Preset } from '../../../shared/model/Preset.js';
+
 /**
  * Default Preset
  */
-function RandomPreset ()
-{
-    Preset.call(this);
-}
+export class RandomPreset extends Preset {
+    constructor() {
+        super();
+    }
 
-RandomPreset.prototype = Object.create(Preset.prototype);
-RandomPreset.prototype.constructor = RandomPreset;
+    calculateRandom() {
+        RandomPreset.prototype.bonuses = RandomPreset.prototype.allBonuses
+            .sort(function () {
+                return 0.5 - Math.random();
+            })
+            .slice(0, Math.floor(Math.random() * (RandomPreset.prototype.allBonuses.length - 1)));
+    }
+}
 
 /**
  * Name
@@ -49,7 +57,3 @@ RandomPreset.prototype.allBonuses = [
     'BonusLeaderSlow',
     'BonusSelfBorderless'
 ];
-
-RandomPreset.prototype.calculateRandom = function(){
-    RandomPreset.prototype.bonuses = RandomPreset.prototype.allBonuses.sort(function() {return 0.5 - Math.random();}).slice(0, Math.floor(Math.random() * (RandomPreset.prototype.allBonuses.length - 1)))
-}

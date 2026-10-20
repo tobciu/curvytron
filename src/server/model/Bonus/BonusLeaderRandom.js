@@ -1,16 +1,30 @@
+import { BonusLeader } from './BonusLeader.js';
+
 /**
  * Random Leader Bonus
  *
  * @param {Number} x
  * @param {Number} y
  */
-function BonusLeaderRandom(x, y)
-{
-    BonusEnemy.call(this, x, y);
-}
+export class BonusLeaderRandom extends BonusLeader {
+    constructor(x, y) {
+        super(x, y);
+    }
 
-BonusLeaderRandom.prototype = Object.create(BonusLeader.prototype);
-BonusLeaderRandom.prototype.constructor = BonusLeaderRandom;
+    /**
+     * Get effects
+     *
+     * @param {Avatar} avatar
+     *
+     * @return {Array}
+     */
+    getEffects(avatar) {
+        return [
+            ['directionInLoop', false],
+            ['angularVelocityBase', Math.PI / 4]
+        ];
+    }
+}
 
 /**
  * Duration
@@ -18,15 +32,3 @@ BonusLeaderRandom.prototype.constructor = BonusLeaderRandom;
  * @type {Number}
  */
 BonusLeaderRandom.prototype.duration = 7500;
-
-/**
- * Get effects
- *
- * @param {Avatar} avatar
- *
- * @return {Array}
- */
-BonusLeaderRandom.prototype.getEffects = function(avatar)
-{
-    return [['directionInLoop', false], ['angularVelocityBase', Math.PI / 4]];
-};

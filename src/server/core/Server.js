@@ -1,90 +1,164 @@
+import http from 'node:http';
+import express from 'express';
+import { WebSocketServer } from 'ws';
+import { EventEmitter } from '#event-emitter';
+import { RoomsController } from '../controller/RoomsController.js';
+import { SocketClient } from './SocketClient.js';
+import { RoomRepository } from '../repository/RoomRepository.js';
+import { Collection } from '../../shared/Collection.js';
+
+/**
+ * Seconds between two keep-alive pings sent to every connected socket.
+ *
+ * @type {Number}
+ */
+const KEEP_ALIVE_INTERVAL = 30000;
+
 /**
  * Server
- */
-function Server(config)
-{
-    EventEmitter.call(this);
-
-    this.config  = config;
-    this.app     = express();
-    this.server  = new http.Server(this.app);
-    this.clients = new Collection([], 'id', true);
-
-    this.roomRepository  = new RoomRepository();
-    this.roomsController = new RoomsController(this.roomRepository);
-
-    this.authorizationHandler  = this.authorizationHandler.bind(this);
-    this.onSocketConnection    = this.onSocketConnection.bind(this);
-    this.onSocketDisconnection = this.onSocketDisconnection.bind(this);
-    this.onError               = this.onError.bind(this);
-
-    this.app.use(express['static']('web'));
-
-    this.server.on('error', this.onError);
-    this.server.on('upgrade', this.authorizationHandler);
-    this.server.listen(config.port);
-
-    console.info('Listening on port %s', config.port);
-}
-
-Server.prototype = Object.create(EventEmitter.prototype);
-Server.prototype.constructor = Server;
-
-/**
- * Authorization Handler
  *
- * @param {Object} request
- * @param {Object} socket
- * @param {Buffer} body
+ * @param {Object} config
+ * @param {Number} config.port
+ * @param {String} config.publicDirectory Directory of the built client
+ * @param {Function} [config.middleware] Extra express middleware (the Vite dev server in development)
  */
-Server.prototype.authorizationHandler = function(request, socket, head)
-{
-    if (!WebSocket.isWebSocket(request)) {
-        return socket.end();
+export class Server extends EventEmitter {
+    constructor(config) {
+        super();
+
+        this.config = config;
+        this.app = express();
+        this.server = http.createServer(this.app);
+        this.sockets = new WebSocketServer({
+            noServer: true,
+            handleProtocols: (protocols) => (protocols.has('websocket') ? 'websocket' : false)
+        });
+        this.clients = new Collection([], 'id', true);
+
+        this.roomRepository = new RoomRepository();
+        this.roomsController = new RoomsController(this.roomRepository);
+
+        this.authorizationHandler = this.authorizationHandler.bind(this);
+        this.onSocketConnection = this.onSocketConnection.bind(this);
+        this.onSocketDisconnection = this.onSocketDisconnection.bind(this);
+        this.onError = this.onError.bind(this);
+        this.keepAlive = this.keepAlive.bind(this);
+
+        if (config.middleware) {
+            this.app.use(config.middleware);
+        } else {
+            this.app.use(express.static(config.publicDirectory));
+        }
+
+        this.server.on('error', this.onError);
+        this.server.on('upgrade', this.authorizationHandler);
+        this.keepAliveLoop = setInterval(this.keepAlive, KEEP_ALIVE_INTERVAL);
+        this.keepAliveLoop.unref();
     }
 
-    var websocket = new WebSocket(request, socket, head, ['websocket'], {ping: 30}),
-        ip = request.headers['x-real-ip'] || request.connection.remoteAddress;
+    /**
+     * Start listening
+     *
+     * @return {Promise}
+     */
+    listen() {
+        return new Promise((resolve) => {
+            this.server.listen(this.config.port, () => {
+                console.info('Listening on port %s', this.config.port);
+                resolve(this);
+            });
+        });
+    }
 
-    return this.onSocketConnection(websocket, ip);
-};
+    /**
+     * Stop the server
+     */
+    close() {
+        clearInterval(this.keepAliveLoop);
 
-/**
- * On socket connection
- *
- * @param {Socket} socket
- * @param {String} ip
- */
-Server.prototype.onSocketConnection = function(socket, ip)
-{
-    var client = new SocketClient(socket, 1, ip);
-    this.clients.add(client);
+        for (const socket of this.sockets.clients) {
+            socket.terminate();
+        }
 
-    client.on('close', this.onSocketDisconnection);
-    this.roomsController.attach(client);
-    this.emit('client', client);
+        this.sockets.close();
+        this.server.close();
+    }
 
-    console.info('Client %s connected.', client.id);
-};
+    /**
+     * Authorization Handler
+     *
+     * @param {http.IncomingMessage} request
+     * @param {Object} socket
+     * @param {Buffer} head
+     */
+    authorizationHandler(request, socket, head) {
+        // Upgrades that are not for the game (e.g. Vite's HMR socket) are handled elsewhere.
+        if (request.headers.upgrade?.toLowerCase() !== 'websocket') {
+            return socket.end();
+        }
 
-/**
- * On socket connection
- *
- * @param {SocketClient} client
- */
-Server.prototype.onSocketDisconnection = function(client)
-{
-    console.info('Client %s disconnected.', client.id);
+        const ip = request.headers['x-real-ip'] || request.socket.remoteAddress;
 
-    this.clients.remove(client);
-};
+        this.sockets.handleUpgrade(request, socket, head, (websocket) => {
+            this.onSocketConnection(websocket, ip);
+        });
+    }
 
-/**
- * On error
- *
- * @param {Error} error
- */
-Server.prototype.onError = function(error)
-{
-    console.error('Server Error:', error.stack);
-};
+    /**
+     * On socket connection
+     *
+     * @param {WebSocket} socket
+     * @param {String} ip
+     */
+    onSocketConnection(socket, ip) {
+        socket.isAlive = true;
+        socket.on('pong', () => {
+            socket.isAlive = true;
+        });
+        socket.on('error', this.onError);
+
+        const client = new SocketClient(socket, 1, ip);
+        this.clients.add(client);
+
+        client.on('close', this.onSocketDisconnection);
+        this.roomsController.attach(client);
+        this.emit('client', client);
+
+        console.info('Client %s connected.', client.id);
+    }
+
+    /**
+     * On socket disconnection
+     *
+     * @param {SocketClient} client
+     */
+    onSocketDisconnection(client) {
+        console.info('Client %s disconnected.', client.id);
+
+        this.clients.remove(client);
+    }
+
+    /**
+     * Drop sockets that did not answer the last ping, ping the others.
+     */
+    keepAlive() {
+        for (const socket of this.sockets.clients) {
+            if (!socket.isAlive) {
+                socket.terminate();
+                continue;
+            }
+
+            socket.isAlive = false;
+            socket.ping();
+        }
+    }
+
+    /**
+     * On error
+     *
+     * @param {Error} error
+     */
+    onError(error) {
+        console.error('Server Error:', error.stack);
+    }
+}

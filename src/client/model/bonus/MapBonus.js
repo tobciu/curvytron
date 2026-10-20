@@ -1,3 +1,7 @@
+import { BounceIn } from '../../animation/BounceIn.js';
+import { BonusManager } from '../../manager/BonusManager.js';
+import { BaseBonus } from '../../../shared/model/BaseBonus.js';
+
 /**
  * Map Bonus
  *
@@ -7,24 +11,32 @@
  * @param {String} type
  * @param {Number} radius
  */
-function MapBonus(id, x, y, type)
-{
-    BaseBonus.call(this, x, y);
+export class MapBonus extends BaseBonus {
+    constructor(id, x, y, type) {
+        super(x, y);
 
-    this.id         = id;
-    this.asset      = this.assets[type];
-    this.animation  = new BounceIn(300);
-    this.changed    = true;
-    this.drawRadius = 0;
-    this.drawWidth  = 0;
-    this.drawX      = 0;
-    this.drawY      = 0;
+        this.id = id;
+        this.asset = this.assets[type];
+        this.animation = new BounceIn(300);
+        this.changed = true;
+        this.drawRadius = 0;
+        this.drawWidth = 0;
+        this.drawX = 0;
+        this.drawY = 0;
 
-    this.update();
+        this.update();
+    }
+
+    /**
+     * Update bonus for drawing
+     */
+    update() {
+        this.drawRadius = this.radius * this.animation.getValue();
+        this.drawWidth = this.drawRadius * 2;
+        this.drawX = this.x - this.drawRadius;
+        this.drawY = this.y - this.drawRadius;
+    }
 }
-
-MapBonus.prototype = Object.create(BaseBonus.prototype);
-MapBonus.prototype.constructor = MapBonus;
 
 /**
  * Assets
@@ -32,14 +44,3 @@ MapBonus.prototype.constructor = MapBonus;
  * @type {Object}
  */
 MapBonus.prototype.assets = BonusManager.prototype.assets;
-
-/**
- * Update bonus for drawing
- */
-MapBonus.prototype.update = function()
-{
-    this.drawRadius = this.radius * this.animation.getValue();
-    this.drawWidth  = this.drawRadius * 2;
-    this.drawX      = this.x - this.drawRadius;
-    this.drawY      = this.y - this.drawRadius;
-};

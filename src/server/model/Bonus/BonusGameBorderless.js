@@ -1,16 +1,38 @@
+import { BonusGame } from './BonusGame.js';
+
 /**
  * Borderless Game Bonus
  *
  * @param {Number} x
  * @param {Number} y
  */
-function BonusGameBorderless(x, y)
-{
-    BonusGame.call(this, x, y);
-}
+export class BonusGameBorderless extends BonusGame {
+    constructor(x, y) {
+        super(x, y);
+    }
 
-BonusGameBorderless.prototype = Object.create(BonusGame.prototype);
-BonusGameBorderless.prototype.constructor = BonusGameBorderless;
+    /**
+     * Get effects
+     *
+     * @param {Game} game
+     *
+     * @return {Array}
+     */
+    getEffects(game) {
+        return [['borderless', true]];
+    }
+
+    /**
+     * Get probability
+     *
+     * @param {Game} game
+     *
+     * @return {Number}
+     */
+    getProbability(game) {
+        return BonusGameBorderless.prototype.probability;
+    }
+}
 
 /**
  * Duration
@@ -25,29 +47,3 @@ BonusGameBorderless.prototype.duration = 10000;
  * @type {Number}
  */
 BonusGameBorderless.prototype.probability = 0.8;
-
-/**
- * Get effects
- *
- * @param {Game} game
- *
- * @return {Array}
- */
-BonusGameBorderless.prototype.getEffects = function(game)
-{
-    return [
-        ['borderless', true]
-    ];
-};
-
-/**
- * Get probability
- *
- * @param {Game} game
- *
- * @return {Number}
- */
-BonusGameBorderless.prototype.getProbability = function (game)
-{
-    return BonusGameBorderless.prototype.probability;
-};

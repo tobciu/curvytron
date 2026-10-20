@@ -1,16 +1,36 @@
+import { BonusGame } from './BonusGame.js';
+
 /**
  * Master Bonus
  *
  * @param {Number} x
  * @param {Number} y
  */
-function BonusGameClear(x, y)
-{
-    BonusGame.call(this, x, y);
-}
+export class BonusGameClear extends BonusGame {
+    constructor(x, y) {
+        super(x, y);
+    }
 
-BonusGameClear.prototype = Object.create(BonusGame.prototype);
-BonusGameClear.prototype.constructor = BonusGameClear;
+    /**
+     * Get probability
+     *
+     * @param {Game} game
+     *
+     * @return {Number}
+     */
+    getProbability(game) {
+        const ratio = 1 - game.getAliveAvatars().count() / game.getPresentAvatars().count();
+
+        return Math.round(ratio * 10) / 10;
+    }
+
+    /**
+     * Apply on
+     */
+    on() {
+        this.target.clearTrails();
+    }
+}
 
 /**
  * Duration
@@ -18,25 +38,3 @@ BonusGameClear.prototype.constructor = BonusGameClear;
  * @type {Number}
  */
 BonusGameClear.prototype.duration = 0;
-
-/**
- * Get probability
- *
- * @param {Game} game
- *
- * @return {Number}
- */
-BonusGameClear.prototype.getProbability = function (game)
-{
-    var ratio = 1 - game.getAliveAvatars().count() / game.getPresentAvatars().count();
-
-    return Math.round(ratio * 10) / 10;
-};
-
-/**
- * Apply on
- */
-BonusGameClear.prototype.on = function()
-{
-    this.target.clearTrails();
-};

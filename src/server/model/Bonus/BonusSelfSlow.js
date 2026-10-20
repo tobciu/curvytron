@@ -1,25 +1,25 @@
+import { BonusSelf } from './BonusSelf.js';
+import { BaseAvatar } from '../../../shared/model/BaseAvatar.js';
+
 /**
  * Slow Bonus
  *
  * @param {Number} x
  * @param {Number} y
  */
-function BonusSelfSlow(x, y)
-{
-    BonusSelf.call(this, x, y);
+export class BonusSelfSlow extends BonusSelf {
+    constructor(x, y) {
+        super(x, y);
+    }
+
+    /**
+     * Get effects
+     *
+     * @param {Avatar} avatar
+     *
+     * @return {Array}
+     */
+    getEffects(avatar) {
+        return [['velocity', -BaseAvatar.prototype.velocity / 2]];
+    }
 }
-
-BonusSelfSlow.prototype = Object.create(BonusSelf.prototype);
-BonusSelfSlow.prototype.constructor = BonusSelfSlow;
-
-/**
- * Get effects
- *
- * @param {Avatar} avatar
- *
- * @return {Array}
- */
-BonusSelfSlow.prototype.getEffects = function(avatar)
-{
-    return [['velocity', -BaseAvatar.prototype.velocity/2]];
-};

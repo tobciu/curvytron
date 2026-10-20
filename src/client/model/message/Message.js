@@ -3,11 +3,36 @@
  *
  * @param {Number} creation
  */
-function Message (creation)
-{
-    this.id       = null;
-    this.creation = typeof(creation) === 'number' ? new Date(creation) : new Date();
-    this.date     = this.getDate();
+export class Message {
+    constructor(creation) {
+        this.id = null;
+        this.creation = typeof creation === 'number' ? new Date(creation) : new Date();
+        this.date = this.getDate();
+    }
+
+    /**
+     * Get date to text
+     *
+     * @return {String}
+     */
+    getDate() {
+        if (!this.creation) {
+            return '';
+        }
+
+        let hours = this.creation.getHours().toString(),
+            minutes = this.creation.getMinutes().toString();
+
+        if (hours.length === 1) {
+            hours = `0${hours}`;
+        }
+
+        if (minutes.length === 1) {
+            minutes = `0${minutes}`;
+        }
+
+        return `${hours}:${minutes}`;
+    }
 }
 
 /**
@@ -44,26 +69,3 @@ Message.prototype.icon = null;
  * @type {Number}
  */
 Message.prototype.maxLength = 140;
-
-/**
- * Get date to text
- *
- * @return {String}
- */
-Message.prototype.getDate = function()
-{
-    if (!this.creation) { return ''; }
-
-    var hours = this.creation.getHours().toString(),
-        minutes = this.creation.getMinutes().toString();
-
-    if (hours.length === 1) {
-        hours = '0' + hours;
-    }
-
-    if (minutes.length === 1) {
-        minutes = '0' + minutes;
-    }
-
-    return hours + ':' + minutes;
-};

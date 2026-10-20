@@ -1,0 +1,6 @@
+dist/
+node_modules/
+public/
+package-lock.json
+src/client/views/
+src/client/index.html

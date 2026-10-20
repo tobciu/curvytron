@@ -6,7 +6,7 @@
         </h2>
 
         <div id="room-parameters" ng-controller="RoomConfigController" ng-if="displayParameters">
-            <ng-include src="'js/views/rooms/parameters.html'"></ng-include>
+            <ng-include src="'views/rooms/parameters.html'"></ng-include>
         </div>
 
         <button type="button" class="btn start-now" ng-click="launch()" ng-if="master || launching">
@@ -56,7 +56,7 @@
                             Waiting for players...
                         </td>
                     </tr>
-                    <tr ng-repeat="player in room.players.items track by player.id | orderBy:'position'" ng-if="player.local" class="local">
+                    <tr ng-repeat="player in room.players.items track by player.id" ng-if="player.local" class="local">
                         <td class="col-remove col-show-hover">
                             <button type="button" class="btn btn-link btn-sm btn-remove pull-left" ng-click="removePlayer(player)">
                                 <span class="icon-close"></span>
@@ -89,7 +89,7 @@
                             </div>
                         </td>
                     </tr>
-                    <tr ng-repeat="player in room.players.items track by player.id | orderBy:'position'" ng-if="!player.local">
+                    <tr ng-repeat="player in room.players.items track by player.id" ng-if="!player.local">
                         <td class="col-remove col-show-hover {{ player.vote ? 'active' : '' }}">
                             <button type="button" class="btn btn-link btn-sm btn-remove pull-left" ng-click="kickPlayer(player)">
                                 <span class="icon-kick {{ player.kicked ? 'kicked' : '' }}"></span>
@@ -120,7 +120,7 @@
             </table>
 
             <div class="room-chat" ng-controller="ChatController">
-                <div class="chat-wrapper" ng-include="'js/views/chat/chat.html'" onload="chatLoaded()"></div>
+                <div class="chat-wrapper" ng-include="'views/chat/chat.html'" onload="chatLoaded()"></div>
             </div>
 
             <div class="clearfix"></div>

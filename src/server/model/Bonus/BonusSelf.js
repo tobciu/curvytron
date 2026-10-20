@@ -1,18 +1,48 @@
+import { Bonus } from './Bonus.js';
+
 /**
  * Self Bonus
  *
  * @param {Number} x
  * @param {Number} y
  */
-function BonusSelf(x, y)
-{
-    Bonus.call(this, x, y);
+export class BonusSelf extends Bonus {
+    constructor(x, y) {
+        super(x, y);
 
-    this.off = this.off.bind(this);
+        this.off = this.off.bind(this);
+    }
+
+    /**
+     * Get target
+     *
+     * @param {Avatar} avatar
+     * @param {Game} game
+     *
+     * @return {Object}
+     */
+    getTarget(avatar, game) {
+        return avatar.alive ? avatar : null;
+    }
+
+    /**
+     * Apply on
+     */
+    on() {
+        if (this.target) {
+            this.target.bonusStack.add(this);
+        }
+    }
+
+    /**
+     * Apply on
+     */
+    off() {
+        if (this.target) {
+            this.target.bonusStack.remove(this);
+        }
+    }
 }
-
-BonusSelf.prototype = Object.create(Bonus.prototype);
-BonusSelf.prototype.constructor = BonusSelf;
 
 /**
  * Affect self
@@ -20,36 +50,3 @@ BonusSelf.prototype.constructor = BonusSelf;
  * @type {String}
  */
 BonusSelf.prototype.affect = 'self';
-
-/**
- * Get target
- *
- * @param {Avatar} avatar
- * @param {Game} game
- *
- * @return {Object}
- */
-BonusSelf.prototype.getTarget = function(avatar, game)
-{
-    return avatar.alive ? avatar : null;
-};
-
-/**
- * Apply on
- */
-BonusSelf.prototype.on = function()
-{
-    if (this.target) {
-        this.target.bonusStack.add(this);
-    }
-};
-
-/**
- * Apply on
- */
-BonusSelf.prototype.off = function()
-{
-    if (this.target) {
-        this.target.bonusStack.remove(this);
-    }
-};

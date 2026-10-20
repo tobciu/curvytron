@@ -1,13 +1,13 @@
+import { Preset } from '../../../shared/model/Preset.js';
+
 /**
  * Size Preset
  */
-function SizePreset ()
-{
-    Preset.call(this);
+export class SizePreset extends Preset {
+    constructor() {
+        super();
+    }
 }
-
-SizePreset.prototype = Object.create(Preset.prototype);
-SizePreset.prototype.constructor = SizePreset;
 
 /**
  * Name
@@ -21,6 +21,4 @@ SizePreset.prototype.name = 'Super size me';
  *
  * @type {Array}
  */
-SizePreset.prototype.bonuses = [
-    'BonusEnemyBig'
-];
+SizePreset.prototype.bonuses = ['BonusEnemyBig'];

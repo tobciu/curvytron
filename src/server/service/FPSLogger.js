@@ -1,10 +1,10 @@
+import { BaseFPSLogger } from '../../shared/service/BaseFPSLogger.js';
+
 /**
  * FPS Logger
  */
-function FPSLogger()
-{
-    BaseFPSLogger.call(this);
+export class FPSLogger extends BaseFPSLogger {
+    constructor() {
+        super();
+    }
 }
-
-FPSLogger.prototype = Object.create(BaseFPSLogger.prototype);
-FPSLogger.prototype.constructor = FPSLogger;

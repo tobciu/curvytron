@@ -1,18 +1,119 @@
 /**
  * Sound Manager
  *
+ * Plays the short sound effects of the game through the Web Audio API.
+ *
  * @param {Profile} profile
  */
-function SoundManager (profile)
-{
-    this.profile = profile;
-    this.active  = this.profile.sound;
+export class SoundManager {
+    constructor(profile) {
+        this.profile = profile;
+        this.active = this.profile.sound;
+        this.buffers = new Map();
+        this.sources = new Map();
 
-    this.toggle = this.toggle.bind(this);
+        this.toggle = this.toggle.bind(this);
 
-    createjs.Sound.alternateExtensions = ['mp3'];
-    createjs.Sound.registerSounds(this.sounds, this.directory);
-    createjs.Sound.setVolume(this.active ? this.volume : 0);
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+
+        if (AudioContext) {
+            this.context = new AudioContext();
+            this.gain = this.context.createGain();
+            this.gain.connect(this.context.destination);
+            this.setVolume(this.active ? this.volume : 0);
+            this.extension = new Audio().canPlayType('audio/ogg; codecs="vorbis"') ? 'ogg' : 'mp3';
+
+            this.sounds.forEach((sound) => this.load(sound));
+        }
+    }
+
+    /**
+     * Load a sound
+     *
+     * @param {String} sound
+     */
+    async load(sound) {
+        try {
+            const response = await fetch(`${this.directory}${sound}.${this.extension}`);
+            const data = await response.arrayBuffer();
+
+            this.buffers.set(sound, await this.context.decodeAudioData(data));
+        } catch (error) {
+            console.warn('Could not load sound "%s":', sound, error);
+        }
+    }
+
+    /**
+     * Play a sound
+     *
+     * @param {String} sound
+     */
+    play(sound) {
+        const buffer = this.buffers.get(sound);
+
+        if (!this.active || !buffer) {
+            return;
+        }
+
+        if (this.context.state === 'suspended') {
+            this.context.resume();
+        }
+
+        const source = this.context.createBufferSource();
+
+        source.buffer = buffer;
+        source.connect(this.gain);
+        source.onended = () => this.sources.get(sound)?.delete(source);
+        source.start();
+
+        if (!this.sources.has(sound)) {
+            this.sources.set(sound, new Set());
+        }
+
+        this.sources.get(sound).add(source);
+    }
+
+    /**
+     * Stop every running instance of a sound
+     *
+     * @param {String} sound
+     */
+    stop(sound) {
+        for (const source of this.sources.get(sound) ?? []) {
+            source.stop();
+        }
+
+        this.sources.delete(sound);
+    }
+
+    /**
+     * Toggle active
+     */
+    toggle() {
+        this.setActive(!this.active);
+    }
+
+    /**
+     * Set active/inactive
+     *
+     * @param {Boolean} active
+     */
+    setActive(active) {
+        this.active = Boolean(active);
+        this.setVolume(this.active ? this.volume : 0);
+        this.profile.setSound(this.active);
+    }
+
+    /**
+     * Set volume
+     *
+     * @param {Number} volume
+     */
+    setVolume(volume = this.volume) {
+        if (this.gain) {
+            this.gain.gain.value = volume;
+        }
+    }
 }
 
 /**
@@ -23,17 +124,11 @@ function SoundManager (profile)
 SoundManager.prototype.volume = 0.5;
 
 /**
- * Sounds
+ * Sounds (files in public/sounds, in .ogg and .mp3)
  *
  * @type {Array}
  */
-SoundManager.prototype.sounds = [
-    {id:'death', src:'death.ogg'},
-    {id:'win', src:'win.ogg'},
-    {id:'notice', src:'notice.ogg'},
-    {id:'bonus-clear', src:'bonus-clear.ogg'},
-    {id:'bonus-pop', src:'bonus-pop.ogg'}
-];
+SoundManager.prototype.sounds = ['death', 'win', 'notice', 'bonus-clear', 'bonus-pop'];
 
 /**
  * Directory
@@ -41,55 +136,3 @@ SoundManager.prototype.sounds = [
  * @type {String}
  */
 SoundManager.prototype.directory = 'sounds/';
-
-/**
- * Play a sound
- *
- * @param {String} sound
- */
-SoundManager.prototype.play = function(sound)
-{
-    if (this.active) {
-        createjs.Sound.play(sound);
-    }
-};
-
-/**
- * Sound manager
- *
- * @param {String} sound
- */
-SoundManager.prototype.stop = function(sound)
-{
-    createjs.Sound.stop(sound);
-};
-
-/**
- * Toggle active
- */
-SoundManager.prototype.toggle = function ()
-{
-    this.setActive(!this.active);
-};
-
-/**
- * Set active/inactive
- *
- * @param {Boolean} active
- */
-SoundManager.prototype.setActive = function(active)
-{
-    this.active = active ? true : false;
-    this.setVolume(this.active ? this.volume : 0);
-    this.profile.setSound(this.active);
-};
-
-/**
- * Set volume
- *
- * @param {Number} volume
- */
-SoundManager.prototype.setVolume = function(volume)
-{
-    createjs.Sound.setVolume(typeof(volume) !== 'undefined' ? volume : this.volume);
-};

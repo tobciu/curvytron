@@ -1,3 +1,5 @@
+import { Message } from './Message.js';
+
 /**
  * Player Message
  *
@@ -6,17 +8,22 @@
  * @param {Player} player
  * @param {Number} creation
  */
-function MessagePlayer(client, content, player, creation)
-{
-    Message.call(this, creation);
+export class MessagePlayer extends Message {
+    constructor(client, content, player, creation) {
+        super(creation);
 
-    this.client  = client;
-    this.content = content;
-    this.player  = player;
+        this.client = client;
+        this.content = content;
+        this.player = player;
+    }
+
+    /**
+     * Clear message
+     */
+    clear() {
+        this.content = '';
+    }
 }
-
-MessagePlayer.prototype = Object.create(Message.prototype);
-MessagePlayer.prototype.constructor = MessagePlayer;
 
 /**
  * Message type
@@ -24,12 +31,3 @@ MessagePlayer.prototype.constructor = MessagePlayer;
  * @type {String}
  */
 MessagePlayer.prototype.type = 'player';
-
-/**
- * Clear message
- */
-MessagePlayer.prototype.clear = function()
-{
-    this.content = '';
-};
-

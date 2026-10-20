@@ -1,18 +1,50 @@
+import { Bonus } from './Bonus.js';
+
 /**
  * Enemy Bonus
  *
  * @param {Number} x
  * @param {Number} y
  */
-function BonusEnemy(x, y)
-{
-    Bonus.call(this, x, y);
+export class BonusEnemy extends Bonus {
+    constructor(x, y) {
+        super(x, y);
 
-    this.off = this.off.bind(this);
+        this.off = this.off.bind(this);
+    }
+
+    /**
+     * Get target
+     *
+     * @param {Avatar} avatar
+     * @param {Game} game
+     *
+     * @return {Object}
+     */
+    getTarget(avatar, game) {
+        return game.avatars.filter(function () {
+            return this.alive && !this.equal(avatar);
+        }).items;
+    }
+
+    /**
+     * Apply on
+     */
+    on() {
+        for (let i = this.target.length - 1; i >= 0; i--) {
+            this.target[i].bonusStack.add(this);
+        }
+    }
+
+    /**
+     * Apply on
+     */
+    off() {
+        for (let i = this.target.length - 1; i >= 0; i--) {
+            this.target[i].bonusStack.remove(this);
+        }
+    }
 }
-
-BonusEnemy.prototype = Object.create(Bonus.prototype);
-BonusEnemy.prototype.constructor = BonusEnemy;
 
 /**
  * Affect enemy
@@ -20,36 +52,3 @@ BonusEnemy.prototype.constructor = BonusEnemy;
  * @type {String}
  */
 BonusEnemy.prototype.affect = 'enemy';
-
-/**
- * Get target
- *
- * @param {Avatar} avatar
- * @param {Game} game
- *
- * @return {Object}
- */
-BonusEnemy.prototype.getTarget = function(avatar, game)
-{
-    return game.avatars.filter(function () { return this.alive && !this.equal(avatar); }).items;
-};
-
-/**
- * Apply on
- */
-BonusEnemy.prototype.on = function()
-{
-    for (var i = this.target.length - 1; i >= 0; i--) {
-        this.target[i].bonusStack.add(this);
-    }
-};
-
-/**
- * Apply on
- */
-BonusEnemy.prototype.off = function()
-{
-    for (var i = this.target.length - 1; i >= 0; i--) {
-        this.target[i].bonusStack.remove(this);
-    }
-};

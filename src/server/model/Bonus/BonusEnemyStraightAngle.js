@@ -1,16 +1,41 @@
+import { BonusEnemy } from './BonusEnemy.js';
+
 /**
  * Inverse Enemy Straight Angle
  *
  * @param {Number} x
  * @param {Number} y
  */
-function BonusEnemyStraightAngle(x, y)
-{
-    BonusEnemy.call(this, x, y);
-}
+export class BonusEnemyStraightAngle extends BonusEnemy {
+    constructor(x, y) {
+        super(x, y);
+    }
 
-BonusEnemyStraightAngle.prototype = Object.create(BonusEnemy.prototype);
-BonusEnemyStraightAngle.prototype.constructor = BonusEnemyStraightAngle;
+    /**
+     * Get effects
+     *
+     * @param {Avatar} avatar
+     *
+     * @return {Array}
+     */
+    getEffects(avatar) {
+        return [
+            ['directionInLoop', false],
+            ['angularVelocityBase', Math.PI / 2]
+        ];
+    }
+
+    /**
+     * Get probability
+     *
+     * @param {Game} game
+     *
+     * @return {Number}
+     */
+    getProbability(game) {
+        return BonusEnemyStraightAngle.prototype.probability;
+    }
+}
 
 /**
  * Duration
@@ -25,30 +50,3 @@ BonusEnemyStraightAngle.prototype.duration = 5000;
  * @type {Number}
  */
 BonusEnemyStraightAngle.prototype.probability = 0.6;
-
-/**
- * Get effects
- *
- * @param {Avatar} avatar
- *
- * @return {Array}
- */
-BonusEnemyStraightAngle.prototype.getEffects = function(avatar)
-{
-    return [
-        ['directionInLoop', false],
-        ['angularVelocityBase', Math.PI/2]
-    ];
-};
-
-/**
- * Get probability
- *
- * @param {Game} game
- *
- * @return {Number}
- */
-BonusEnemyStraightAngle.prototype.getProbability = function (game)
-{
-    return BonusEnemyStraightAngle.prototype.probability;
-};

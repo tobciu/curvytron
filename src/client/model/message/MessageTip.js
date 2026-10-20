@@ -1,15 +1,15 @@
+import { Message } from './Message.js';
+
 /**
  * Tip message
  */
-function MessageTip()
-{
-    Message.call(this);
+export class MessageTip extends Message {
+    constructor() {
+        super();
 
-    this.content = this.tips[Math.floor(Math.random() * this.tips.length)];
+        this.content = this.tips[Math.floor(Math.random() * this.tips.length)];
+    }
 }
-
-MessageTip.prototype = Object.create(Message.prototype);
-MessageTip.prototype.constructor = MessageTip;
 
 /**
  * Message type

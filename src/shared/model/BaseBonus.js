@@ -1,20 +1,48 @@
+import { EventEmitter } from '#event-emitter';
+
 /**
  * BaseBonus
  *
  * @param {Number} x
  * @param {Number} y
  */
-function BaseBonus(x, y)
-{
-    EventEmitter.call(this);
+export class BaseBonus extends EventEmitter {
+    constructor(x, y) {
+        super();
 
-    this.x  = x;
-    this.y  = y;
-    this.id = null;
+        this.x = x;
+        this.y = y;
+        this.id = null;
+    }
+
+    /**
+     * Clear
+     *
+     * @param {Array} point
+     */
+    clear() {}
+
+    /**
+     * Apply to target(s)
+     *
+     * @param {Avatar} avatar
+     * @param {Game} game
+     *
+     * @return {Number}
+     */
+    applyTo(avatar, game) {}
+
+    /**
+     * Get probability
+     *
+     * @param {Game} game
+     *
+     * @return {Number}
+     */
+    getProbability(game) {
+        return BaseBonus.prototype.probability;
+    }
 }
-
-BaseBonus.prototype = Object.create(EventEmitter.prototype);
-BaseBonus.prototype.constructor = BaseBonus;
 
 /**
  * Target affected
@@ -43,32 +71,3 @@ BaseBonus.prototype.duration = 5000;
  * @type {Number}
  */
 BaseBonus.prototype.probability = 1;
-
-/**
- * Clear
- *
- * @param {Array} point
- */
-BaseBonus.prototype.clear = function () {};
-
-/**
- * Apply to target(s)
- *
- * @param {Avatar} avatar
- * @param {Game} game
- *
- * @return {Number}
- */
-BaseBonus.prototype.applyTo = function (avatar, game) {};
-
-/**
- * Get probability
- *
- * @param {Game} game
- *
- * @return {Number}
- */
-BaseBonus.prototype.getProbability = function (game)
-{
-    return BaseBonus.prototype.probability;
-};

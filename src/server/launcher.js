@@ -1,23 +1,66 @@
-var config,
-    packageInfo = require('../package.json');
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { Server } from './core/Server.js';
 
-try {
-    config = require('../config.json');
-} catch (error) {
-    config = {
-        port: 8080,
-        inspector: { enabled: false }
-    };
+const rootDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const dev = process.argv.includes('--dev');
+
+/**
+ * Load the optional config.json (see config.json.sample)
+ *
+ * @return {Promise<Object>}
+ */
+async function loadConfig() {
+    const defaults = { port: 8080, inspector: { enabled: false } };
+
+    try {
+        const config = JSON.parse(await readFile(path.join(rootDirectory, 'config.json'), 'utf8'));
+
+        return { ...defaults, ...config };
+    } catch (error) {
+        if (error.code !== 'ENOENT') {
+            console.error('Invalid config.json:', error.message);
+        }
+
+        return defaults;
+    }
 }
 
-var server = new Server({ port: config.port });
+/**
+ * Serve the client through Vite (with hot reload) instead of the production build.
+ *
+ * @return {Promise<Function>} Express middleware
+ */
+async function createDevMiddleware() {
+    const { createServer } = await import('vite');
+    const vite = await createServer({
+        root: rootDirectory,
+        appType: 'spa',
+        server: { middlewareMode: true, hmr: { port: 24678 } }
+    });
 
-if (config.inspector.enabled) {
+    return vite.middlewares;
+}
+
+const config = await loadConfig();
+const server = new Server({
+    port: Number(process.env.PORT) || config.port,
+    publicDirectory: path.join(rootDirectory, 'dist'),
+    middleware: dev ? await createDevMiddleware() : null
+});
+
+if (config.inspector?.enabled) {
     try {
-      new Inspector(server, config.inspector);
+        const { Inspector } = await import('./core/Inspector.js');
+        const packageInfo = JSON.parse(await readFile(path.join(rootDirectory, 'package.json'), 'utf8'));
+
+        new Inspector(server, config.inspector, packageInfo);
     } catch (error) {
         console.error('Inspector error:', error);
     }
 }
 
-module.exports = server;
+await server.listen();
+
+export default server;

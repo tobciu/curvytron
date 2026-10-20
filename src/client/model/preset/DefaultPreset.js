@@ -1,13 +1,13 @@
+import { Preset } from '../../../shared/model/Preset.js';
+
 /**
  * Default Preset
  */
-function DefaultPreset ()
-{
-    Preset.call(this);
+export class DefaultPreset extends Preset {
+    constructor() {
+        super();
+    }
 }
-
-DefaultPreset.prototype = Object.create(Preset.prototype);
-DefaultPreset.prototype.constructor = DefaultPreset;
 
 /**
  * Name

@@ -1,14 +1,14 @@
-(function(){
+(function () {
     'use strict';
 
-    var nbPlayers = 50;
+    const nbPlayers = 50;
 
     function getCurrentController() {
         return angular.element(document.getElementsByTagName('section')[0]).scope();
     }
 
     function createRoom() {
-        var roomsController = getCurrentController();
+        const roomsController = getCurrentController();
 
         // Ensure it's the rooms controller
         if (!roomsController.rooms) {
@@ -19,7 +19,7 @@
     }
 
     function createPlayers() {
-        var roomController = getCurrentController(),
+        const roomController = getCurrentController(),
             total = roomController.room.players.items.length;
 
         // Ensure it's the room controller
@@ -37,7 +37,7 @@
     }
 
     function launch() {
-        var roomController = getCurrentController();
+        const roomController = getCurrentController();
 
         // Ensure it's the room controller
         if (!roomController.room) {
@@ -51,4 +51,4 @@
     // Create a room
     createRoom();
     setTimeout(createPlayers, 500);
-}());
+})();

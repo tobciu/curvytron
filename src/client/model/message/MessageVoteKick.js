@@ -1,17 +1,17 @@
+import { Message } from './Message.js';
+
 /**
  * New Kick vote message
  *
  * @param {Player} target
  */
-function MessageVoteKick(target)
-{
-    Message.call(this);
+export class MessageVoteKick extends Message {
+    constructor(target) {
+        super();
 
-    this.target = target;
+        this.target = target;
+    }
 }
-
-MessageVoteKick.prototype = Object.create(Message.prototype);
-MessageVoteKick.prototype.constructor = MessageVoteKick;
 
 /**
  * Message type

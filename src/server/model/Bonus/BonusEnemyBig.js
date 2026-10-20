@@ -1,16 +1,27 @@
+import { BonusEnemy } from './BonusEnemy.js';
+
 /**
  * Big Enemy Bonus
  *
  * @param {Number} x
  * @param {Number} y
  */
-function BonusEnemyBig(x, y)
-{
-    BonusEnemy.call(this, x, y);
-}
+export class BonusEnemyBig extends BonusEnemy {
+    constructor(x, y) {
+        super(x, y);
+    }
 
-BonusEnemyBig.prototype = Object.create(BonusEnemy.prototype);
-BonusEnemyBig.prototype.constructor = BonusEnemyBig;
+    /**
+     * Get effects
+     *
+     * @param {Avatar} avatar
+     *
+     * @return {Array}
+     */
+    getEffects(avatar) {
+        return [['radius', 1]];
+    }
+}
 
 /**
  * Duration
@@ -18,15 +29,3 @@ BonusEnemyBig.prototype.constructor = BonusEnemyBig;
  * @type {Number}
  */
 BonusEnemyBig.prototype.duration = 7500;
-
-/**
- * Get effects
- *
- * @param {Avatar} avatar
- *
- * @return {Array}
- */
-BonusEnemyBig.prototype.getEffects = function(avatar)
-{
-    return [['radius', 1]];
-};

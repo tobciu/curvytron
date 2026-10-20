@@ -1,7 +1,34 @@
 /**
  * Room Name Generator
  */
-function RoomNameGenerator() {}
+export class RoomNameGenerator {
+    /**
+     * Get random name
+     *
+     * @return {String}
+     */
+    getName() {
+        return `The ${this.getAdjective()} ${this.getNoun()}`;
+    }
+
+    /**
+     * Get random adjective
+     *
+     * @return {String}
+     */
+    getAdjective() {
+        return this.adjectives[Math.floor(Math.random() * this.adjectives.length)];
+    }
+
+    /**
+     * Get random noun
+     *
+     * @return {String}
+     */
+    getNoun() {
+        return this.nouns[Math.floor(Math.random() * this.nouns.length)];
+    }
+}
 
 /**
  * Adjectives
@@ -50,33 +77,3 @@ RoomNameGenerator.prototype.nouns = [
     'confrontation',
     'challenge'
 ];
-
-/**
- * Get random name
- *
- * @return {String}
- */
-RoomNameGenerator.prototype.getName = function()
-{
-    return 'The ' + this.getAdjective() + ' ' + this.getNoun();
-};
-
-/**
- * Get random adjective
- *
- * @return {String}
- */
-RoomNameGenerator.prototype.getAdjective = function ()
-{
-    return this.adjectives[Math.floor(Math.random() * this.adjectives.length)];
-};
-
-/**
- * Get random noun
- *
- * @return {String}
- */
-RoomNameGenerator.prototype.getNoun = function ()
-{
-    return this.nouns[Math.floor(Math.random() * this.nouns.length)];
-};

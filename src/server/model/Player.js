@@ -1,3 +1,6 @@
+import { BasePlayer } from '../../shared/model/BasePlayer.js';
+import { Avatar } from './Avatar.js';
+
 /**
  * Player
  *
@@ -5,24 +8,30 @@
  * @param {String} name
  * @param {String} color
  */
-function Player(client, name, color)
-{
-    BasePlayer.call(this, client, name, color);
+export class Player extends BasePlayer {
+    constructor(client, name, color) {
+        super(client, name, color);
+    }
+
+    /**
+     * Create the avatar
+     *
+     * @return {Avatar}
+     */
+    createAvatar() {
+        return new Avatar(this);
+    }
+
+    /**
+     * Serialize
+     *
+     * @return {Object}
+     */
+    serialize() {
+        const data = super.serialize();
+
+        data.active = this.client.active;
+
+        return data;
+    }
 }
-
-Player.prototype = Object.create(BasePlayer.prototype);
-Player.prototype.constructor = Player;
-
-/**
- * Serialize
- *
- * @return {Object}
- */
-Player.prototype.serialize = function()
-{
-    var data = BasePlayer.prototype.serialize.call(this);
-
-    data.active = this.client.active;
-
-    return data;
-};

@@ -1,19 +1,18 @@
+import { BaseTrail } from '../../shared/model/BaseTrail.js';
+
 /**
  * Trail
  */
-function Trail(avatar)
-{
-    BaseTrail.call(this, avatar);
+export class Trail extends BaseTrail {
+    constructor(avatar) {
+        super(avatar);
+    }
+
+    /**
+     * Clear
+     */
+    clear() {
+        super.clear();
+        this.emit('clear', { avatar: this.avatar });
+    }
 }
-
-Trail.prototype = Object.create(BaseTrail.prototype);
-Trail.prototype.constructor = Trail;
-
-/**
- * Clear
- */
-Trail.prototype.clear = function()
-{
-    BaseTrail.prototype.clear.call(this);
-    this.emit('clear', {avatar: this.avatar});
-};

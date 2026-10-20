@@ -1,59 +1,55 @@
+import { EventEmitter } from '#event-emitter';
+
 /**
  * FPS Logger
  */
-function BaseFPSLogger()
-{
-    EventEmitter.call(this);
+export class BaseFPSLogger extends EventEmitter {
+    constructor() {
+        super();
 
-    this.interval  = null;
-    this.frames    = 0;
-    this.frequency = 0;
-
-    this.onFrame = this.onFrame.bind(this);
-    this.log     = this.log.bind(this);
-
-    this.start();
-}
-
-BaseFPSLogger.prototype = Object.create(EventEmitter.prototype);
-BaseFPSLogger.prototype.constructor = BaseFPSLogger;
-
-/**
- * End frame
- */
-BaseFPSLogger.prototype.onFrame = function ()
-{
-    this.frames++;
-};
-
-/**
- * Log
- */
-BaseFPSLogger.prototype.log = function()
-{
-    this.frequency = this.frames;
-    this.frames    = 0;
-};
-
-/**
- * Start
- */
-BaseFPSLogger.prototype.start = function()
-{
-    if (!this.interval) {
-        this.frames   = 0;
-        this.interval = setInterval(this.log, 1000);
-    }
-};
-
-/**
- * Stop
- */
-BaseFPSLogger.prototype.stop = function()
-{
-    if (this.interval) {
-        clearInterval(this.interval);
-        this.interval  = null;
+        this.interval = null;
+        this.frames = 0;
         this.frequency = 0;
+
+        this.onFrame = this.onFrame.bind(this);
+        this.log = this.log.bind(this);
+
+        this.start();
     }
-};
+
+    /**
+     * End frame
+     */
+    onFrame() {
+        this.frames++;
+    }
+
+    /**
+     * Log
+     */
+    log() {
+        this.frequency = this.frames;
+        this.frames = 0;
+    }
+
+    /**
+     * Start
+     */
+    start() {
+        if (!this.interval) {
+            this.frames = 0;
+            this.interval = setInterval(this.log, 1000);
+        }
+    }
+
+    /**
+     * Stop
+     */
+    stop() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+            this.frequency = 0;
+        }
+    }
+}

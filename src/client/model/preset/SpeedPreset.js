@@ -1,13 +1,13 @@
+import { Preset } from '../../../shared/model/Preset.js';
+
 /**
  * Speed Preset
  */
-function SpeedPreset ()
-{
-    Preset.call(this);
+export class SpeedPreset extends Preset {
+    constructor() {
+        super();
+    }
 }
-
-SpeedPreset.prototype = Object.create(Preset.prototype);
-SpeedPreset.prototype.constructor = SpeedPreset;
 
 /**
  * Name
@@ -21,7 +21,4 @@ SpeedPreset.prototype.name = 'Speed of light';
  *
  * @type {Array}
  */
-SpeedPreset.prototype.bonuses = [
-    'BonusSelfFast',
-    'BonusEnemyFast'
-];
+SpeedPreset.prototype.bonuses = ['BonusSelfFast', 'BonusEnemyFast'];

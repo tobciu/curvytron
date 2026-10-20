@@ -1,17 +1,17 @@
+import { Message } from './Message.js';
+
 /**
  * Kick message
  *
  * @param {Player} target
  */
-function MessageKick (target)
-{
-    Message.call(this);
+export class MessageKick extends Message {
+    constructor(target) {
+        super();
 
-    this.target = target;
+        this.target = target;
+    }
 }
-
-MessageKick.prototype = Object.create(Message.prototype);
-MessageKick.prototype.constructor = MessageKick;
 
 /**
  * Message type

@@ -1,18 +1,135 @@
+import { CustomPreset } from './preset/CustomPreset.js';
+import { DefaultPreset } from './preset/DefaultPreset.js';
+import { EmptyPreset } from './preset/EmptyPreset.js';
+import { RandomPreset } from './preset/RandomPreset.js';
+import { SizePreset } from './preset/SizePreset.js';
+import { SoloPreset } from './preset/SoloPreset.js';
+import { SpeedPreset } from './preset/SpeedPreset.js';
+import { BaseRoomConfig } from '../../shared/model/BaseRoomConfig.js';
+
 /**
  * Room Configuration
  *
  * @param {Room} room
  */
-function RoomConfig(room)
-{
-    BaseRoomConfig.call(this, room);
+export class RoomConfig extends BaseRoomConfig {
+    constructor(room) {
+        super(room);
 
-    this.preset       = this.getDefaultPreset();
-    this.customPreset = new CustomPreset();
+        this.preset = this.getDefaultPreset();
+        this.customPreset = new CustomPreset();
+    }
+
+    /**
+     * Set open
+     *
+     * @param {String} open
+     */
+    setOpen(open) {
+        this.open = open;
+    }
+
+    /**
+     * Set password
+     *
+     * @param {String} password
+     */
+    setPassword(password) {
+        this.password = password;
+    }
+
+    /**
+     * Get available bonuses
+     *
+     * @return {Array}
+     */
+    getBonuses() {
+        const bonuses = [];
+
+        for (const bonus in this.bonuses) {
+            if (this.bonuses[bonus]) {
+                bonuses.push(bonus);
+            }
+        }
+
+        return bonuses.sort();
+    }
+
+    /**
+     * Set bonus value
+     *
+     * @param {String} bonus
+     * @param {Boolean} value
+     *
+     * @return {Boolean}
+     */
+    setBonus(bonus, value) {
+        super.setBonus(bonus, value);
+        this.checkPresets();
+    }
+
+    /**
+     * Check preset
+     */
+    checkPresets() {
+        const bonuses = this.getBonuses();
+        let preset;
+
+        for (let i = this.presets.length - 1; i >= 0; i--) {
+            preset = this.presets[i];
+            if (this.bonusesMatch(preset.bonuses, bonuses)) {
+                this.preset = preset;
+
+                return;
+            }
+        }
+
+        this.preset = this.customPreset;
+    }
+
+    /**
+     * Bonuses match
+     *
+     * @param {Array} listA
+     * @param {Array} listB
+     *
+     * @return {Boolean}
+     */
+    bonusesMatch(listA, listB) {
+        if (typeof listA !== 'object' || typeof listA !== 'object') {
+            return false;
+        }
+
+        return listA.length === listB.length && listA.sort().toString() === listB.sort().toString();
+    }
+
+    /**
+     * IS default preset
+     *
+     * @return {Boolean}
+     */
+    isDefaultPreset() {
+        return this.preset === this.getDefaultPreset();
+    }
+
+    /**
+     * Get default preset
+     *
+     * @return {Preset}
+     */
+    getDefaultPreset() {
+        return this.presets[0];
+    }
+
+    /**
+     * Get custom preset
+     *
+     * @return {CustomPreset}
+     */
+    getCustomPreset() {
+        return this.customPreset;
+    }
 }
-
-RoomConfig.prototype = Object.create(BaseRoomConfig.prototype);
-RoomConfig.prototype.constructor = RoomConfig;
 
 /**
  * Bonus classes
@@ -30,7 +147,7 @@ RoomConfig.prototype.bonusClasses = {
     BonusEnemyInverse: 'bonus-enemy-inverse',
     BonusEnemyStraightAngle: 'bonus-enemy-straight-angle',
     BonusGameBorderless: 'bonus-game-borderless',
-    BonusAllColor:'bonus-all-color',
+    BonusAllColor: 'bonus-all-color',
     BonusGameClear: 'bonus-all-clear',
     BonusSelfRandom: 'bonus-self-random',
     BonusLeaderRandom: 'bonus-leader-random',
@@ -63,122 +180,3 @@ RoomConfig.prototype.presets = [
     new EmptyPreset(),
     new RandomPreset()
 ];
-
-/**
- * Set open
- *
- * @param {String} open
- */
-RoomConfig.prototype.setOpen = function(open)
-{
-    this.open = open;
-};
-
-/**
- * Set password
- *
- * @param {String} password
- */
-RoomConfig.prototype.setPassword = function(password)
-{
-    this.password = password;
-};
-
-/**
- * Get available bonuses
- *
- * @return {Array}
- */
-RoomConfig.prototype.getBonuses = function()
-{
-    var bonuses = [];
-
-    for (var bonus in this.bonuses) {
-        if (this.bonuses[bonus]) {
-            bonuses.push(bonus);
-        }
-    }
-
-    return bonuses.sort();
-};
-
-/**
- * Set bonus value
- *
- * @param {String} bonus
- * @param {Boolean} value
- *
- * @return {Boolean}
- */
-RoomConfig.prototype.setBonus = function(bonus, value)
-{
-    BaseRoomConfig.prototype.setBonus.call(this, bonus, value);
-    this.checkPresets();
-};
-
-/**
- * Check preset
- */
-RoomConfig.prototype.checkPresets = function()
-{
-    var bonuses = this.getBonuses(),
-        preset;
-
-    for (var i = this.presets.length - 1; i >= 0; i--) {
-        preset = this.presets[i];
-        if (this.bonusesMatch(preset.bonuses, bonuses)) {
-            this.preset = preset;
-
-            return;
-        }
-    }
-
-    this.preset = this.customPreset;
-};
-
-/**
- * Bonuses match
- *
- * @param {Array} listA
- * @param {Array} listB
- *
- * @return {Boolean}
- */
-RoomConfig.prototype.bonusesMatch = function(listA, listB)
-{
-    if (typeof(listA) !== 'object' || typeof(listA) !== 'object') {
-        return false;
-    }
-
-    return listA.length === listB.length && listA.sort().toString() === listB.sort().toString();
-};
-
-/**
- * IS default preset
- *
- * @return {Boolean}
- */
-RoomConfig.prototype.isDefaultPreset = function()
-{
-    return this.preset === this.getDefaultPreset();
-};
-
-/**
- * Get default preset
- *
- * @return {Preset}
- */
-RoomConfig.prototype.getDefaultPreset = function()
-{
-    return this.presets[0];
-};
-
-/**
- * Get custom preset
- *
- * @return {CustomPreset}
- */
-RoomConfig.prototype.getCustomPreset = function()
-{
-    return this.customPreset;
-};
