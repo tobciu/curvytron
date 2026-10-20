@@ -63,9 +63,12 @@ export async function addLocalPlayer(page: Page, name: string): Promise<void> {
     await expect(page.locator('.room-players tr.local')).toHaveCount(before + 1);
 }
 
-/** Set every local player ready (clicks only the ones that are not ready yet). */
+/** Toggle the ready state of every local player (they are all expected to be not ready yet). */
 export async function readyAll(page: Page): Promise<void> {
-    for (const button of await page.locator('.room-players tr.local .player-ready:not(.ready)').all()) {
-        await button.click();
+    const rows = page.locator('.room-players tr.local');
+    const count = await rows.count();
+
+    for (let index = 0; index < count; index++) {
+        await rows.nth(index).locator('.player-ready').click();
     }
 }

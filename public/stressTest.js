@@ -1,35 +1,39 @@
+/**
+ * Stress test: creates a room, adds players to it and starts the game.
+ * Drives the page like a user would (see doc/dev.md).
+ */
 (function () {
     'use strict';
 
     const nbPlayers = 50;
 
-    function getCurrentController() {
-        return angular.element(document.getElementsByTagName('section')[0]).scope();
+    function type(input, value) {
+        input.value = value;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.form.requestSubmit();
     }
 
     function createRoom() {
-        const roomsController = getCurrentController();
+        const input = document.querySelector('.top-right-form input[name=name]');
 
-        // Ensure it's the rooms controller
-        if (!roomsController.rooms) {
-            return;
+        // Ensure we are on the room list
+        if (input) {
+            type(input, 'Stress test ' + Date.now());
         }
-
-        roomsController.createRoom();
     }
 
     function createPlayers() {
-        const roomController = getCurrentController(),
-            total = roomController.room.players.items.length;
+        const input = document.getElementById('add-user-name');
 
-        // Ensure it's the room controller
-        if (!roomController.room) {
+        // Ensure we are in a room
+        if (!input) {
             return;
         }
 
-        roomController.submitAddPlayer('Slug #' + total);
+        const total = document.querySelectorAll('.room-players tr.local').length;
 
         if (total < nbPlayers) {
+            type(input, 'Slug #' + total);
             setTimeout(createPlayers, 50);
         } else {
             launch();
@@ -37,18 +41,13 @@
     }
 
     function launch() {
-        const roomController = getCurrentController();
+        const button = document.querySelector('.start-now');
 
-        // Ensure it's the room controller
-        if (!roomController.room) {
-            return;
+        if (button) {
+            button.click();
         }
-
-        // Set all players ready
-        roomController.launch();
     }
 
-    // Create a room
     createRoom();
     setTimeout(createPlayers, 500);
 })();

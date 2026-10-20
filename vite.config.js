@@ -1,33 +1,10 @@
-import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import vue from '@vitejs/plugin-vue';
 import { defineConfig } from 'vite';
 import { minify } from 'html-minifier-terser';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'src/client');
-
-/**
- * Angular templates (`import template from './views/x.html?template'`) are whitespace-collapsed
- * like the previous gulp build did: the layout of the game depends on it.
- */
-function templates() {
-    return {
-        name: 'curvytron-templates',
-        async load(id) {
-            if (!id.endsWith('.html?template')) {
-                return null;
-            }
-
-            const file = id.slice(0, -'?template'.length);
-
-            this.addWatchFile(file);
-
-            const html = await minify(await readFile(file, 'utf8'), { collapseWhitespace: true });
-
-            return `export default ${JSON.stringify(html)};`;
-        }
-    };
-}
 
 /**
  * Collapse whitespace of the index page in production.
@@ -47,7 +24,19 @@ export default defineConfig({
     root,
     base: './',
     publicDir: path.resolve(root, '../../public'),
-    plugins: [templates(), minifyIndex()],
+    plugins: [
+        vue({
+            template: {
+                // <colorpicker-saturation> & co are styled custom elements
+                compilerOptions: {
+                    isCustomElement: (tag) => tag.startsWith('colorpicker-'),
+                    // Keep whitespace between inline elements like the HTML minifier did for the old templates
+                    whitespace: 'preserve'
+                }
+            }
+        }),
+        minifyIndex()
+    ],
     build: {
         outDir: path.resolve(root, '../../dist'),
         emptyOutDir: true,
@@ -55,7 +44,7 @@ export default defineConfig({
     },
     test: {
         root: path.resolve(root, '../..'),
-        include: ['tests/**/*.test.js']
+        include: ['tests/**/*.test.{js,ts}']
     },
     css: {
         preprocessorOptions: {

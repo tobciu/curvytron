@@ -1,3 +1,4 @@
+<template>
 <section id="about" class="container">
     <section>
         <h1>Team</h1>
@@ -59,3 +60,4 @@
         </div>
     </section>
 </section>
+</template>

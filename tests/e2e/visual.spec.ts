@@ -47,6 +47,23 @@ test('profile panel', async ({ browser }) => {
     );
 });
 
+test('color picker', async ({ browser }) => {
+    const page = await openPlayer(browser, 'Alice', { color: '#336699' });
+
+    await page.goto('/');
+    await page.locator('.profile-link').click();
+    await expect(page.locator('.panel')).toHaveClass(/active/);
+    await page.waitForTimeout(500);
+    await page.locator('#profile-color').click();
+    await expect(page.locator('.colorpicker')).toBeVisible();
+
+    // The profile panel is fixed on the right, the picker opens below the color field
+    await expect(page).toHaveScreenshot('color-picker.png', {
+        ...snapshotOptions(page),
+        clip: { x: 780, y: 100, width: 500, height: 380 }
+    });
+});
+
 test('first visit profile tutorial', async ({ browser }) => {
     const page = await openPlayer(browser, 'Nobody', { profile: false });
 
