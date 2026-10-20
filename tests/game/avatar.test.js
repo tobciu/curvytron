@@ -43,6 +43,15 @@ describe('Avatar', () => {
         expect(avatar.y).toBeCloseTo(18);
     });
 
+    it('moves when it faces exactly to the right, as it does after a reset', () => {
+        const [avatar] = avatars();
+
+        place(avatar, 10, 10, 0);
+        avatar.update(1000);
+
+        expect(avatar.x).toBeCloseTo(26);
+    });
+
     it('does not move once dead', () => {
         const [avatar] = avatars();
 

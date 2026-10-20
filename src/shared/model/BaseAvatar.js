@@ -335,7 +335,7 @@ export class BaseAvatar extends EventEmitter {
             this.body.radius = BaseAvatar.prototype.radius;
         }
 
-        // useless? this.updateVelocities();
+        this.updateVelocities();
     }
 
     /**

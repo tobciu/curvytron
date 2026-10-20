@@ -36,8 +36,6 @@ export function createGame(names = ['Alice', 'Bob', 'Carl']) {
 export function place(avatar, x, y, angle = 0) {
     avatar.setPosition(x, y);
     avatar.setAngle(angle);
-    // setAngle() does nothing when the angle does not change: velocities would stay at zero
-    avatar.updateVelocities();
 }
 
 /** The properties a bonus can change: used to check that a bonus is fully reverted. */
