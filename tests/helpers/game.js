@@ -1,6 +1,6 @@
-import { Room } from '../../src/server/model/Room.js';
-import { Player } from '../../src/server/model/Player.js';
-import { Collection } from '../../src/shared/Collection.js';
+import { Room } from '../../src/server/model/Room.ts';
+import { Player } from '../../src/server/model/Player.ts';
+import { Collection } from '../../src/shared/Collection.ts';
 
 /** A client that is not connected to anything: it ignores what is sent to it. */
 export function createClient(id) {

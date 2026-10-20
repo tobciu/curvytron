@@ -1,0 +1,39 @@
+import { BaseBonusStack } from '../../shared/model/BaseBonusStack.ts';
+import type { Bonus } from './Bonus/Bonus.ts';
+
+/**
+ * Game Bonus Stack
+ */
+export class GameBonusStack extends BaseBonusStack {
+    constructor(game: any) {
+        super(game);
+    }
+
+    /**
+     * Add bonus to the stack
+     */
+    add(bonus: Bonus) {
+        super.add(bonus);
+    }
+
+    /**
+     * Remove bonus from the stack
+     */
+    remove(bonus: Bonus) {
+        super.remove(bonus);
+    }
+
+    /**
+     * Apply the value to target's property
+     */
+    apply(property: string, value: number) {
+        switch (property) {
+            case 'borderless':
+                this.target.setBorderless(value ? true : false);
+                break;
+            default:
+                super.apply(property, value);
+                break;
+        }
+    }
+}

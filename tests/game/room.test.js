@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Room } from '../../src/server/model/Room.js';
-import { Player } from '../../src/server/model/Player.js';
-import { KickVote } from '../../src/server/model/KickVote.js';
-import { FloodFilter } from '../../src/server/service/FloodFilter.js';
-import { RoomNameGenerator } from '../../src/server/service/RoomNameGenerator.js';
-import { BonusSelfFast } from '../../src/server/model/Bonus/BonusSelfFast.js';
-import { Collection } from '../../src/shared/Collection.js';
+import { Room } from '../../src/server/model/Room.ts';
+import { Player } from '../../src/server/model/Player.ts';
+import { KickVote } from '../../src/server/model/KickVote.ts';
+import { FloodFilter } from '../../src/server/service/FloodFilter.ts';
+import { RoomNameGenerator } from '../../src/server/service/RoomNameGenerator.ts';
+import { BonusSelfFast } from '../../src/server/model/Bonus/BonusSelfFast.ts';
+import { Collection } from '../../src/shared/Collection.ts';
 import { createClient, createGame, place } from '../helpers/game.js';
 
 beforeEach(() => vi.useFakeTimers());

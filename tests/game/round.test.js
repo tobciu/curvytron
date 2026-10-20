@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AvatarBody } from '../../src/server/core/AvatarBody.js';
+import { AvatarBody } from '../../src/server/core/AvatarBody.ts';
 import { createGame, place } from '../helpers/game.js';
 
 let game;

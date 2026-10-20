@@ -250,7 +250,7 @@ export abstract class BaseAvatar extends EventEmitter {
     /**
      * Die
      */
-    die() {
+    die(_body?: unknown) {
         this.bonusStack.clear();
         this.alive = false;
         this.addPoint(this.x, this.y);

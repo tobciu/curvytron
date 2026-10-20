@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { World } from '../../src/server/core/World.js';
-import { Body } from '../../src/server/core/Body.js';
+import { World } from '../../src/server/core/World.ts';
+import { Body } from '../../src/server/core/Body.ts';
 
 /** A world where the bodies are taken into account, like during a game */
 function createWorld(size = 100) {

@@ -93,7 +93,7 @@ export abstract class BasePlayer extends EventEmitter {
     /**
      * Serialize
      */
-    serialize() {
+    serialize(): Record<string, any> {
         return {
             client: this.client.id,
             id: this.id,

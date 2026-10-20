@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { Collection } from '../src/shared/Collection.js';
-import { Compressor } from '../src/shared/service/Compressor.js';
-import { BaseSocketClient } from '../src/shared/core/BaseSocketClient.js';
+import { Collection } from '../src/shared/Collection.ts';
+import { Compressor } from '../src/shared/service/Compressor.ts';
+import { BaseSocketClient } from '../src/shared/core/BaseSocketClient.ts';
 import { EventEmitter } from '#event-emitter';
 
 describe('Collection', () => {

@@ -5,7 +5,7 @@
     src
      |- shared  # Base classes that are extended by their equivalent on client and server side
      |- client  # Front-end (Vue 3 + TypeScript, bundled by Vite)
-     |- server  # Back-end (Node.js, WebSocket server)
+     |- server  # Back-end (Node.js, WebSocket server), TypeScript run directly by Node >= 22.18
     public      # Static assets (images, fonts, sounds) copied as is to the build
     tests       # Vitest unit / integration tests and Playwright end-to-end tests
 
@@ -38,8 +38,16 @@ constructor of the base class does not see the override: read it later (methods,
 The shared classes can not reference client or server classes directly: they call factory methods
 (`createTrail()`, `createGame()`, ...) that are implemented on each side.
 
-`#event-emitter` is resolved to Node's `EventEmitter` on the server and to `src/client/EventEmitter.js` in the browser.
+`#event-emitter` is resolved to Node's `EventEmitter` on the server and to `src/client/EventEmitter.ts` in the browser.
 On the client, listeners receive a DOM-like event (`{ type, detail }`).
+
+### TypeScript
+
+`src/shared` and `src/server` are written in strict TypeScript. Node (>= 22.18) strips the types at runtime, so there is
+no build step for the server (`node src/server/launcher.ts`). This limits the syntax to what can simply be erased:
+relative imports end with `.ts`, no enums / namespaces / constructor parameter properties, and a subclass that only
+narrows the type of an inherited field uses `declare` (a plain redeclaration would reset the value set by the base class).
+`npm run typecheck` checks everything.
 
 ## Commands
 

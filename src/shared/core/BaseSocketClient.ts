@@ -99,7 +99,7 @@ export class BaseSocketClient extends EventEmitter {
     /**
      * Add an event to the list
      */
-    addEvent(name: string, data?: any, callback?: (...args: any[]) => any, force?: boolean) {
+    addEvent(name: string, data?: any, callback?: ((...args: any[]) => any) | null, force?: boolean) {
         const event: any[] = [name];
 
         if (typeof data !== 'undefined') {
@@ -121,7 +121,7 @@ export class BaseSocketClient extends EventEmitter {
     /**
      * Add an event to the list
      */
-    addEvents(sources: any, force: boolean) {
+    addEvents(sources: any, force?: boolean) {
         const length = sources.length,
             events: any[][] = [];
 
@@ -242,7 +242,7 @@ export class BaseSocketClient extends EventEmitter {
     /**
      * Object version of the client
      */
-    serialize() {
+    serialize(): Record<string, any> {
         return { id: this.id };
     }
 }

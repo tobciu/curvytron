@@ -3,11 +3,7 @@
         "target": "ES2022",
         "module": "ESNext",
         "moduleResolution": "Bundler",
-        "lib": [
-            "ES2023",
-            "DOM",
-            "DOM.Iterable"
-        ],
+        "lib": ["ES2023", "DOM", "DOM.Iterable"],
         "strict": true,
         "noEmit": true,
         "skipLibCheck": true,
@@ -16,19 +12,10 @@
         "allowJs": true,
         "checkJs": false,
         "resolveJsonModule": true,
-        "types": [
-            "vite/client",
-            "node"
-        ],
+        "types": ["vite/client", "node"],
         "allowImportingTsExtensions": true,
         "erasableSyntaxOnly": true,
         "noImplicitOverride": false
     },
-    "include": [
-        "src/client/**/*.ts",
-        "src/client/**/*.vue",
-        "src/client/**/*.js",
-        "src/shared/**/*.js",
-        "tests/**/*.ts"
-    ]
+    "include": ["src/**/*.ts", "src/client/**/*.vue", "src/client/**/*.js", "src/shared/**/*.js", "tests/**/*.ts"]
 }

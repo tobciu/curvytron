@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { Server } from '../src/server/core/Server.js';
+import { Server } from '../src/server/core/Server.ts';
 import { TestClient } from './helpers/TestClient.js';
 
 let server;

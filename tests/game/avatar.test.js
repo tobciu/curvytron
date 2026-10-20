@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { BaseAvatar } from '../../src/shared/model/BaseAvatar.js';
+import { BaseAvatar } from '../../src/shared/model/BaseAvatar.ts';
 import { createGame, place } from '../helpers/game.js';
 
 let game;

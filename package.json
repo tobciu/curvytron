@@ -1,80 +1,82 @@
 {
-  "name": "curvytron",
-  "version": "2.0.0",
-  "description": "A web multiplayer Tron game like... with curves!",
-  "keywords": [
-    "tron",
-    "game",
-    "indie",
-    "html5",
-    "devops"
-  ],
-  "homepage": "https://github.com/Elao/curvytron",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Elao/curvytron"
-  },
-  "license": "MIT",
-  "contributors": [
-    {
-      "name": "Johan Dufour",
-      "email": "johan.dufour@gmail.com",
-      "homepage": "https://github.com/lutangar"
+    "name": "curvytron",
+    "version": "2.0.0",
+    "description": "A web multiplayer Tron game like... with curves!",
+    "keywords": [
+        "tron",
+        "game",
+        "indie",
+        "html5",
+        "devops"
+    ],
+    "homepage": "https://github.com/Elao/curvytron",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Elao/curvytron"
     },
-    {
-      "name": "Thomas JARRAND",
-      "email": "thomas.jarrand@gmail.com",
-      "homepage": "http://thomas-jarrand.com"
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Johan Dufour",
+            "email": "johan.dufour@gmail.com",
+            "homepage": "https://github.com/lutangar"
+        },
+        {
+            "name": "Thomas JARRAND",
+            "email": "thomas.jarrand@gmail.com",
+            "homepage": "http://thomas-jarrand.com"
+        }
+    ],
+    "type": "module",
+    "engines": {
+        "node": ">=22.18"
+    },
+    "imports": {
+        "#event-emitter": {
+            "node": "./src/server/EventEmitter.ts",
+            "default": "./src/client/EventEmitter.ts"
+        }
+    },
+    "scripts": {
+        "dev": "node src/server/launcher.ts --dev",
+        "build": "vite build",
+        "start": "node src/server/launcher.ts",
+        "lint": "eslint .",
+        "format": "prettier --write .",
+        "test": "vitest run",
+        "test:e2e": "npm run build && playwright test",
+        "typecheck": "vue-tsc --noEmit",
+        "test:visual": "npm run build && playwright test --project=visual",
+        "test:visual:update": "npm run build && playwright test --project=visual --update-snapshots"
+    },
+    "dependencies": {
+        "express": "^5.1.0",
+        "ws": "^8.18.0"
+    },
+    "optionalDependencies": {
+        "influx": "^5.9.0"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.0.0",
+        "@playwright/test": "^1.56.1",
+        "@types/express": "^5.0.6",
+        "@types/node": "^22.20.5",
+        "@types/ws": "^8.18.2",
+        "@vitejs/plugin-vue": "^6.0.10",
+        "@vue/test-utils": "^2.5.1",
+        "eslint": "^9.0.0",
+        "eslint-plugin-vue": "^10.11.1",
+        "globals": "^16.0.0",
+        "html-minifier-terser": "^7.2.0",
+        "jsdom": "^29.1.1",
+        "prettier": "^3.3.0",
+        "sass": "^1.80.0",
+        "typescript": "~5.9",
+        "typescript-eslint": "^8.72.0",
+        "vite": "^7.0.0",
+        "vitest": "^3.0.0",
+        "vue": "^3.5.44",
+        "vue-router": "^4.6.4",
+        "vue-tsc": "^3.3.13"
     }
-  ],
-  "type": "module",
-  "engines": {
-    "node": ">=22.18"
-  },
-  "imports": {
-    "#event-emitter": {
-      "node": "./src/server/EventEmitter.js",
-      "default": "./src/client/EventEmitter.js"
-    }
-  },
-  "scripts": {
-    "dev": "node src/server/launcher.js --dev",
-    "build": "vite build",
-    "start": "node src/server/launcher.js",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "test": "vitest run",
-    "test:e2e": "npm run build && playwright test",
-    "typecheck": "vue-tsc --noEmit",
-    "test:visual": "npm run build && playwright test --project=visual",
-    "test:visual:update": "npm run build && playwright test --project=visual --update-snapshots"
-  },
-  "dependencies": {
-    "express": "^5.1.0",
-    "ws": "^8.18.0"
-  },
-  "optionalDependencies": {
-    "influx": "^5.9.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.0.0",
-    "@playwright/test": "^1.56.1",
-    "@types/node": "^22.20.5",
-    "@vitejs/plugin-vue": "^6.0.10",
-    "@vue/test-utils": "^2.5.1",
-    "eslint": "^9.0.0",
-    "eslint-plugin-vue": "^10.11.1",
-    "globals": "^16.0.0",
-    "html-minifier-terser": "^7.2.0",
-    "jsdom": "^29.1.1",
-    "prettier": "^3.3.0",
-    "sass": "^1.80.0",
-    "typescript": "~5.9",
-    "typescript-eslint": "^8.72.0",
-    "vite": "^7.0.0",
-    "vitest": "^3.0.0",
-    "vue": "^3.5.44",
-    "vue-router": "^4.6.4",
-    "vue-tsc": "^3.3.13"
-  }
 }

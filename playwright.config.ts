@@ -5,7 +5,7 @@ const port = Number(process.env.E2E_PORT ?? 4173);
 const visualPort = port + 1;
 
 const server = (serverPort: number) => ({
-    command: 'node src/server/launcher.js',
+    command: 'node src/server/launcher.ts',
     env: { PORT: String(serverPort) },
     url: `http://localhost:${serverPort}`,
     reuseExistingServer: !process.env.CI,
