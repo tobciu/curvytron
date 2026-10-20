@@ -5,7 +5,7 @@ WORKDIR /curvytron
 COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY vite.config.js ./
+COPY vite.config.js tsconfig.json ./
 COPY public public
 COPY src src
 RUN npm run build
