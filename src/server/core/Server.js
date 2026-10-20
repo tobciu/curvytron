@@ -64,7 +64,7 @@ export class Server extends EventEmitter {
     listen() {
         return new Promise((resolve) => {
             this.server.listen(this.config.port, () => {
-                console.info('Listening on port %s', this.config.port);
+                console.info('Listening on port %s', this.server.address().port);
                 resolve(this);
             });
         });

@@ -10,7 +10,7 @@ server {
     server_name curvytron.acme.com;
 
     # Path to curvytron repository on file system:
-    root /path/to/curvytron/web;
+    root /path/to/curvytron/dist;
     index index.html;
 
     # Custom logs (Optional):

@@ -89,7 +89,7 @@ curvytronApp.controller('PlayerListController', ['$scope', '$element', 'SocketCl
 curvytronApp.controller('RoundController', ['$scope', 'GameRepository', 'Notifier', RoundController]);
 curvytronApp.controller('MetricController', ['$scope', 'SocketClient', MetricController]);
 curvytronApp.controller('WaitingController', ['$scope', 'SocketClient', WaitingController]);
-curvytronApp.controller('KillLogController', ['$scope', '$interpolate', 'SocketClient', KillLogController]);
+curvytronApp.controller('KillLogController', ['$scope', 'SocketClient', KillLogController]);
 curvytronApp.controller('ProfileController', ['$scope', 'Profile', 'Radio', 'SoundManager', ProfileController]);
 
 curvytronApp.config([

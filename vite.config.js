@@ -51,7 +51,11 @@ export default defineConfig({
     build: {
         outDir: path.resolve(root, '../../dist'),
         emptyOutDir: true,
-        sourcemap: true
+        sourcemap: false
+    },
+    test: {
+        root: path.resolve(root, '../..'),
+        include: ['tests/**/*.test.js']
     },
     css: {
         preprocessorOptions: {

@@ -5,11 +5,10 @@ import { MessageDie } from '../../model/message/MessageDie.js';
  * Kill Log Controller
  *
  * @param {Object} $scope
- * @param {Object} $interpolate
  * @param {SocketClient} client
  */
 export class KillLogController extends AbstractController {
-    constructor($scope, $interpolate, client) {
+    constructor($scope, client) {
         super($scope);
 
         if (!$scope.game) {
@@ -20,18 +19,18 @@ export class KillLogController extends AbstractController {
         this.game = $scope.game;
         this.element = document.getElementById('kill-log-feed');
         this.templates = {
-            suicide: $interpolate(
-                '<span style="color: {{ ::deadPlayer.color }}">{{ ::deadPlayer.name }}</span> committed suicide'
-            ),
-            kill: $interpolate(
-                '<span style="color: {{ ::deadPlayer.color }}">{{ ::deadPlayer.name }}</span> was killed by <span style="color: {{ ::killerPlayer.color }}">{{ ::killerPlayer.name }}</span>'
-            ),
-            crash: $interpolate(
-                '<span style="color: {{ ::deadPlayer.color }}">{{ ::deadPlayer.name }}</span> crashed on <span style="color: {{ ::killerPlayer.color }}">{{ ::killerPlayer.name }}</span>'
-            ),
-            wall: $interpolate(
-                '<span style="color: {{ ::deadPlayer.color }}">{{ ::deadPlayer.name }}</span> crashed on the wall'
-            )
+            suicide: ({ deadPlayer }) => [this.player(deadPlayer), ' committed suicide'],
+            kill: ({ deadPlayer, killerPlayer }) => [
+                this.player(deadPlayer),
+                ' was killed by ',
+                this.player(killerPlayer)
+            ],
+            crash: ({ deadPlayer, killerPlayer }) => [
+                this.player(deadPlayer),
+                ' crashed on ',
+                this.player(killerPlayer)
+            ],
+            wall: ({ deadPlayer }) => [this.player(deadPlayer), ' crashed on the wall']
         };
 
         this.clear = this.clear.bind(this);
@@ -57,15 +56,34 @@ export class KillLogController extends AbstractController {
     }
 
     /**
+     * Colored player name
+     *
+     * @param {Avatar} avatar
+     *
+     * @return {HTMLElement}
+     */
+    player(avatar) {
+        const element = document.createElement('span');
+
+        element.style.color = avatar.color;
+        element.textContent = avatar.name;
+
+        return element;
+    }
+
+    /**
      * Display the given message
      *
      * @param {string} message
      */
     display(message) {
-        const content = `<span class="message-icon icon-dead"></span>${this.templates[message.type](message)}`,
+        const icon = document.createElement('span'),
             item = this.element.children[0];
 
-        item.innerHTML = content;
+        icon.className = 'message-icon icon-dead';
+
+        // Player names and colors are user input: build text nodes, never HTML.
+        item.replaceChildren(icon, ...this.templates[message.type](message));
         this.element.appendChild(item);
     }
 

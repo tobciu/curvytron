@@ -1,14 +1,30 @@
-FROM cyrale/curvytron
+FROM node:22-alpine AS build
 
-ENV APP_DIRECTORY /curvytron
+WORKDIR /curvytron
 
-WORKDIR ${APP_DIRECTORY}
+COPY package.json package-lock.json ./
+RUN npm ci
 
-COPY web/images/bonus.png web/images/bonus.png
+COPY vite.config.js ./
+COPY public public
 COPY src src
+RUN npm run build
 
-RUN gulp
+
+FROM node:22-alpine
+
+ENV NODE_ENV=production
+WORKDIR /curvytron
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+COPY src/server src/server
+COPY src/shared src/shared
+COPY --from=build /curvytron/dist dist
 
 EXPOSE 8080
 
-CMD node bin/curvytron.js
+USER node
+
+CMD ["node", "src/server/launcher.js"]

@@ -11,7 +11,6 @@ export class KickVote extends EventEmitter {
     constructor(player, total) {
         super();
 
-
         this.id = player.id;
         this.target = player;
         this.votes = new Collection();

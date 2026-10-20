@@ -1,6 +1,13 @@
 import { EventEmitter } from '#event-emitter';
 
 /**
+ * `readyState` of an open WebSocket
+ *
+ * @type {Number}
+ */
+const WEBSOCKET_OPEN = 1;
+
+/**
  * Base Socket Client
  *
  * @param {Object} socket
@@ -173,6 +180,10 @@ export class BaseSocketClient extends EventEmitter {
      * @param {String} data
      */
     sendEvents(events) {
+        if (this.socket.readyState !== WEBSOCKET_OPEN) {
+            return;
+        }
+
         this.socket.send(JSON.stringify(events));
     }
 
@@ -192,7 +203,18 @@ export class BaseSocketClient extends EventEmitter {
      * @param {Event} e
      */
     onMessage(e) {
-        const data = JSON.parse(e.data);
+        let data;
+
+        try {
+            data = JSON.parse(e.data);
+        } catch {
+            return;
+        }
+
+        if (!Array.isArray(data)) {
+            return;
+        }
+
         const length = data.length;
         let name;
         let source;

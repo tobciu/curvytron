@@ -19,7 +19,7 @@ export default [
         languageOptions: { globals: globals.node }
     },
     {
-        files: ['src/client/**', 'src/shared/**'],
+        files: ['src/client/**', 'src/shared/**', 'public/**'],
         languageOptions: { globals: { ...globals.browser, angular: 'readonly', createjs: 'readonly' } }
     }
 ];

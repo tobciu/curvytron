@@ -35,7 +35,7 @@ async function loadConfig() {
 async function createDevMiddleware() {
     const { createServer } = await import('vite');
     const vite = await createServer({
-        root: rootDirectory,
+        configFile: path.join(rootDirectory, 'vite.config.js'),
         appType: 'spa',
         server: { middlewareMode: true, hmr: { port: 24678 } }
     });
