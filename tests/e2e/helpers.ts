@@ -20,6 +20,13 @@ export async function openPlayer(
     const page = await context.newPage();
 
     await page.route('**/fonts.googleapis.com/**', (route) => route.abort());
+    // Remote avatars of the about page: same size whatever the network is
+    await page.route('**/gravatar.com/**', (route) =>
+        route.fulfill({
+            contentType: 'image/svg+xml',
+            body: '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="120" height="120" fill="#888"/></svg>'
+        })
+    );
 
     if (options.profile !== false) {
         const profile = { name, color: options.color ?? '#ff0000', sound: false, radio: false };
