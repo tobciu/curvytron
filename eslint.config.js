@@ -45,7 +45,7 @@ export default tseslint.config(
         languageOptions: { globals: globals.node }
     },
     {
-        files: ['src/client/**', 'src/shared/**', 'public/**'],
+        files: ['src/client/**', 'src/shared/**', 'public/**', 'tests/client/**'],
         languageOptions: { globals: { ...globals.browser } }
     }
 );
