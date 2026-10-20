@@ -50,6 +50,14 @@ On the client, listeners receive a DOM-like event (`{ type, detail }`).
 | `npm run typecheck`          | Check the types of the `.ts` and `.vue` files                       |
 | `npm run format`             | Format the sources with Prettier                                    |
 
+### Tests
+
+    tests
+     |- game/    # Game rules on the server side: avatars, world and collisions, bonuses, rounds, rooms, votes
+     |- client/  # Client side model (profile, chat, presets), runs in jsdom with the browser event emitter
+     |- e2e/     # Playwright: real browsers against a real server, plus screenshot comparisons
+     |- *.test.* # Shared code, protocol (real WebSocket server) and color maths
+
 The first time, install the browser used by the end-to-end tests with `npx playwright install chromium`
 (or set `CHROMIUM_PATH` to an existing Chromium / Chrome executable).
 
