@@ -4,3 +4,5 @@ dist/
 stats/
 config.json
 *.sublime-*
+test-results/
+playwright-report/
