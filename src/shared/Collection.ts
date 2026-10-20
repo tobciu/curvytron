@@ -1,17 +1,27 @@
+/** An element is indexed by the property named `key` (`id` by default) */
+type Indexed = Record<string, any>;
+
 /**
- * Collection
+ * Collection of elements, indexed by one of their properties.
  *
- * @param {Array} items
- * @param {String} key
- * @param {Boolean} index
+ * Callbacks of `map`, `filter`, `match` and `walk` receive the element as `this`.
  */
-export class Collection {
-    constructor(items, key, index) {
-        this.ids = [];
-        this.items = [];
-        this.key = typeof key !== 'undefined' && key ? key : 'id';
+export class Collection<T = any> {
+    ids: any[] = [];
+    items: T[] = [];
+    key: string;
+    /** When true, elements without id get the next free one */
+    index: boolean;
+    id = 0;
+
+    /**
+     * @param items Initial elements
+     * @param key Name of the property that identifies an element
+     * @param index Give an id to the elements that have none
+     */
+    constructor(items?: T[] | null, key?: string | null, index?: boolean) {
+        this.key = key ? key : 'id';
         this.index = typeof index !== 'undefined' && index;
-        this.id = 0;
 
         if (items) {
             for (let i = items.length - 1; i >= 0; i--) {
@@ -23,7 +33,7 @@ export class Collection {
     /**
      * Clear
      */
-    clear() {
+    clear(): void {
         this.ids.length = 0;
         this.items.length = 0;
         this.id = 0;
@@ -31,47 +41,42 @@ export class Collection {
 
     /**
      * Count the size of the collection
-     *
-     * @return {Number}
      */
-    count() {
+    count(): number {
         return this.ids.length;
     }
 
     /**
      * Is the collection empty?
-     *
-     * @return {Boolean}
      */
-    isEmpty() {
+    isEmpty(): boolean {
         return this.ids.length === 0;
     }
 
     /**
      * Add an element
      *
-     * @param {mixed} element
-     * @param {Number} ttl
-     *
-     * @return {Boolean}
+     * @param ttl Remove the element after this delay (ms)
+     * @return false when the element is already in the collection
      */
-    add(element, ttl) {
+    add(element: T, ttl?: number): boolean {
         this.setId(element);
 
         if (this.exists(element)) {
             return false;
         }
 
-        this.ids.push(element[this.key]);
+        const id = (element as Indexed)[this.key];
 
-        const index = this.ids.indexOf(element[this.key]);
+        this.ids.push(id);
+
+        const index = this.ids.indexOf(id);
 
         this.items[index] = element;
 
-        if (typeof ttl !== 'undefined' && ttl) {
-            const collection = this;
-            setTimeout(function () {
-                collection.remove(element);
+        if (ttl) {
+            setTimeout(() => {
+                this.remove(element);
             }, ttl);
         }
 
@@ -80,16 +85,13 @@ export class Collection {
 
     /**
      * Remove an element
-     *
-     * @param {mixed} element
-     *
-     * @return {Boolean}
      */
-    remove(element) {
-        const index = this.ids.indexOf(element[this.key]);
+    remove(element: T): boolean {
+        const index = this.ids.indexOf((element as Indexed)[this.key]);
 
         if (index >= 0) {
             this.deleteIndex(index);
+
             return true;
         }
 
@@ -98,16 +100,13 @@ export class Collection {
 
     /**
      * Remove an element by its id
-     *
-     * @param {mixed} id
-     *
-     * @return {Boolean}
      */
-    removeById(id) {
+    removeById(id: any): boolean {
         const index = this.ids.indexOf(id);
 
         if (index >= 0) {
             this.deleteIndex(index);
+
             return true;
         }
 
@@ -116,61 +115,47 @@ export class Collection {
 
     /**
      * Set the id of an element
-     *
-     * @param {mixed} element
      */
-    setId(element) {
+    setId(element: T): void {
         if (this.index) {
-            if (typeof element[this.key] !== 'undefined' && element[this.key]) {
-                if (element[this.key] > this.id) {
-                    this.id = element[this.key];
+            const indexed = element as Indexed;
+
+            if (typeof indexed[this.key] !== 'undefined' && indexed[this.key]) {
+                if (indexed[this.key] > this.id) {
+                    this.id = indexed[this.key];
                 }
             } else {
-                element[this.key] = ++this.id;
+                indexed[this.key] = ++this.id;
             }
         }
     }
 
     /**
      * Get the index for the given element
-     *
-     * @param {mixed} element
-     *
-     * @return {Number}
      */
-    getElementIndex(element) {
-        return this.ids.indexOf(element[this.key]);
+    getElementIndex(element: T): number {
+        return this.ids.indexOf((element as Indexed)[this.key]);
     }
 
     /**
      * Get the index fo the given id
-     *
-     * @param {Number} id
-     *
-     * @return {Number}
      */
-    getIdIndex(id) {
+    getIdIndex(id: any): number {
         return this.ids.indexOf(id);
     }
 
     /**
      * Delete the element at the given index
-     *
-     * @param {Number} index
      */
-    deleteIndex(index) {
+    deleteIndex(index: number): void {
         this.items.splice(index, 1);
         this.ids.splice(index, 1);
     }
 
     /**
      * Get an element by its id
-     *
-     * @param {Number} id
-     *
-     * @return {mixed}
      */
-    getById(id) {
+    getById(id: any): T | null {
         const index = this.ids.indexOf(id);
 
         return index >= 0 ? this.items[index] : null;
@@ -178,63 +163,43 @@ export class Collection {
 
     /**
      * Get an element by its index
-     *
-     * @param {Number} index
-     *
-     * @return {mixed}
      */
-    getByIndex(index) {
+    getByIndex(index: number): T | null {
         return typeof this.items[index] !== 'undefined' ? this.items[index] : null;
     }
 
     /**
      * Test if an element is in the collection
-     *
-     * @param {mixed} element
-     *
-     * @return {Boolean}
      */
-    exists(element) {
+    exists(element: T): boolean {
         return this.getElementIndex(element) >= 0;
     }
 
     /**
-     * Test if the given index exists is in the collection
-     *
-     * @param {String} index
-     *
-     * @return {Boolean}
+     * Test if the given id is in the collection
      */
-    indexExists(index) {
-        return this.ids.indexOf(index) >= 0;
+    indexExists(id: any): boolean {
+        return this.ids.indexOf(id) >= 0;
     }
 
     /**
      * Map
-     *
-     * @param {Function} callable
-     *
-     * @return {Collection}
      */
-    map(callable) {
-        const elements = [];
+    map<U>(callable: (this: T) => U): Collection<U> {
+        const elements: U[] = [];
 
         for (let i = this.items.length - 1; i >= 0; i--) {
             elements.push(callable.call(this.items[i]));
         }
 
-        return new Collection(elements, this.key, this.index);
+        return new Collection<U>(elements, this.key, this.index);
     }
 
     /**
      * Filter
-     *
-     * @param {Function} callable
-     *
-     * @return {Collection}
      */
-    filter(callable) {
-        const elements = [];
+    filter(callable: (this: T) => unknown): Collection<T> {
+        const elements: T[] = [];
 
         for (let i = this.items.length - 1; i >= 0; i--) {
             if (callable.call(this.items[i])) {
@@ -242,17 +207,13 @@ export class Collection {
             }
         }
 
-        return new Collection(elements, this.key, this.index);
+        return new Collection<T>(elements, this.key, this.index);
     }
 
     /**
-     * Match
-     *
-     * @param {Function} callable
-     *
-     * @return {Collection}
+     * First element for which the callback is true
      */
-    match(callable) {
+    match(callable: (this: T) => unknown): T | null {
         const length = this.items.length;
 
         for (let i = 0; i < length; i++) {
@@ -266,10 +227,8 @@ export class Collection {
 
     /**
      * Apply the given callback to all element
-     *
-     * @param {Function} callable
      */
-    walk(callable) {
+    walk(callable: (this: T) => void): void {
         for (let i = this.items.length - 1; i >= 0; i--) {
             callable.call(this.items[i]);
         }
@@ -277,10 +236,8 @@ export class Collection {
 
     /**
      * Get random item from the collection
-     *
-     * @return {mixed}
      */
-    getRandomItem() {
+    getRandomItem(): T | null {
         if (this.items.length === 0) {
             return null;
         }
@@ -290,28 +247,22 @@ export class Collection {
 
     /**
      * Get first item in collection
-     *
-     * @return {Mixed}
      */
-    getFirst() {
+    getFirst(): T | null {
         return this.items.length > 0 ? this.items[0] : null;
     }
 
     /**
      * Get last item in collection
-     *
-     * @return {Mixed}
      */
-    getLast() {
+    getLast(): T | null {
         return this.items.length > 0 ? this.items[this.items.length - 1] : null;
     }
 
     /**
      * Sort
-     *
-     * @param {Function} callable
      */
-    sort(callable) {
+    sort(callable: (a: T, b: T) => number): void {
         this.items.sort(callable);
         this.rebuildIds();
     }
@@ -319,13 +270,7 @@ export class Collection {
     /**
      * Rebuild Ids
      */
-    rebuildIds() {
-        const ids = new Array(this.items.length);
-
-        for (let i = this.items.length - 1; i >= 0; i--) {
-            ids[i] = this.items[i][this.key];
-        }
-
-        this.ids = ids;
+    rebuildIds(): void {
+        this.ids = this.items.map((item) => (item as Indexed)[this.key]);
     }
 }

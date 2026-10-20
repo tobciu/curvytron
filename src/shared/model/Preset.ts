@@ -4,19 +4,13 @@
 export class Preset {
     /**
      * Bonuses
-     *
-     * @type {Array}
      */
-    bonuses = [];
+    bonuses: string[] = [];
 
     /**
      * Has onus
-     *
-     * @param {String} bonus
-     *
-     * @return {Boolean}
      */
-    hasBonus(bonus) {
+    hasBonus(bonus: string): boolean {
         return this.bonuses.indexOf(bonus) > -1;
     }
 }

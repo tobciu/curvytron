@@ -1,10 +1,18 @@
 import { EventEmitter } from '#event-emitter';
+import type { BaseAvatar } from './BaseAvatar.ts';
 
 /**
  * BaseTrail
  */
 export class BaseTrail extends EventEmitter {
-    constructor(avatar) {
+    avatar: BaseAvatar;
+    color: string;
+    radius: number;
+    points: number[][];
+    lastX: number | null;
+    lastY: number | null;
+
+    constructor(avatar: BaseAvatar) {
         super();
 
         this.avatar = avatar;
@@ -17,11 +25,8 @@ export class BaseTrail extends EventEmitter {
 
     /**
      * Add point
-     *
-     * @param {Number} x
-     * @param {Number} y
      */
-    addPoint(x, y) {
+    addPoint(x: number, y: number) {
         this.points.push([x, y]);
         this.lastX = x;
         this.lastY = y;

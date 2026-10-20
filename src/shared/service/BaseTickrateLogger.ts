@@ -1,35 +1,35 @@
-import { EventEmitter } from '#event-emitter';
-
 /**
- * FPS Logger
+ * Tickrate Logger
  */
-export class BaseFPSLogger extends EventEmitter {
+export class BaseTickrateLogger {
+    interval: ReturnType<typeof setInterval> | null;
+    frequency: number;
+    ticks: any[];
+
     constructor() {
-        super();
-
         this.interval = null;
-        this.frames = 0;
         this.frequency = 0;
+        this.ticks = [];
 
-        this.onFrame = this.onFrame.bind(this);
         this.log = this.log.bind(this);
+        this.tick = this.tick.bind(this);
 
         this.start();
     }
 
     /**
-     * End frame
+     * Tick
      */
-    onFrame() {
-        this.frames++;
+    tick(data: any) {
+        this.ticks.push(data);
     }
 
     /**
      * Log
      */
     log() {
-        this.frequency = this.frames;
-        this.frames = 0;
+        this.frequency = this.ticks.length;
+        this.ticks.length = 0;
     }
 
     /**
@@ -37,7 +37,6 @@ export class BaseFPSLogger extends EventEmitter {
      */
     start() {
         if (!this.interval) {
-            this.frames = 0;
             this.interval = setInterval(this.log, 1000);
         }
     }
@@ -49,7 +48,6 @@ export class BaseFPSLogger extends EventEmitter {
         if (this.interval) {
             clearInterval(this.interval);
             this.interval = null;
-            this.frequency = 0;
         }
     }
 }

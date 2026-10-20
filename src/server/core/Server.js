@@ -5,7 +5,7 @@ import { EventEmitter } from '#event-emitter';
 import { RoomsController } from '../controller/RoomsController.js';
 import { SocketClient } from './SocketClient.js';
 import { RoomRepository } from '../repository/RoomRepository.js';
-import { Collection } from '../../shared/Collection.js';
+import { Collection } from '../../shared/Collection.ts';
 
 /**
  * Seconds between two keep-alive pings sent to every connected socket.

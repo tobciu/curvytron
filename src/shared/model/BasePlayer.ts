@@ -1,28 +1,31 @@
 import { EventEmitter } from '#event-emitter';
+import type { BaseAvatar } from './BaseAvatar.ts';
 
 /**
  * BasePlayer
- *
- * @param {String} client
- * @param {String} name
- * @param {String} color
  */
-export class BasePlayer extends EventEmitter {
+export abstract class BasePlayer extends EventEmitter {
+    client: { id: number | null };
+    name: string;
+    color: string;
+    ready: boolean;
+    id: number | null;
+    avatar: BaseAvatar | null;
+
     /**
      * Max length for name
-     *
-     * @type {Number}
      */
     static maxLength = 25;
 
     /**
      * Max length for color
-     *
-     * @type {Number}
      */
     static colorMaxLength = 20;
 
-    constructor(client, name, color, ready) {
+    /** Create the avatar of the player */
+    abstract createAvatar(): BaseAvatar;
+
+    constructor(client: { id: number | null }, name: string, color?: string, ready?: boolean) {
         super();
 
         this.client = client;
@@ -35,19 +38,15 @@ export class BasePlayer extends EventEmitter {
 
     /**
      * Set name
-     *
-     * @param {String} name
      */
-    setName(name) {
+    setName(name: string) {
         this.name = name;
     }
 
     /**
-     * Set name
-     *
-     * @param {String} name
+     * Set color
      */
-    setColor(color) {
+    setColor(color: string) {
         if (!this.validateColor(color, true)) {
             return false;
         }
@@ -59,28 +58,20 @@ export class BasePlayer extends EventEmitter {
 
     /**
      * Equal
-     *
-     * @param {Player} player
-     *
-     * @return {Boolean}
      */
-    equal(player) {
+    equal(player: BasePlayer): boolean {
         return this.id === player.id;
     }
 
     /**
      * Toggle Ready
-     *
-     * @param {Boolean} toggle
      */
-    toggleReady(toggle) {
+    toggleReady(toggle?: boolean) {
         this.ready = typeof toggle !== 'undefined' ? (toggle ? true : false) : !this.ready;
     }
 
     /**
      * Get avatar
-     *
-     * @return {Avatar}
      */
     getAvatar() {
         if (!this.avatar) {
@@ -94,15 +85,13 @@ export class BasePlayer extends EventEmitter {
      * Reset player after a game
      */
     reset() {
-        this.avatar.destroy();
+        this.avatar?.destroy();
         this.avatar = null;
         this.ready = false;
     }
 
     /**
      * Serialize
-     *
-     * @return {Object}
      */
     serialize() {
         return {
@@ -116,10 +105,8 @@ export class BasePlayer extends EventEmitter {
 
     /**
      * Get random Color
-     *
-     * @return {String}
      */
-    getRandomColor() {
+    getRandomColor(): string {
         let color = '';
         const randomNum = function () {
             return Math.ceil(Math.random() * 255).toString(16);
@@ -134,12 +121,8 @@ export class BasePlayer extends EventEmitter {
 
     /**
      * Validate color
-     *
-     * @param {String} color
-     *
-     * @return {Boolean}
      */
-    validateColor(color, yiq) {
+    validateColor(color?: unknown, yiq?: boolean): boolean {
         if (typeof color !== 'string') {
             return false;
         }

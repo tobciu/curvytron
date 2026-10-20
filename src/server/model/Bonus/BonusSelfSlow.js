@@ -1,5 +1,5 @@
 import { BonusSelf } from './BonusSelf.js';
-import { BaseAvatar } from '../../../shared/model/BaseAvatar.js';
+import { BaseAvatar } from '../../../shared/model/BaseAvatar.ts';
 
 /**
  * Slow Bonus

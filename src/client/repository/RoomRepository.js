@@ -2,7 +2,7 @@ import { EventEmitter } from '#event-emitter';
 import { Client } from '../model/Client.js';
 import { Player } from '../model/Player.js';
 import { Room } from '../model/Room.js';
-import { Collection } from '../../shared/Collection.js';
+import { Collection } from '../../shared/Collection.ts';
 
 /**
  * RoomRepository

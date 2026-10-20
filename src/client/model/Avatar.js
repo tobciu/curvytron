@@ -1,6 +1,6 @@
 import { Canvas } from '../core/Canvas.js';
 import { PlayerInput } from './PlayerInput.js';
-import { BaseAvatar } from '../../shared/model/BaseAvatar.js';
+import { BaseAvatar } from '../../shared/model/BaseAvatar.ts';
 import { Trail } from './Trail.js';
 import { BonusStack } from './BonusStack.js';
 

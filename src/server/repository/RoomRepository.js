@@ -1,7 +1,7 @@
 import { EventEmitter } from '#event-emitter';
 import { Room } from '../model/Room.js';
 import { RoomNameGenerator } from '../service/RoomNameGenerator.js';
-import { Collection } from '../../shared/Collection.js';
+import { Collection } from '../../shared/Collection.ts';
 
 /**
  * Room Repository

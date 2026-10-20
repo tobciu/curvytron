@@ -1,5 +1,5 @@
 import { EventEmitter } from '#event-emitter';
-import { Collection } from '../../shared/Collection.js';
+import { Collection } from '../../shared/Collection.ts';
 import { gamepadListener } from '../gamepadListener.js';
 import { GamepadMapper } from '../lib/GamepadMapper.js';
 import { KeyboardMapper } from '../lib/KeyboardMapper.js';

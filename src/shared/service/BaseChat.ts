@@ -1,10 +1,12 @@
 import { EventEmitter } from '#event-emitter';
-import { Collection } from '../Collection.js';
+import { Collection } from '../Collection.ts';
 
 /**
  * BaseChat system
  */
 export class BaseChat extends EventEmitter {
+    messages: Collection;
+
     constructor() {
         super();
 
@@ -13,10 +15,8 @@ export class BaseChat extends EventEmitter {
 
     /**
      * Add message
-     *
-     * @param {Message} message
      */
-    addMessage(message) {
+    addMessage(message: any) {
         if (!this.isValid(message)) {
             return false;
         }
@@ -29,12 +29,8 @@ export class BaseChat extends EventEmitter {
 
     /**
      * Is message valid?
-     *
-     * @param {Message} message
-     *
-     * @return {Boolean}
      */
-    isValid(message) {
+    isValid(message: any): boolean {
         return true;
     }
 
@@ -47,10 +43,8 @@ export class BaseChat extends EventEmitter {
 
     /**
      * Serialize
-     *
-     * @return {Array}
      */
-    serialize(max) {
+    serialize(max?: any) {
         const length = this.messages.items.length,
             limit = typeof max === 'number' ? Math.min(max, length) : length,
             min = length - limit,

@@ -3,8 +3,8 @@ import { AvatarBody } from '../core/AvatarBody.js';
 import { World } from '../core/World.js';
 import { Avatar } from './Avatar.js';
 import { GameBonusStack } from './GameBonusStack.js';
-import { Collection } from '../../shared/Collection.js';
-import { BaseGame } from '../../shared/model/BaseGame.js';
+import { Collection } from '../../shared/Collection.ts';
+import { BaseGame } from '../../shared/model/BaseGame.ts';
 import { FPSLogger } from '../service/FPSLogger.js';
 import { BonusManager } from '../manager/BonusManager.js';
 

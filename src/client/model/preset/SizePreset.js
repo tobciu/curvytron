@@ -1,4 +1,4 @@
-import { Preset } from '../../../shared/model/Preset.js';
+import { Preset } from '../../../shared/model/Preset.ts';
 
 /**
  * Size Preset

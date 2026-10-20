@@ -1,6 +1,6 @@
 import { Message } from '../model/Message.js';
 import { FloodFilter } from './FloodFilter.js';
-import { BaseChat } from '../../shared/service/BaseChat.js';
+import { BaseChat } from '../../shared/service/BaseChat.ts';
 
 /**
  * Chat system

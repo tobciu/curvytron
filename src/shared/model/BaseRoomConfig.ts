@@ -1,17 +1,23 @@
 import { EventEmitter } from '#event-emitter';
+import type { BaseRoom } from './BaseRoom.ts';
 
 /**
  * Base room configuration
  */
 export class BaseRoomConfig extends EventEmitter {
+    room: BaseRoom;
+    maxScore: number | null;
+    open: boolean;
+    password: string | null;
+    variables: Record<string, number>;
+    bonuses: Record<string, boolean>;
+
     /**
      * Password length
-     *
-     * @type {Number}
      */
-    passwordLength = 4;
+    passwordLength: number = 4;
 
-    constructor(room) {
+    constructor(room: BaseRoom) {
         super();
 
         this.room = room;
@@ -48,11 +54,9 @@ export class BaseRoomConfig extends EventEmitter {
 
     /**
      * Set max score
-     *
-     * @param {Number} maxScore
      */
-    setMaxScore(maxScore) {
-        maxScore = parseInt(maxScore, 10);
+    setMaxScore(value: number | string) {
+        const maxScore = typeof value === 'string' ? parseInt(value, 10) : value;
 
         this.maxScore = maxScore ? maxScore : null;
 
@@ -61,27 +65,20 @@ export class BaseRoomConfig extends EventEmitter {
 
     /**
      * Variable exists
-     *
-     * @param {String} variable
-     *
-     * @return {Boolean}
      */
-    variableExists(variable) {
+    variableExists(variable: string): boolean {
         return typeof this.variables[variable] !== 'undefined';
     }
 
     /**
      * Set variable
-     *
-     * @param {String} variable
-     * @param {Float} value
      */
-    setVariable(variable, value) {
+    setVariable(variable: string, input: number | string) {
         if (!this.variableExists(variable)) {
             return false;
         }
 
-        value = parseFloat(value);
+        const value = typeof input === 'string' ? parseFloat(input) : input;
 
         if (-1 > value || value > 1) {
             return false;
@@ -94,12 +91,8 @@ export class BaseRoomConfig extends EventEmitter {
 
     /**
      * Get variable
-     *
-     * @param {String} variable
-     *
-     * @return {Float}
      */
-    getVariable(variable) {
+    getVariable(variable: string): number | undefined {
         if (!this.variableExists(variable)) {
             return;
         }
@@ -109,23 +102,15 @@ export class BaseRoomConfig extends EventEmitter {
 
     /**
      * Bonus exists
-     *
-     * @param {String} bonus
-     *
-     * @return {Boolean}
      */
-    bonusExists(bonus) {
+    bonusExists(bonus: string): boolean {
         return typeof this.bonuses[bonus] !== 'undefined';
     }
 
     /**
      * Toggle bonus
-     *
-     * @param {String} bonus
-     *
-     * @return {Boolean}
      */
-    toggleBonus(bonus) {
+    toggleBonus(bonus: string): boolean {
         if (!this.bonusExists(bonus)) {
             return false;
         }
@@ -137,12 +122,8 @@ export class BaseRoomConfig extends EventEmitter {
 
     /**
      * Get bonus value
-     *
-     * @param {String} bonus
-     *
-     * @return {Boolean}
      */
-    getBonus(bonus) {
+    getBonus(bonus: string): boolean | undefined {
         if (!this.bonusExists(bonus)) {
             return;
         }
@@ -152,13 +133,8 @@ export class BaseRoomConfig extends EventEmitter {
 
     /**
      * Set bonus value
-     *
-     * @param {String} bonus
-     * @param {Boolean} value
-     *
-     * @return {Boolean}
      */
-    setBonus(bonus, value) {
+    setBonus(bonus: string, value: unknown): void {
         if (!this.bonusExists(bonus)) {
             return;
         }
@@ -168,41 +144,29 @@ export class BaseRoomConfig extends EventEmitter {
 
     /**
      * Get max score
-     *
-     * @return {Number}
      */
-    getMaxScore() {
+    getMaxScore(): number {
         return this.maxScore ? this.maxScore : this.getDefaultMaxScore();
     }
 
     /**
      * Get max score
-     *
-     * @param {Number} players
-     *
-     * @return {Number}
      */
-    getDefaultMaxScore() {
+    getDefaultMaxScore(): number {
         return Math.max(1, (this.room.players.count() - 1) * 10);
     }
 
     /**
      * Authorise joinning the room
-     *
-     * @param {String} password
-     *
-     * @return {Boolean}
      */
-    allow(password) {
+    allow(password: string): boolean {
         return this.open || this.password === password;
     }
 
     /**
      * Generate password
-     *
-     * @return {String}
      */
-    generatePassword() {
+    generatePassword(): string {
         let password = '';
 
         for (let i = 0; i < this.passwordLength; i++) {
@@ -214,8 +178,6 @@ export class BaseRoomConfig extends EventEmitter {
 
     /**
      * Serialize
-     *
-     * @return {Object}
      */
     serialize() {
         return {

@@ -1,6 +1,6 @@
 import { Body } from './Body.js';
 import { Island } from './Island.js';
-import { Collection } from '../../shared/Collection.js';
+import { Collection } from '../../shared/Collection.ts';
 
 /**
  * World

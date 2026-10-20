@@ -1,11 +1,34 @@
 import { EventEmitter } from '#event-emitter';
+import type { BaseBonusStack } from './BaseBonusStack.ts';
+import type { BasePlayer } from './BasePlayer.ts';
+import type { BaseTrail } from './BaseTrail.ts';
 
 /**
  * Base Avatar
- *
- * @param {Player} player
  */
-export class BaseAvatar extends EventEmitter {
+export abstract class BaseAvatar extends EventEmitter {
+    id: number;
+    name: string;
+    color: string;
+    borderColor: string;
+    player: BasePlayer;
+    x: number;
+    y: number;
+    trail: BaseTrail;
+    bonusStack: BaseBonusStack;
+    /** Collision body of the avatar, only used by the server */
+    body: { radius: number } | null = null;
+    angle: number;
+    velocityX: number;
+    velocityY: number;
+    angularVelocity: number;
+    alive: boolean;
+    printing: boolean;
+    score: number;
+    roundScore: number;
+    ready: boolean;
+    present: boolean;
+
     /**
      * Default values of the properties that bonuses change: what an avatar goes back to
      *
@@ -29,23 +52,27 @@ export class BaseAvatar extends EventEmitter {
 
     /**
      * Number of trail points that don't kill the player
-     *
-     * @type {Number}
      */
-    trailLatency = 3;
+    trailLatency: number = 3;
 
-    velocity = BaseAvatar.defaults.velocity;
-    angularVelocityBase = BaseAvatar.defaults.angularVelocityBase;
-    radius = BaseAvatar.defaults.radius;
-    inverse = BaseAvatar.defaults.inverse;
-    invincible = BaseAvatar.defaults.invincible;
-    ghost = BaseAvatar.defaults.ghost;
-    directionInLoop = BaseAvatar.defaults.directionInLoop;
+    velocity: number = BaseAvatar.defaults.velocity;
+    angularVelocityBase: number = BaseAvatar.defaults.angularVelocityBase;
+    radius: number = BaseAvatar.defaults.radius;
+    inverse: boolean = BaseAvatar.defaults.inverse;
+    invincible: boolean = BaseAvatar.defaults.invincible;
+    ghost: boolean = BaseAvatar.defaults.ghost;
+    directionInLoop: boolean = BaseAvatar.defaults.directionInLoop;
 
-    constructor(player) {
+    /** Create the trail of the avatar */
+    abstract createTrail(): BaseTrail;
+
+    /** Create the stack of bonuses of the avatar */
+    abstract createBonusStack(): BaseBonusStack;
+
+    constructor(player: BasePlayer) {
         super();
 
-        this.id = player.id;
+        this.id = player.id as number;
         this.name = player.name;
         this.color = player.color;
         this.borderColor = player.color;
@@ -70,42 +97,30 @@ export class BaseAvatar extends EventEmitter {
 
     /**
      * Equal
-     *
-     * @param {Avatar} avatar
-     *
-     * @return {Boolean}
      */
-    equal(avatar) {
+    equal(avatar: BaseAvatar): boolean {
         return this.id === avatar.id;
     }
 
     /**
      * Set Point
-     *
-     * @param {Float} x
-     * @param {Float} y
      */
-    setPosition(x, y) {
+    setPosition(x: number, y: number) {
         this.x = x;
         this.y = y;
     }
 
     /**
      * Add point
-     *
-     * @param {Float} x
-     * @param {Float} y
      */
-    addPoint(x, y) {
+    addPoint(x: number, y: number, important?: boolean) {
         this.trail.addPoint(x, y);
     }
 
     /**
      * Update angular velocity
-     *
-     * @param {Number} factor
      */
-    updateAngularVelocity(factor) {
+    updateAngularVelocity(factor?: number) {
         if (typeof factor === 'undefined') {
             if (this.angularVelocity === 0) {
                 return;
@@ -118,19 +133,15 @@ export class BaseAvatar extends EventEmitter {
 
     /**
      * Set angular velocity
-     *
-     * @param {Float} angularVelocity
      */
-    setAngularVelocity(angularVelocity) {
+    setAngularVelocity(angularVelocity: number) {
         this.angularVelocity = angularVelocity;
     }
 
     /**
      * Set angle
-     *
-     * @param {Float} angle
      */
-    setAngle(angle) {
+    setAngle(angle: number) {
         if (this.angle !== angle) {
             this.angle = angle;
             this.updateVelocities();
@@ -139,17 +150,13 @@ export class BaseAvatar extends EventEmitter {
 
     /**
      * Update
-     *
-     * @param {Number} step
      */
-    update(step) {}
+    update(step: number) {}
 
     /**
      * Add angle
-     *
-     * @param {Number} step
      */
-    updateAngle(step) {
+    updateAngle(step: number) {
         if (this.angularVelocity) {
             if (this.directionInLoop) {
                 this.setAngle(this.angle + this.angularVelocity * step);
@@ -162,19 +169,15 @@ export class BaseAvatar extends EventEmitter {
 
     /**
      * Update position
-     *
-     * @param {Number} step
      */
-    updatePosition(step) {
+    updatePosition(step: number) {
         this.setPosition(this.x + this.velocityX * step, this.y + this.velocityY * step);
     }
 
     /**
      * Set velocity
-     *
-     * @param {Number} step
      */
-    setVelocity(velocity) {
+    setVelocity(velocity: number) {
         velocity = Math.max(velocity, BaseAvatar.defaults.velocity / 2);
 
         if (this.velocity !== velocity) {
@@ -208,19 +211,15 @@ export class BaseAvatar extends EventEmitter {
 
     /**
      * Set radius
-     *
-     * @param {Number} radius
      */
-    setRadius(radius) {
+    setRadius(radius: number) {
         this.radius = Math.max(radius, BaseAvatar.defaults.radius / 8);
     }
 
     /**
      * Set inverse
-     *
-     * @param {Number} inverse
      */
-    setInverse(inverse) {
+    setInverse(inverse: boolean) {
         if (this.inverse !== inverse) {
             this.inverse = inverse ? true : false;
             this.updateAngularVelocity();
@@ -229,33 +228,22 @@ export class BaseAvatar extends EventEmitter {
 
     /**
      * Set invincible
-     *
-     * @param {Number} invincible
      */
-    setInvincible(invincible) {
+    setInvincible(invincible: boolean) {
         this.invincible = invincible ? true : false;
     }
 
     /**
      * Set ghost
-     *
-     * @param {Number} ghost
      */
-    setGhost(ghost) {
+    setGhost(ghost: boolean) {
         this.ghost = ghost ? true : false;
     }
 
     /**
      * Get distance
-     *
-     * @param {Number} fromX
-     * @param {Number} fromY
-     * @param {Number} toX
-     * @param {Number} toY
-     *
-     * @return {Number}
      */
-    getDistance(fromX, fromY, toX, toY) {
+    getDistance(fromX: number, fromY: number, toX: number, toY: number): number {
         return Math.sqrt(Math.pow(fromX - toX, 2) + Math.pow(fromY - toY, 2));
     }
 
@@ -270,10 +258,8 @@ export class BaseAvatar extends EventEmitter {
 
     /**
      * Set printing
-     *
-     * @param {Boolean} printing
      */
-    setPrinting(printing) {
+    setPrinting(printing: boolean) {
         printing = printing ? true : false;
 
         if (this.printing !== printing) {
@@ -289,17 +275,13 @@ export class BaseAvatar extends EventEmitter {
 
     /**
      * This score
-     *
-     * @param {Number} score
      */
-    addScore(score) {
+    addScore(score: number) {
         this.setRoundScore(this.roundScore + score);
     }
 
     /**
      * Resolve score
-     *
-     * @param {Number} score
      */
     resolveScore() {
         this.setScore(this.score + this.roundScore);
@@ -308,37 +290,29 @@ export class BaseAvatar extends EventEmitter {
 
     /**
      * This round score
-     *
-     * @param {Number} score
      */
-    setRoundScore(score) {
+    setRoundScore(score: number) {
         this.roundScore = score;
     }
 
     /**
      * This score
-     *
-     * @param {Number} score
      */
-    setScore(score) {
+    setScore(score: number) {
         this.score = score;
     }
 
     /**
      * Set color
-     *
-     * @param {Number} color
      */
-    setColor(color) {
+    setColor(color: string) {
         this.color = color;
     }
 
     /**
      * Set borderColor
-     *
-     * @param {Number} color
      */
-    setBorderColor(borderColor) {
+    setBorderColor(borderColor: string) {
         this.borderColor = borderColor;
     }
 
@@ -385,8 +359,6 @@ export class BaseAvatar extends EventEmitter {
 
     /**
      * Serialize
-     *
-     * @return {Object}
      */
     serialize() {
         return {

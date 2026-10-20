@@ -1,13 +1,16 @@
 import { EventEmitter } from '#event-emitter';
-import { Collection } from '../Collection.js';
+import { Collection } from '../Collection.ts';
+import type { BaseBonus } from './BaseBonus.ts';
 
 /**
  * Base Bonus Stack
- *
- * @param {Object} target
  */
 export class BaseBonusStack extends EventEmitter {
-    constructor(target) {
+    /** What the bonuses change: an avatar or a game. Its properties are set by name. */
+    target: any;
+    bonuses: Collection<BaseBonus>;
+
+    constructor(target: any) {
         super();
 
         this.target = target;
@@ -16,10 +19,8 @@ export class BaseBonusStack extends EventEmitter {
 
     /**
      * Add bonus to the stack
-     *
-     * @param {Bonus} bonus
      */
-    add(bonus) {
+    add(bonus: BaseBonus) {
         if (this.bonuses.add(bonus)) {
             this.resolve();
         }
@@ -27,10 +28,8 @@ export class BaseBonusStack extends EventEmitter {
 
     /**
      * Remove bonus from the stack
-     *
-     * @param {Bonus} bonus
      */
-    remove(bonus) {
+    remove(bonus: BaseBonus) {
         if (this.bonuses.remove(bonus)) {
             this.resolve(bonus);
         }
@@ -46,12 +45,12 @@ export class BaseBonusStack extends EventEmitter {
     /**
      * Resolve
      */
-    resolve(bonus) {
-        const properties = {};
-        let effects;
-        let property;
-        let i;
-        let j;
+    resolve(bonus?: BaseBonus) {
+        const properties: Record<string, any> = {};
+        let effects: Array<[string, any]>;
+        let property: string;
+        let i: number;
+        let j: number;
 
         if (typeof bonus !== 'undefined') {
             effects = bonus.getEffects(this.target);
@@ -83,33 +82,22 @@ export class BaseBonusStack extends EventEmitter {
 
     /**
      * Apply the value to target's property
-     *
-     * @param {String} property
-     * @param {Number} value
      */
-    apply(property, value) {
+    apply(property: string, value: any) {
         this.target[property] = value;
     }
 
     /**
      * Get default property
-     *
-     * @param {String} property
-     *
-     * @return {Number}
      */
-    getDefaultProperty(property) {
+    getDefaultProperty(property: string): any {
         return 0;
     }
 
     /**
      * Append
-     *
-     * @param {Object} properties
-     * @param {String} property
-     * @param {Number} value
      */
-    append(properties, property, value) {
+    append(properties: Record<string, any>, property: string, value: any) {
         properties[property] += value;
     }
 }

@@ -1,32 +1,40 @@
 import { EventEmitter } from '#event-emitter';
-import { Collection } from '../Collection.js';
+import { Collection } from '../Collection.ts';
+import type { BaseGame } from './BaseGame.ts';
+import type { BasePlayer } from './BasePlayer.ts';
+import type { BaseRoomConfig } from './BaseRoomConfig.ts';
 
 /**
  * Base Room
  */
-export class BaseRoom extends EventEmitter {
+export abstract class BaseRoom extends EventEmitter {
+    name: string;
+    players: Collection<BasePlayer>;
+    config: BaseRoomConfig;
+    game: BaseGame | undefined;
+
     /**
      * Number of player needed to start a room
-     *
-     * @type {Number}
      */
-    minPlayer = 1;
+    minPlayer: number = 1;
 
     /**
      * Max length for name
-     *
-     * @type {Number}
      */
     static maxLength = 25;
 
     /**
      * Launch time
-     *
-     * @type {Number}
      */
-    launchTime = 5000;
+    launchTime: number = 5000;
 
-    constructor(name) {
+    /** Create the configuration of the room */
+    abstract createConfig(): BaseRoomConfig;
+
+    /** Create a game with the players of the room */
+    abstract createGame(): BaseGame;
+
+    constructor(name: string) {
         super();
 
         this.name = name;
@@ -38,30 +46,22 @@ export class BaseRoom extends EventEmitter {
 
     /**
      * Add player
-     *
-     * @param {Player} player
      */
-    addPlayer(player) {
+    addPlayer(player: BasePlayer) {
         return this.players.add(player);
     }
 
     /**
      * Equal
-     *
-     * @param {Room} room
-     *
-     * @return {Boolean}
      */
-    equal(room) {
+    equal(room: BaseRoom | null): boolean {
         return room ? this.name === room.name : false;
     }
 
     /**
      * Is name available?
-     *
-     * @param {String} name
      */
-    isNameAvailable(name) {
+    isNameAvailable(name: string) {
         return !this.players.match(function () {
             return this.name === name;
         });
@@ -69,19 +69,15 @@ export class BaseRoom extends EventEmitter {
 
     /**
      * Remove player
-     *
-     * @param {Player} player
      */
-    removePlayer(player) {
+    removePlayer(player: BasePlayer) {
         return this.players.remove(player);
     }
 
     /**
      * Is ready
-     *
-     * @return {Boolean}
      */
-    isReady() {
+    isReady(): boolean {
         return (
             !this.game &&
             this.players.count() >= this.minPlayer &&
@@ -130,13 +126,11 @@ export class BaseRoom extends EventEmitter {
 
     /**
      * Serialize
-     *
-     * @return {Object}
      */
-    serialize(full) {
+    serialize(full?: boolean): Record<string, any> {
         full = typeof full === 'undefined' || full;
 
-        const data = {
+        const data: Record<string, any> = {
             name: this.name,
             players: full
                 ? this.players.map(function () {

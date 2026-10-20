@@ -1,4 +1,4 @@
-import { BaseFPSLogger } from '../../shared/service/BaseFPSLogger.js';
+import { BaseFPSLogger } from '../../shared/service/BaseFPSLogger.ts';
 
 /**
  * FPS Logger

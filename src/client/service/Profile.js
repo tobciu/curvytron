@@ -1,6 +1,6 @@
 import { EventEmitter } from '#event-emitter';
 import { PlayerControl } from '../model/PlayerControl.js';
-import { BasePlayer } from '../../shared/model/BasePlayer.js';
+import { BasePlayer } from '../../shared/model/BasePlayer.ts';
 
 /**
  * Remembered profile

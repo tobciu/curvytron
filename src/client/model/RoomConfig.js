@@ -5,7 +5,7 @@ import { RandomPreset } from './preset/RandomPreset.js';
 import { SizePreset } from './preset/SizePreset.js';
 import { SoloPreset } from './preset/SoloPreset.js';
 import { SpeedPreset } from './preset/SpeedPreset.js';
-import { BaseRoomConfig } from '../../shared/model/BaseRoomConfig.js';
+import { BaseRoomConfig } from '../../shared/model/BaseRoomConfig.ts';
 
 /**
  * Room Configuration

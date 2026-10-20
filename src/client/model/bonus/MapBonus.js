@@ -1,6 +1,6 @@
 import { BounceIn } from '../../animation/BounceIn.js';
 import { BonusManager } from '../../manager/BonusManager.js';
-import { BaseBonus } from '../../../shared/model/BaseBonus.js';
+import { BaseBonus } from '../../../shared/model/BaseBonus.ts';
 
 /**
  * Map Bonus

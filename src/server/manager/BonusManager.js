@@ -1,7 +1,7 @@
 import { Body } from '../core/Body.js';
 import { World } from '../core/World.js';
-import { BaseBonusManager } from '../../shared/manager/BaseBonusManager.js';
-import { BaseBonus } from '../../shared/model/BaseBonus.js';
+import { BaseBonusManager } from '../../shared/manager/BaseBonusManager.ts';
+import { BaseBonus } from '../../shared/model/BaseBonus.ts';
 
 /**
  * Bonus Manager

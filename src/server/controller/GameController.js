@@ -1,6 +1,6 @@
 import { SocketGroup } from '../core/SocketGroup.js';
-import { Collection } from '../../shared/Collection.js';
-import { Compressor } from '../../shared/service/Compressor.js';
+import { Collection } from '../../shared/Collection.ts';
+import { Compressor } from '../../shared/service/Compressor.ts';
 
 /**
  * Game Controller

@@ -1,43 +1,38 @@
 import { EventEmitter } from '#event-emitter';
+import type { BaseAvatar } from './BaseAvatar.ts';
+import type { BaseGame } from './BaseGame.ts';
 
 /**
  * BaseBonus
- *
- * @param {Number} x
- * @param {Number} y
  */
 export class BaseBonus extends EventEmitter {
+    x: number;
+    y: number;
+    id: number | null;
+
     /**
      * Target affected
-     *
-     * @type {String}
      */
-    affect = 'self';
+    affect: string = 'self';
 
     /**
      * Radius
-     *
-     * @type {Number}
      */
     static radius = 3;
 
-    radius = BaseBonus.radius;
+    radius: number = BaseBonus.radius;
 
     /**
      * Effect duration
-     *
-     * @type {Number}
      */
-    duration = 5000;
+    duration: number = 5000;
 
     /**
      * Probability to appear
-     *
-     * @type {Number}
      */
     static probability = 1;
 
-    constructor(x, y) {
+    constructor(x: number, y: number) {
         super();
 
         this.x = x;
@@ -47,29 +42,25 @@ export class BaseBonus extends EventEmitter {
 
     /**
      * Clear
-     *
-     * @param {Array} point
      */
     clear() {}
 
     /**
-     * Apply to target(s)
-     *
-     * @param {Avatar} avatar
-     * @param {Game} game
-     *
-     * @return {Number}
+     * Effects on the target: pairs of property and value
      */
-    applyTo(avatar, game) {}
+    getEffects(target: any): Array<[string, any]> {
+        return [];
+    }
+
+    /**
+     * Apply to target(s)
+     */
+    applyTo(avatar: BaseAvatar, game: BaseGame): void {}
 
     /**
      * Get probability
-     *
-     * @param {Game} game
-     *
-     * @return {Number}
      */
-    static getProbability(game) {
+    static getProbability(game: BaseGame): number {
         return BaseBonus.probability;
     }
 }

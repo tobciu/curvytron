@@ -3,7 +3,7 @@ import { md5 } from '../service/hash.js';
 import { ClientTracker } from '../trackers/TrackerClient.js';
 import { GameTracker } from '../trackers/TrackerGame.js';
 import { RoomTracker } from '../trackers/TrackerRoom.js';
-import { Collection } from '../../shared/Collection.js';
+import { Collection } from '../../shared/Collection.ts';
 
 /**
  * Inspector

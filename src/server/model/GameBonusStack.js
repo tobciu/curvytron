@@ -1,4 +1,4 @@
-import { BaseBonusStack } from '../../shared/model/BaseBonusStack.js';
+import { BaseBonusStack } from '../../shared/model/BaseBonusStack.ts';
 
 /**
  * Game Bonus Stack

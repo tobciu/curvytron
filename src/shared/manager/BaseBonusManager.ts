@@ -1,34 +1,31 @@
 import { EventEmitter } from '#event-emitter';
-import { Collection } from '../Collection.js';
+import { Collection } from '../Collection.ts';
+import type { BaseBonus } from '../model/BaseBonus.ts';
+import type { BaseGame } from '../model/BaseGame.ts';
 
 /**
  * Base Bonus Manager
- *
- * @param {Game} game
  */
 export class BaseBonusManager extends EventEmitter {
+    game: BaseGame;
+    bonuses: Collection<BaseBonus>;
+
     /**
      * Maximum number of bonus on the map at the same time
-     *
-     * @type {Number}
      */
-    bonusCap = 20;
+    bonusCap: number = 20;
 
     /**
      * Interval between two bonus pop (will vary from a factor x1 to x3)
-     *
-     * @type {Number}
      */
-    bonusPopingTime = 3000;
+    bonusPopingTime: number = 3000;
 
     /**
      * Margin from bonus to trails
-     *
-     * @type {Number}
      */
-    bonusPopingMargin = 0.01;
+    bonusPopingMargin: number = 0.01;
 
-    constructor(game) {
+    constructor(game: BaseGame) {
         super();
 
         this.game = game;
@@ -53,19 +50,15 @@ export class BaseBonusManager extends EventEmitter {
 
     /**
      * Add bonus
-     *
-     * @param {Bonus} bonus
      */
-    add(bonus) {
+    add(bonus: BaseBonus) {
         return this.bonuses.add(bonus);
     }
 
     /**
      * Remove bonus
-     *
-     * @param {Bonus} bonus
      */
-    remove(bonus) {
+    remove(bonus: BaseBonus) {
         bonus.clear();
 
         return this.bonuses.remove(bonus);

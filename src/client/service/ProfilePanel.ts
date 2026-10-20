@@ -12,7 +12,11 @@ export class ProfilePanel {
     /** Is the "what we need to know" tutorial displayed? (decided when the panel opens) */
     readonly tutorial = ref(false);
 
-    constructor(private readonly profile: Profile) {}
+    private readonly profile: Profile;
+
+    constructor(profile: Profile) {
+        this.profile = profile;
+    }
 
     openProfile(): void {
         if (!this.open.value) {

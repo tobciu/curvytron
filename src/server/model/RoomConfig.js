@@ -17,7 +17,7 @@ import { BonusSelfMaster } from './Bonus/BonusSelfMaster.js';
 import { BonusSelfRandom } from './Bonus/BonusSelfRandom.js';
 import { BonusSelfSlow } from './Bonus/BonusSelfSlow.js';
 import { BonusSelfSmall } from './Bonus/BonusSelfSmall.js';
-import { BaseRoomConfig } from '../../shared/model/BaseRoomConfig.js';
+import { BaseRoomConfig } from '../../shared/model/BaseRoomConfig.ts';
 
 /**
  * Room Configuration

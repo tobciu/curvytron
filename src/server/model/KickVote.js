@@ -1,5 +1,5 @@
 import { EventEmitter } from '#event-emitter';
-import { Collection } from '../../shared/Collection.js';
+import { Collection } from '../../shared/Collection.ts';
 
 /**
  * Kick vote

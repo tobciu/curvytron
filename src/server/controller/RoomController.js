@@ -4,7 +4,7 @@ import { KickManager } from '../manager/KickManager.js';
 import { Message } from '../model/Message.js';
 import { Player } from '../model/Player.js';
 import { Chat } from '../service/Chat.js';
-import { Collection } from '../../shared/Collection.js';
+import { Collection } from '../../shared/Collection.ts';
 
 /**
  * Room Controller

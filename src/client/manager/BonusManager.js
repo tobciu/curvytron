@@ -1,5 +1,5 @@
 import { Canvas } from '../core/Canvas.js';
-import { BaseBonusManager } from '../../shared/manager/BaseBonusManager.js';
+import { BaseBonusManager } from '../../shared/manager/BaseBonusManager.ts';
 import { SpriteAsset } from '../lib/SpriteAsset.js';
 
 /**

@@ -1,5 +1,5 @@
 import { Body } from '../../core/Body.js';
-import { BaseBonus } from '../../../shared/model/BaseBonus.js';
+import { BaseBonus } from '../../../shared/model/BaseBonus.ts';
 
 /**
  * Bonus

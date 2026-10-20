@@ -1,6 +1,6 @@
 import { Explode } from '../animation/Explode.js';
 import { Canvas } from '../core/Canvas.js';
-import { BaseGame } from '../../shared/model/BaseGame.js';
+import { BaseGame } from '../../shared/model/BaseGame.ts';
 import { FPSLogger } from '../service/FPSLogger.js';
 import { BonusManager } from '../manager/BonusManager.js';
 

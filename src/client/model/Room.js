@@ -1,4 +1,4 @@
-import { BaseRoom } from '../../shared/model/BaseRoom.js';
+import { BaseRoom } from '../../shared/model/BaseRoom.ts';
 import { RoomConfig } from './RoomConfig.js';
 import { Game } from './Game.js';
 

@@ -1,7 +1,7 @@
 import { EventEmitter } from '#event-emitter';
 import { MapBonus } from '../model/bonus/MapBonus.js';
 import { StackedBonus } from '../model/bonus/StackedBonus.js';
-import { Compressor } from '../../shared/service/Compressor.js';
+import { Compressor } from '../../shared/service/Compressor.ts';
 
 /**
  * GameRepository

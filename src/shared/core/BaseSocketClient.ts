@@ -2,19 +2,24 @@ import { EventEmitter } from '#event-emitter';
 
 /**
  * `readyState` of an open WebSocket
- *
- * @type {Number}
  */
 const WEBSOCKET_OPEN = 1;
 
 /**
  * Base Socket Client
- *
- * @param {Object} socket
- * @param {Number} interval
  */
 export class BaseSocketClient extends EventEmitter {
-    constructor(socket, interval) {
+    /** Identifier given by the server */
+    id: number | null = null;
+    socket: any;
+    interval: number;
+    events: any[][];
+    callbacks: Record<number, (data: any) => void>;
+    loop: ReturnType<typeof setInterval> | null;
+    connected: boolean;
+    callCount: number;
+
+    constructor(socket: any, interval?: number) {
         super();
 
         this.socket = socket;
@@ -45,10 +50,8 @@ export class BaseSocketClient extends EventEmitter {
 
     /**
      * Set interval
-     *
-     * @param {Number} interval
      */
-    setInterval(interval) {
+    setInterval(interval?: number) {
         this.stop();
         this.flush();
 
@@ -95,14 +98,9 @@ export class BaseSocketClient extends EventEmitter {
 
     /**
      * Add an event to the list
-     *
-     * @param {String} name
-     * @param {Object} data
-     * @param {Function} callback
-     * @param {Boolean} force
      */
-    addEvent(name, data, callback, force) {
-        const event = [name];
+    addEvent(name: string, data?: any, callback?: (...args: any[]) => any, force?: boolean) {
+        const event: any[] = [name];
 
         if (typeof data !== 'undefined') {
             event[1] = data;
@@ -122,13 +120,10 @@ export class BaseSocketClient extends EventEmitter {
 
     /**
      * Add an event to the list
-     *
-     * @param {Array} events
-     * @param {Boolean} force
      */
-    addEvents(sources, force) {
+    addEvents(sources: any, force: boolean) {
         const length = sources.length,
-            events = [];
+            events: any[][] = [];
 
         for (let i = 0; i < length; i++) {
             events.push(sources[i]);
@@ -144,12 +139,8 @@ export class BaseSocketClient extends EventEmitter {
 
     /**
      * Index a new callback
-     *
-     * @param {Function} callback
-     *
-     * @return {Number}
      */
-    indexCallback(callback) {
+    indexCallback(callback: (...args: any[]) => any): number {
         const index = this.callCount++;
 
         this.callbacks[index] = callback;
@@ -159,12 +150,9 @@ export class BaseSocketClient extends EventEmitter {
 
     /**
      * Add a callback
-     *
-     * @param {Number} id
-     * @param {Object} data
      */
-    addCallback(id, data) {
-        const event = [id];
+    addCallback(id: number, data?: any) {
+        const event: any[] = [id];
 
         if (typeof data !== 'undefined') {
             event[1] = data;
@@ -175,11 +163,8 @@ export class BaseSocketClient extends EventEmitter {
 
     /**
      * Send an event
-     *
-     * @param {String} name
-     * @param {String} data
      */
-    sendEvents(events) {
+    sendEvents(events: any) {
         if (this.socket.readyState !== WEBSOCKET_OPEN) {
             return;
         }
@@ -199,10 +184,8 @@ export class BaseSocketClient extends EventEmitter {
 
     /**
      * On message
-     *
-     * @param {Event} e
      */
-    onMessage(e) {
+    onMessage(e: any) {
         let data;
 
         try {
@@ -237,11 +220,8 @@ export class BaseSocketClient extends EventEmitter {
 
     /**
      * Play an indexed callback
-     *
-     * @param {Number} id
-     * @param {Object|null} data
      */
-    playCallback(id, data) {
+    playCallback(id: number, data: any | null) {
         if (typeof this.callbacks[id] !== 'undefined') {
             this.callbacks[id](data);
             delete this.callbacks[id];
@@ -250,23 +230,17 @@ export class BaseSocketClient extends EventEmitter {
 
     /**
      * Create callback
-     *
-     * @param {Number} id
-     *
-     * @return {Function}
      */
-    createCallback(id) {
+    createCallback(id: number) {
         const client = this;
 
-        return function (data) {
+        return function (data?: any) {
             client.addCallback(id, data);
         };
     }
 
     /**
      * Object version of the client
-     *
-     * @return {Object}
      */
     serialize() {
         return { id: this.id };

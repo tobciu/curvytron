@@ -1,4 +1,4 @@
-import { BaseTrail } from '../../shared/model/BaseTrail.js';
+import { BaseTrail } from '../../shared/model/BaseTrail.ts';
 
 /**
  * Trail

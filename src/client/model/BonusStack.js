@@ -1,5 +1,5 @@
 import { Canvas } from '../core/Canvas.js';
-import { BaseBonusStack } from '../../shared/model/BaseBonusStack.js';
+import { BaseBonusStack } from '../../shared/model/BaseBonusStack.ts';
 
 /**
  * Bonus Stack

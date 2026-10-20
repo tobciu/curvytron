@@ -1,4 +1,4 @@
-import { BasePlayer } from '../../shared/model/BasePlayer.js';
+import { BasePlayer } from '../../shared/model/BasePlayer.ts';
 import { Avatar } from './Avatar.js';
 
 /**

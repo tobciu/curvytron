@@ -4,8 +4,8 @@ import { MessagePlayer } from '../model/message/MessagePlayer.js';
 import { MessageRoomMaster } from '../model/message/MessageRoomMaster.js';
 import { MessageTip } from '../model/message/MessageTip.js';
 import { MessageVoteKick } from '../model/message/MessageVoteKick.js';
-import { Collection } from '../../shared/Collection.js';
-import { BaseChat } from '../../shared/service/BaseChat.js';
+import { Collection } from '../../shared/Collection.ts';
+import { BaseChat } from '../../shared/service/BaseChat.ts';
 
 /**
  * Chat system

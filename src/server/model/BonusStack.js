@@ -1,5 +1,5 @@
-import { BaseAvatar } from '../../shared/model/BaseAvatar.js';
-import { BaseBonusStack } from '../../shared/model/BaseBonusStack.js';
+import { BaseAvatar } from '../../shared/model/BaseAvatar.ts';
+import { BaseBonusStack } from '../../shared/model/BaseBonusStack.ts';
 
 /**
  * Bonus Stack

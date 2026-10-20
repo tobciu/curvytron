@@ -1,6 +1,6 @@
 import { EventEmitter } from '#event-emitter';
 import { KickVote } from '../model/KickVote.js';
-import { Collection } from '../../shared/Collection.js';
+import { Collection } from '../../shared/Collection.ts';
 
 /**
  * Kick vote manager

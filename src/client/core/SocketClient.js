@@ -1,4 +1,4 @@
-import { BaseSocketClient } from '../../shared/core/BaseSocketClient.js';
+import { BaseSocketClient } from '../../shared/core/BaseSocketClient.ts';
 
 /**
  * SocketClient

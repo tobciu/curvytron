@@ -1,61 +1,68 @@
 import { EventEmitter } from '#event-emitter';
+import { Collection } from '../Collection.ts';
+import type { BaseBonusManager } from '../manager/BaseBonusManager.ts';
+import type { BaseFPSLogger } from '../service/BaseFPSLogger.ts';
+import type { BaseAvatar } from './BaseAvatar.ts';
+import type { BaseRoom } from './BaseRoom.ts';
 
 /**
  * BaseGame
- *
- * @param {Room} room
  */
-export class BaseGame extends EventEmitter {
+export abstract class BaseGame extends EventEmitter {
+    room: BaseRoom;
+    name: string;
+    frame: ReturnType<typeof setTimeout> | null;
+    avatars: Collection<BaseAvatar>;
+    size: number;
+    rendered: number | null;
+    maxScore: number;
+    fps: BaseFPSLogger;
+    started: boolean;
+    bonusManager: BaseBonusManager;
+    inRound: boolean;
+
     /**
      * Loop frame rate
-     *
-     * @type {Number}
      */
-    framerate = (1 / 60) * 1000;
+    framerate: number = (1 / 60) * 1000;
 
     /**
      * Map size factor per player
-     *
-     * @type {Number}
      */
-    perPlayerSize = 80;
+    perPlayerSize: number = 80;
 
     /**
      * Time before round start
-     *
-     * @type {Number}
      */
-    warmupTime = 3000;
+    warmupTime: number = 3000;
 
     /**
      * Time after round end
-     *
-     * @type {Number}
      */
-    warmdownTime = 5000;
+    warmdownTime: number = 5000;
 
     /**
      * Margin from borders
-     *
-     * @type {Number}
      */
-    spawnMargin = 0.05;
+    spawnMargin: number = 0.05;
 
     /**
      * Angle margin from borders
-     *
-     * @type {Number}
      */
-    spawnAngleMargin = 0.3;
+    spawnAngleMargin: number = 0.3;
 
     /**
      * Borderless
-     *
-     * @type {Boolean}
      */
-    borderless = false;
+    borderless: boolean = false;
 
-    constructor(room) {
+    /** Create the FPS logger */
+    abstract createFPSLogger(): BaseFPSLogger;
+
+    /** Create the manager of the bonuses of the game */
+    abstract createBonusManager(): BaseBonusManager;
+
+    constructor(room: BaseRoom) {
         super();
 
         this.room = room;
@@ -83,17 +90,13 @@ export class BaseGame extends EventEmitter {
 
     /**
      * Update
-     *
-     * @param {Number} step
      */
-    update(step) {}
+    update(step: number) {}
 
     /**
      * Remove a avatar from the game
-     *
-     * @param {Avatar} avatar
      */
-    removeAvatar(avatar) {
+    removeAvatar(avatar: BaseAvatar) {
         if (this.avatars.exists(avatar)) {
             avatar.die();
             avatar.destroy();
@@ -127,7 +130,7 @@ export class BaseGame extends EventEmitter {
         this.newFrame();
 
         const now = new Date().getTime(),
-            step = now - this.rendered;
+            step = now - (this.rendered ?? now);
 
         this.rendered = now;
 
@@ -155,7 +158,7 @@ export class BaseGame extends EventEmitter {
         const size = this.getSize(this.getPresentAvatars().count());
 
         if (this.size !== size) {
-            this.setSize(size);
+            this.setSize();
         }
     }
 
@@ -190,16 +193,17 @@ export class BaseGame extends EventEmitter {
      * Clear frame
      */
     clearFrame() {
-        clearTimeout(this.frame);
+        if (this.frame) {
+            clearTimeout(this.frame);
+        }
+
         this.frame = null;
     }
 
     /**
      * On frame
-     *
-     * @param {Number} step
      */
-    onFrame(step) {
+    onFrame(step: number) {
         this.update(step);
     }
 
@@ -212,12 +216,8 @@ export class BaseGame extends EventEmitter {
 
     /**
      * Get size by players
-     *
-     * @param {Number} players
-     *
-     * @return {Number}
      */
-    getSize(players) {
+    getSize(players: number): number {
         const square = this.perPlayerSize * this.perPlayerSize,
             size = Math.sqrt(square + ((players - 1) * square) / 5);
 
@@ -226,17 +226,13 @@ export class BaseGame extends EventEmitter {
 
     /**
      * Are all avatars ready?
-     *
-     * @return {Boolean}
      */
-    isReady() {
+    isReady(): boolean {
         return this.getLoadingAvatars().isEmpty();
     }
 
     /**
      * Get still loading avatars
-     *
-     * @return {Collection}
      */
     getLoadingAvatars() {
         return this.avatars.filter(function () {
@@ -246,8 +242,6 @@ export class BaseGame extends EventEmitter {
 
     /**
      * Get alive avatars
-     *
-     * @return {Collection}
      */
     getAliveAvatars() {
         return this.avatars.filter(function () {
@@ -257,8 +251,6 @@ export class BaseGame extends EventEmitter {
 
     /**
      * Get present avatars
-     *
-     * @return {Collection}
      */
     getPresentAvatars() {
         return this.avatars.filter(function () {
@@ -268,14 +260,8 @@ export class BaseGame extends EventEmitter {
 
     /**
      * Sort avatars
-     *
-     * @param {Object} avatars
-     *
-     * @return {Object}
      */
-    sortAvatars(avatars) {
-        avatars = typeof avatars !== 'undefined' ? avatars : this.avatars;
-
+    sortAvatars(avatars: Collection<BaseAvatar> = this.avatars): Collection<BaseAvatar> {
         avatars.sort(function (a, b) {
             return a.score > b.score ? -1 : a.score < b.score ? 1 : 0;
         });
@@ -285,17 +271,13 @@ export class BaseGame extends EventEmitter {
 
     /**
      * Set borderless
-     *
-     * @param {Boolean} borderless
      */
-    setBorderless(borderless) {
+    setBorderless(borderless: boolean) {
         this.borderless = borderless ? true : false;
     }
 
     /**
      * Serialize
-     *
-     * @return {Object}
      */
     serialize() {
         return {
@@ -310,7 +292,7 @@ export class BaseGame extends EventEmitter {
     /**
      * New round
      */
-    newRound(time) {
+    newRound(time?: number) {
         this.started = true;
 
         if (!this.inRound) {

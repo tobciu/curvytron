@@ -1,5 +1,5 @@
 import { BonusEnemy } from './BonusEnemy.js';
-import { BaseAvatar } from '../../../shared/model/BaseAvatar.js';
+import { BaseAvatar } from '../../../shared/model/BaseAvatar.ts';
 
 /**
  * Slow Enemy Bonus

@@ -1,7 +1,7 @@
 import { PingLogger } from './PingLogger.js';
-import { Collection } from '../../shared/Collection.js';
-import { BaseSocketClient } from '../../shared/core/BaseSocketClient.js';
-import { BaseTickrateLogger } from '../../shared/service/BaseTickrateLogger.js';
+import { Collection } from '../../shared/Collection.ts';
+import { BaseSocketClient } from '../../shared/core/BaseSocketClient.ts';
+import { BaseTickrateLogger } from '../../shared/service/BaseTickrateLogger.ts';
 
 /**
  * Socket Client
