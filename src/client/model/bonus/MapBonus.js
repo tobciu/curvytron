@@ -12,11 +12,16 @@ import { BaseBonus } from '../../../shared/model/BaseBonus.js';
  * @param {Number} radius
  */
 export class MapBonus extends BaseBonus {
+    /**
+     * Assets
+     *
+     * @type {Object}
+     */
     constructor(id, x, y, type) {
         super(x, y);
 
         this.id = id;
-        this.asset = this.assets[type];
+        this.asset = BonusManager.assets[type];
         this.animation = new BounceIn(300);
         this.changed = true;
         this.drawRadius = 0;
@@ -37,10 +42,3 @@ export class MapBonus extends BaseBonus {
         this.drawY = this.y - this.drawRadius;
     }
 }
-
-/**
- * Assets
- *
- * @type {Object}
- */
-MapBonus.prototype.assets = BonusManager.prototype.assets;

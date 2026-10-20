@@ -5,6 +5,27 @@ import { Collection } from '../Collection.js';
  * Base Room
  */
 export class BaseRoom extends EventEmitter {
+    /**
+     * Number of player needed to start a room
+     *
+     * @type {Number}
+     */
+    minPlayer = 1;
+
+    /**
+     * Max length for name
+     *
+     * @type {Number}
+     */
+    static maxLength = 25;
+
+    /**
+     * Launch time
+     *
+     * @type {Number}
+     */
+    launchTime = 5000;
+
     constructor(name) {
         super();
 
@@ -133,24 +154,3 @@ export class BaseRoom extends EventEmitter {
         return data;
     }
 }
-
-/**
- * Number of player needed to start a room
- *
- * @type {Number}
- */
-BaseRoom.prototype.minPlayer = 1;
-
-/**
- * Max length for name
- *
- * @type {Number}
- */
-BaseRoom.prototype.maxLength = 25;
-
-/**
- * Launch time
- *
- * @type {Number}
- */
-BaseRoom.prototype.launchTime = 5000;

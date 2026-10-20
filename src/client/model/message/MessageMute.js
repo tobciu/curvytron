@@ -7,6 +7,20 @@ import { Message } from './Message.js';
  * @param {Player} player
  */
 export class MessageMute extends Message {
+    /**
+     * Message type
+     *
+     * @type {String}
+     */
+    type = 'mute';
+
+    /**
+     * Default icon
+     *
+     * @type {String}
+     */
+    icon = 'icon-megaphone';
+
     constructor(client, player) {
         super();
 
@@ -14,17 +28,3 @@ export class MessageMute extends Message {
         this.player = player;
     }
 }
-
-/**
- * Message type
- *
- * @type {String}
- */
-MessageMute.prototype.type = 'mute';
-
-/**
- * Default icon
- *
- * @type {String}
- */
-MessageMute.prototype.icon = 'icon-megaphone';

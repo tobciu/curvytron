@@ -203,11 +203,6 @@
         @include opacity(66);
     }
 
-    .icon-radio {
-        @extend .icon-music;
-        @include opacity(66);
-    }
-
     &::after {
         content: ' ';
         width: 40px;
@@ -224,10 +219,6 @@
     &.active {
         .icon-volume {
             @extend .icon-volume-up;
-            @include opacity(100);
-        }
-
-        .icon-radio {
             @include opacity(100);
         }
 

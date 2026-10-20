@@ -6,6 +6,20 @@ import { Message } from './Message.js';
  * @param {SocketClient} client
  */
 export class MessageRoomMaster extends Message {
+    /**
+     * Message type
+     *
+     * @type {String}
+     */
+    type = 'room-master';
+
+    /**
+     * Default icon
+     *
+     * @type {String}
+     */
+    icon = 'icon-megaphone';
+
     constructor(client) {
         super();
 
@@ -33,17 +47,3 @@ export class MessageRoomMaster extends Message {
         return this.client.players.getFirst();
     }
 }
-
-/**
- * Message type
- *
- * @type {String}
- */
-MessageRoomMaster.prototype.type = 'room-master';
-
-/**
- * Default icon
- *
- * @type {String}
- */
-MessageRoomMaster.prototype.icon = 'icon-megaphone';

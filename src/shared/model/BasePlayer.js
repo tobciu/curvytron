@@ -8,6 +8,20 @@ import { EventEmitter } from '#event-emitter';
  * @param {String} color
  */
 export class BasePlayer extends EventEmitter {
+    /**
+     * Max length for name
+     *
+     * @type {Number}
+     */
+    static maxLength = 25;
+
+    /**
+     * Max length for color
+     *
+     * @type {Number}
+     */
+    static colorMaxLength = 20;
+
     constructor(client, name, color, ready) {
         super();
 
@@ -143,17 +157,3 @@ export class BasePlayer extends EventEmitter {
         return matches ? true : false;
     }
 }
-
-/**
- * Max length for name
- *
- * @type {Number}
- */
-BasePlayer.prototype.maxLength = 25;
-
-/**
- * Max length for color
- *
- * @type {Number}
- */
-BasePlayer.prototype.colorMaxLength = 20;

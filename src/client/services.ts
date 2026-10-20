@@ -6,7 +6,6 @@ import { ActivityWatcher } from './service/ActivityWatcher.js';
 import { RoomRepository } from './repository/RoomRepository.js';
 import { GameRepository } from './repository/GameRepository.js';
 import { Chat } from './service/Chat.js';
-import { Radio } from './service/Radio.js';
 import { Notifier } from './service/Notifier.js';
 import { ProfilePanel } from './service/ProfilePanel';
 import type * as T from './types';
@@ -17,7 +16,6 @@ export interface Services {
     profile: T.Profile;
     profilePanel: ProfilePanel;
     sound: T.SoundManager;
-    radio: T.Radio;
     watcher: T.ActivityWatcher;
     roomRepository: T.RoomRepository;
     gameRepository: T.GameRepository;
@@ -37,7 +35,6 @@ export function createServices(): Services {
     const roomRepository = new RoomRepository(client);
     const gameRepository = new GameRepository(client, roomRepository, sound);
     const chat = new Chat(client, roomRepository);
-    const radio = new Radio(profile);
     const notifier = new Notifier(sound, watcher);
 
     return {
@@ -45,7 +42,6 @@ export function createServices(): Services {
         profile,
         profilePanel,
         sound,
-        radio,
         watcher,
         roomRepository,
         gameRepository,

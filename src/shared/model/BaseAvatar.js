@@ -6,6 +6,42 @@ import { EventEmitter } from '#event-emitter';
  * @param {Player} player
  */
 export class BaseAvatar extends EventEmitter {
+    /**
+     * Default values of the properties that bonuses change: what an avatar goes back to
+     *
+     * - velocity: movement velocity
+     * - angularVelocityBase: turn velocity
+     * - radius: radius of the head
+     * - inverse: inverted controls
+     * - invincible: does not die on trails
+     * - ghost: goes through borders
+     * - directionInLoop: turns in a loop (true) or in straight angles (false)
+     */
+    static defaults = Object.freeze({
+        velocity: 16,
+        angularVelocityBase: 2.8 / 1000,
+        radius: 0.6,
+        inverse: false,
+        invincible: false,
+        ghost: false,
+        directionInLoop: true
+    });
+
+    /**
+     * Number of trail points that don't kill the player
+     *
+     * @type {Number}
+     */
+    trailLatency = 3;
+
+    velocity = BaseAvatar.defaults.velocity;
+    angularVelocityBase = BaseAvatar.defaults.angularVelocityBase;
+    radius = BaseAvatar.defaults.radius;
+    inverse = BaseAvatar.defaults.inverse;
+    invincible = BaseAvatar.defaults.invincible;
+    ghost = BaseAvatar.defaults.ghost;
+    directionInLoop = BaseAvatar.defaults.directionInLoop;
+
     constructor(player) {
         super();
 
@@ -139,7 +175,7 @@ export class BaseAvatar extends EventEmitter {
      * @param {Number} step
      */
     setVelocity(velocity) {
-        velocity = Math.max(velocity, BaseAvatar.prototype.velocity / 2);
+        velocity = Math.max(velocity, BaseAvatar.defaults.velocity / 2);
 
         if (this.velocity !== velocity) {
             this.velocity = velocity;
@@ -164,8 +200,8 @@ export class BaseAvatar extends EventEmitter {
      */
     updateBaseAngularVelocity() {
         if (this.directionInLoop) {
-            const ratio = this.velocity / BaseAvatar.prototype.velocity;
-            this.angularVelocityBase = ratio * BaseAvatar.prototype.angularVelocityBase + Math.log(1 / ratio) / 1000;
+            const ratio = this.velocity / BaseAvatar.defaults.velocity;
+            this.angularVelocityBase = ratio * BaseAvatar.defaults.angularVelocityBase + Math.log(1 / ratio) / 1000;
             this.updateAngularVelocity();
         }
     }
@@ -176,7 +212,7 @@ export class BaseAvatar extends EventEmitter {
      * @param {Number} radius
      */
     setRadius(radius) {
-        this.radius = Math.max(radius, BaseAvatar.prototype.radius / 8);
+        this.radius = Math.max(radius, BaseAvatar.defaults.radius / 8);
     }
 
     /**
@@ -319,20 +355,20 @@ export class BaseAvatar extends EventEmitter {
         this.velocityY = 0;
         this.angularVelocity = 0;
         this.roundScore = 0;
-        this.velocity = BaseAvatar.prototype.velocity;
+        this.velocity = BaseAvatar.defaults.velocity;
         this.alive = true;
         this.ghost = false;
         this.printing = false;
         this.color = this.player.color;
         this.borderColor = this.player.color;
-        this.radius = BaseAvatar.prototype.radius;
-        this.inverse = BaseAvatar.prototype.inverse;
-        this.invincible = BaseAvatar.prototype.invincible;
-        this.directionInLoop = BaseAvatar.prototype.directionInLoop;
-        this.angularVelocityBase = BaseAvatar.prototype.angularVelocityBase;
+        this.radius = BaseAvatar.defaults.radius;
+        this.inverse = BaseAvatar.defaults.inverse;
+        this.invincible = BaseAvatar.defaults.invincible;
+        this.directionInLoop = BaseAvatar.defaults.directionInLoop;
+        this.angularVelocityBase = BaseAvatar.defaults.angularVelocityBase;
 
         if (this.body) {
-            this.body.radius = BaseAvatar.prototype.radius;
+            this.body.radius = BaseAvatar.defaults.radius;
         }
 
         this.updateVelocities();
@@ -362,59 +398,3 @@ export class BaseAvatar extends EventEmitter {
         };
     }
 }
-
-/**
- * Movement velocity
- *
- * @type {Number}
- */
-BaseAvatar.prototype.velocity = 16;
-
-/**
- * Turn velocity
- *
- * @type {Float}
- */
-BaseAvatar.prototype.angularVelocityBase = 2.8 / 1000;
-
-/**
- * Radius
- *
- * @type {Number}
- */
-BaseAvatar.prototype.radius = 0.6;
-
-/**
- * Number of trail points that don't kill the player
- *
- * @type {Number}
- */
-BaseAvatar.prototype.trailLatency = 3;
-
-/**
- * Inverted controls
- *
- * @type {Boolean}
- */
-BaseAvatar.prototype.inverse = false;
-
-/**
- * Invincible
- *
- * @type {Boolean}
- */
-BaseAvatar.prototype.invincible = false;
-
-/**
- * Invincible
- *
- * @type {Boolean}
- */
-BaseAvatar.prototype.ghost = false;
-
-/**
- * Type of tunrn: round or straight
- *
- * @type {Boolean}
- */
-BaseAvatar.prototype.directionInLoop = true;

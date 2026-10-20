@@ -4,6 +4,47 @@
  * @param {Number} creation
  */
 export class Message {
+    /**
+     * Message type
+     *
+     * @type {String}
+     */
+    type = 'default';
+
+    /**
+     * Default color
+     *
+     * @type {String}
+     */
+    static anonymousColor = '#75858c';
+
+    static anonymousName = 'Anonymous';
+
+    static maxLength = 140;
+
+    color = Message.anonymousColor;
+
+    /**
+     * Default name
+     *
+     * @type {String}
+     */
+    name = Message.anonymousName;
+
+    /**
+     * Default icon
+     *
+     * @type {String}
+     */
+    icon = null;
+
+    /**
+     * Message max length
+     *
+     * @type {Number}
+     */
+    maxLength = Message.maxLength;
+
     constructor(creation) {
         this.id = null;
         this.creation = typeof creation === 'number' ? new Date(creation) : new Date();
@@ -34,38 +75,3 @@ export class Message {
         return `${hours}:${minutes}`;
     }
 }
-
-/**
- * Message type
- *
- * @type {String}
- */
-Message.prototype.type = 'default';
-
-/**
- * Default color
- *
- * @type {String}
- */
-Message.prototype.color = '#75858c';
-
-/**
- * Default name
- *
- * @type {String}
- */
-Message.prototype.name = 'Anonymous';
-
-/**
- * Default icon
- *
- * @type {String}
- */
-Message.prototype.icon = null;
-
-/**
- * Message max length
- *
- * @type {Number}
- */
-Message.prototype.maxLength = 140;

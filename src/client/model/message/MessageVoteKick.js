@@ -6,23 +6,23 @@ import { Message } from './Message.js';
  * @param {Player} target
  */
 export class MessageVoteKick extends Message {
+    /**
+     * Message type
+     *
+     * @type {String}
+     */
+    type = 'vote-kick';
+
+    /**
+     * Default icon
+     *
+     * @type {String}
+     */
+    icon = 'icon-megaphone';
+
     constructor(target) {
         super();
 
         this.target = target;
     }
 }
-
-/**
- * Message type
- *
- * @type {String}
- */
-MessageVoteKick.prototype.type = 'vote-kick';
-
-/**
- * Default icon
- *
- * @type {String}
- */
-MessageVoteKick.prototype.icon = 'icon-megaphone';

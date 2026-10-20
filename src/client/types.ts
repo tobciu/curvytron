@@ -93,7 +93,6 @@ export interface Avatar extends Emitter {
     local: boolean;
     player: Player;
     input?: Emitter & { useGamepad(): boolean };
-    elements: Record<string, HTMLElement | null>;
     setScore(score: number): void;
     setRoundScore(score: number): void;
 }
@@ -149,7 +148,6 @@ export interface Profile extends Emitter {
     name: string | null;
     color: string | null;
     sound: boolean;
-    radio: boolean;
     controls: PlayerControl[];
     persist(): void;
     isComplete(): boolean;
@@ -163,12 +161,6 @@ export interface SoundManager {
     toggle(): void;
     play(sound: string): void;
     stop(sound: string): void;
-}
-
-export interface Radio {
-    enabled: boolean;
-    toggle(): void;
-    setActive(active: boolean): void;
 }
 
 export interface ActivityWatcher {

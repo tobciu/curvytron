@@ -4,6 +4,20 @@
  * @param {Avatar} avatar
  */
 export class PrintManager {
+    /**
+     * Hole distance
+     *
+     * @type {Number}
+     */
+    holeDistance = 5;
+
+    /**
+     * Print distance
+     *
+     * @type {Number}
+     */
+    printDistance = 60;
+
     constructor(avatar) {
         this.avatar = avatar;
         this.active = false;
@@ -105,17 +119,3 @@ export class PrintManager {
         this.lastY = 0;
     }
 }
-
-/**
- * Hole distance
- *
- * @type {Number}
- */
-PrintManager.prototype.holeDistance = 5;
-
-/**
- * Print distance
- *
- * @type {Number}
- */
-PrintManager.prototype.printDistance = 60;

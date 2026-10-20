@@ -4,6 +4,13 @@ import { BaseTrail } from '../../shared/model/BaseTrail.js';
  * Trail
  */
 export class Trail extends BaseTrail {
+    /**
+     * Distance tolerance
+     *
+     * @type {Number}
+     */
+    tolerance = 1;
+
     constructor(avatar) {
         super(avatar);
 
@@ -68,10 +75,3 @@ export class Trail extends BaseTrail {
         this.clearAsked = true;
     }
 }
-
-/**
- * Distance tolerance
- *
- * @type {Number}
- */
-Trail.prototype.tolerance = 1;

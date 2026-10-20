@@ -5,6 +5,13 @@
  * @param {Number} tolerance
  */
 export class StopWatch {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    tolerance = 2;
+
     constructor(name, tolerance) {
         this.name = name;
         this.from = null;
@@ -45,10 +52,3 @@ export class StopWatch {
         }
     }
 }
-
-/**
- * Duration
- *
- * @type {Number}
- */
-StopWatch.prototype.tolerance = 2;

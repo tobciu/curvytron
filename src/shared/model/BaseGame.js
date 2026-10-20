@@ -6,6 +6,55 @@ import { EventEmitter } from '#event-emitter';
  * @param {Room} room
  */
 export class BaseGame extends EventEmitter {
+    /**
+     * Loop frame rate
+     *
+     * @type {Number}
+     */
+    framerate = (1 / 60) * 1000;
+
+    /**
+     * Map size factor per player
+     *
+     * @type {Number}
+     */
+    perPlayerSize = 80;
+
+    /**
+     * Time before round start
+     *
+     * @type {Number}
+     */
+    warmupTime = 3000;
+
+    /**
+     * Time after round end
+     *
+     * @type {Number}
+     */
+    warmdownTime = 5000;
+
+    /**
+     * Margin from borders
+     *
+     * @type {Number}
+     */
+    spawnMargin = 0.05;
+
+    /**
+     * Angle margin from borders
+     *
+     * @type {Number}
+     */
+    spawnAngleMargin = 0.3;
+
+    /**
+     * Borderless
+     *
+     * @type {Boolean}
+     */
+    borderless = false;
+
     constructor(room) {
         super();
 
@@ -114,7 +163,7 @@ export class BaseGame extends EventEmitter {
      * On round new
      */
     onRoundNew() {
-        this.borderless = BaseGame.prototype.borderless;
+        this.borderless = false;
 
         this.bonusManager.clear();
 
@@ -297,52 +346,3 @@ export class BaseGame extends EventEmitter {
         return false;
     }
 }
-
-/**
- * Loop frame rate
- *
- * @type {Number}
- */
-BaseGame.prototype.framerate = (1 / 60) * 1000;
-
-/**
- * Map size factor per player
- *
- * @type {Number}
- */
-BaseGame.prototype.perPlayerSize = 80;
-
-/**
- * Time before round start
- *
- * @type {Number}
- */
-BaseGame.prototype.warmupTime = 3000;
-
-/**
- * Time after round end
- *
- * @type {Number}
- */
-BaseGame.prototype.warmdownTime = 5000;
-
-/**
- * Margin from borders
- *
- * @type {Number}
- */
-BaseGame.prototype.spawnMargin = 0.05;
-
-/**
- * Angle margin from borders
- *
- * @type {Number}
- */
-BaseGame.prototype.spawnAngleMargin = 0.3;
-
-/**
- * Borderless
- *
- * @type {Boolean}
- */
-BaseGame.prototype.borderless = false;

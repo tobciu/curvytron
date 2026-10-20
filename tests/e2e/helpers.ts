@@ -29,7 +29,7 @@ export async function openPlayer(
     );
 
     if (options.profile !== false) {
-        const profile = { name, color: options.color ?? '#ff0000', sound: false, radio: false };
+        const profile = { name, color: options.color ?? '#ff0000', sound: false };
 
         await page.addInitScript((value) => {
             if (!window.localStorage.getItem('PROFILE')) {

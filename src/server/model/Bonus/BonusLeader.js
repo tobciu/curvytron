@@ -7,6 +7,20 @@ import { Bonus } from './Bonus.js';
  * @param {Number} y
  */
 export class BonusLeader extends Bonus {
+    /**
+     * Affect leader
+     *
+     * @type {String}
+     */
+    affect = 'leader';
+
+    /**
+     * Probability
+     *
+     * @type {Number}
+     */
+    static probability = 0.5;
+
     constructor(x, y) {
         super(x, y);
 
@@ -61,7 +75,7 @@ export class BonusLeader extends Bonus {
      *
      * @return {Number}
      */
-    getProbability(game) {
+    static getProbability(game) {
         const leader = game
             .sortAvatars(
                 game.avatars.filter(function () {
@@ -74,20 +88,6 @@ export class BonusLeader extends Bonus {
         } else if (leader.score === 0) {
             return 0;
         }
-        return BonusLeader.prototype.probability;
+        return BonusLeader.probability;
     }
 }
-
-/**
- * Affect leader
- *
- * @type {String}
- */
-BonusLeader.prototype.affect = 'leader';
-
-/**
- * Probability
- *
- * @type {Number}
- */
-BonusLeader.prototype.probability = 0.5;

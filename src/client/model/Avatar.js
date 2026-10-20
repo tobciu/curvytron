@@ -10,6 +10,20 @@ import { BonusStack } from './BonusStack.js';
  * @param {Player} player
  */
 export class Avatar extends BaseAvatar {
+    /**
+     * Array width
+     *
+     * @type {Number}
+     */
+    arrowWidth = 3;
+
+    /**
+     * Arrow canvas size
+     *
+     * @type {Number}
+     */
+    arrowSize = 200;
+
     constructor(player) {
         super(player);
 
@@ -24,11 +38,6 @@ export class Avatar extends BaseAvatar {
         this.startY = 0;
         this.clearX = 0;
         this.clearY = 0;
-        this.elements = {
-            root: null,
-            roundScore: null,
-            score: null
-        };
 
         if (this.local) {
             this.input = new PlayerInput(this, player.getBinding());
@@ -248,17 +257,3 @@ export class Avatar extends BaseAvatar {
         return !this.bonusStack.bonuses.isEmpty();
     }
 }
-
-/**
- * Array width
- *
- * @type {Number}
- */
-Avatar.prototype.arrowWidth = 3;
-
-/**
- * Arrow canvas size
- *
- * @type {Number}
- */
-Avatar.prototype.arrowSize = 200;

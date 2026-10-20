@@ -9,6 +9,13 @@ import { Message } from './Message.js';
  * @param {Number} creation
  */
 export class MessagePlayer extends Message {
+    /**
+     * Message type
+     *
+     * @type {String}
+     */
+    type = 'player';
+
     constructor(client, content, player, creation) {
         super(creation);
 
@@ -24,10 +31,3 @@ export class MessagePlayer extends Message {
         this.content = '';
     }
 }
-
-/**
- * Message type
- *
- * @type {String}
- */
-MessagePlayer.prototype.type = 'player';

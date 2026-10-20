@@ -3,6 +3,54 @@
  */
 export class RoomNameGenerator {
     /**
+     * Adjectives
+     *
+     * @type {Array}
+     */
+    adjectives = [
+        'awesome',
+        'amazing',
+        'great',
+        'fantastic',
+        'super',
+        'admirable',
+        'famous',
+        'fine',
+        'gigantic',
+        'grand',
+        'marvelous',
+        'mighty',
+        'outstanding',
+        'splendid',
+        'wonderful',
+        'big',
+        'super',
+        'smashing',
+        'sensational'
+    ];
+
+    nouns = [
+        'game',
+        'adventure',
+        'fun zone',
+        'arena',
+        'party',
+        'tournament',
+        'league',
+        'gala',
+        'gathering',
+        'bunch',
+        'fight',
+        'battle',
+        'conflict',
+        'encounter',
+        'clash',
+        'combat',
+        'confrontation',
+        'challenge'
+    ];
+
+    /**
      * Get random name
      *
      * @return {String}
@@ -29,51 +77,3 @@ export class RoomNameGenerator {
         return this.nouns[Math.floor(Math.random() * this.nouns.length)];
     }
 }
-
-/**
- * Adjectives
- *
- * @type {Array}
- */
-RoomNameGenerator.prototype.adjectives = [
-    'awesome',
-    'amazing',
-    'great',
-    'fantastic',
-    'super',
-    'admirable',
-    'famous',
-    'fine',
-    'gigantic',
-    'grand',
-    'marvelous',
-    'mighty',
-    'outstanding',
-    'splendid',
-    'wonderful',
-    'big',
-    'super',
-    'smashing',
-    'sensational'
-];
-
-RoomNameGenerator.prototype.nouns = [
-    'game',
-    'adventure',
-    'fun zone',
-    'arena',
-    'party',
-    'tournament',
-    'league',
-    'gala',
-    'gathering',
-    'bunch',
-    'fight',
-    'battle',
-    'conflict',
-    'encounter',
-    'clash',
-    'combat',
-    'confrontation',
-    'challenge'
-];

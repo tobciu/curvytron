@@ -252,8 +252,8 @@ export class RoomRepository extends EventEmitter {
         this.client.addEvent(
             'player:add',
             {
-                name: name.substr(0, Player.prototype.maxLength),
-                color: color ? color.substr(0, Player.prototype.colorMaxLength) : null
+                name: name.substr(0, Player.maxLength),
+                color: color ? color.substr(0, Player.colorMaxLength) : null
             },
             callback
         );
@@ -306,7 +306,7 @@ export class RoomRepository extends EventEmitter {
             'room:color',
             {
                 player: player.id,
-                color: color.substr(0, Player.prototype.colorMaxLength)
+                color: color.substr(0, Player.colorMaxLength)
             },
             function (result) {
                 if (!result.success) {
@@ -327,7 +327,7 @@ export class RoomRepository extends EventEmitter {
      * @param {Function} callback
      */
     setName(player, name, callback) {
-        name = name.substr(0, Player.prototype.nameMaxLength).trim();
+        name = name.substr(0, Player.maxLength).trim();
 
         if (name !== player.name) {
             this.client.addEvent('room:name', { player, name }, callback);

@@ -7,6 +7,27 @@ import { Collection } from '../Collection.js';
  * @param {Game} game
  */
 export class BaseBonusManager extends EventEmitter {
+    /**
+     * Maximum number of bonus on the map at the same time
+     *
+     * @type {Number}
+     */
+    bonusCap = 20;
+
+    /**
+     * Interval between two bonus pop (will vary from a factor x1 to x3)
+     *
+     * @type {Number}
+     */
+    bonusPopingTime = 3000;
+
+    /**
+     * Margin from bonus to trails
+     *
+     * @type {Number}
+     */
+    bonusPopingMargin = 0.01;
+
     constructor(game) {
         super();
 
@@ -61,24 +82,3 @@ export class BaseBonusManager extends EventEmitter {
         this.bonuses.clear();
     }
 }
-
-/**
- * Maximum number of bonus on the map at the same time
- *
- * @type {Number}
- */
-BaseBonusManager.prototype.bonusCap = 20;
-
-/**
- * Interval between two bonus pop (will vary from a factor x1 to x3)
- *
- * @type {Number}
- */
-BaseBonusManager.prototype.bonusPopingTime = 3000;
-
-/**
- * Margin from bonus to trails
- *
- * @type {Number}
- */
-BaseBonusManager.prototype.bonusPopingMargin = 0.01;

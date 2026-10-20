@@ -13,6 +13,56 @@ import { BaseRoomConfig } from '../../shared/model/BaseRoomConfig.js';
  * @param {Room} room
  */
 export class RoomConfig extends BaseRoomConfig {
+    /**
+     * Bonus classes
+     *
+     * @type {Object}
+     */
+    bonusClasses = {
+        BonusSelfSmall: 'bonus-self-small',
+        BonusSelfSlow: 'bonus-self-slow',
+        BonusSelfFast: 'bonus-self-fast',
+        BonusSelfMaster: 'bonus-self-master',
+        BonusEnemySlow: 'bonus-enemy-slow',
+        BonusEnemyFast: 'bonus-enemy-fast',
+        BonusEnemyBig: 'bonus-enemy-big',
+        BonusEnemyInverse: 'bonus-enemy-inverse',
+        BonusEnemyStraightAngle: 'bonus-enemy-straight-angle',
+        BonusGameBorderless: 'bonus-game-borderless',
+        BonusAllColor: 'bonus-all-color',
+        BonusGameClear: 'bonus-all-clear',
+        BonusSelfRandom: 'bonus-self-random',
+        BonusLeaderRandom: 'bonus-leader-random',
+        BonusEnemyRandom: 'bonus-enemy-random',
+        BonusLeaderFast: 'bonus-leader-fast',
+        BonusLeaderInverse: 'bonus-leader-inverse',
+        BonusLeaderSlow: 'bonus-leader-slow',
+        BonusSelfBorderless: 'bonus-self-borderless'
+    };
+
+    /**
+     * Variables names
+     *
+     * @type {Object}
+     */
+    variablesNames = {
+        bonusRate: 'Bonus quantity'
+    };
+
+    /**
+     * Presets
+     *
+     * @type {Object}
+     */
+    presets = [
+        new DefaultPreset(),
+        new SpeedPreset(),
+        new SizePreset(),
+        new SoloPreset(),
+        new EmptyPreset(),
+        new RandomPreset()
+    ];
+
     constructor(room) {
         super(room);
 
@@ -130,53 +180,3 @@ export class RoomConfig extends BaseRoomConfig {
         return this.customPreset;
     }
 }
-
-/**
- * Bonus classes
- *
- * @type {Object}
- */
-RoomConfig.prototype.bonusClasses = {
-    BonusSelfSmall: 'bonus-self-small',
-    BonusSelfSlow: 'bonus-self-slow',
-    BonusSelfFast: 'bonus-self-fast',
-    BonusSelfMaster: 'bonus-self-master',
-    BonusEnemySlow: 'bonus-enemy-slow',
-    BonusEnemyFast: 'bonus-enemy-fast',
-    BonusEnemyBig: 'bonus-enemy-big',
-    BonusEnemyInverse: 'bonus-enemy-inverse',
-    BonusEnemyStraightAngle: 'bonus-enemy-straight-angle',
-    BonusGameBorderless: 'bonus-game-borderless',
-    BonusAllColor: 'bonus-all-color',
-    BonusGameClear: 'bonus-all-clear',
-    BonusSelfRandom: 'bonus-self-random',
-    BonusLeaderRandom: 'bonus-leader-random',
-    BonusEnemyRandom: 'bonus-enemy-random',
-    BonusLeaderFast: 'bonus-leader-fast',
-    BonusLeaderInverse: 'bonus-leader-inverse',
-    BonusLeaderSlow: 'bonus-leader-slow',
-    BonusSelfBorderless: 'bonus-self-borderless'
-};
-
-/**
- * Variables names
- *
- * @type {Object}
- */
-RoomConfig.prototype.variablesNames = {
-    bonusRate: 'Bonus quantity'
-};
-
-/**
- * Presets
- *
- * @type {Object}
- */
-RoomConfig.prototype.presets = [
-    new DefaultPreset(),
-    new SpeedPreset(),
-    new SizePreset(),
-    new SoloPreset(),
-    new EmptyPreset(),
-    new RandomPreset()
-];

@@ -7,6 +7,36 @@ import { EventEmitter } from '#event-emitter';
  * @param {Number} y
  */
 export class BaseBonus extends EventEmitter {
+    /**
+     * Target affected
+     *
+     * @type {String}
+     */
+    affect = 'self';
+
+    /**
+     * Radius
+     *
+     * @type {Number}
+     */
+    static radius = 3;
+
+    radius = BaseBonus.radius;
+
+    /**
+     * Effect duration
+     *
+     * @type {Number}
+     */
+    duration = 5000;
+
+    /**
+     * Probability to appear
+     *
+     * @type {Number}
+     */
+    static probability = 1;
+
     constructor(x, y) {
         super();
 
@@ -39,35 +69,7 @@ export class BaseBonus extends EventEmitter {
      *
      * @return {Number}
      */
-    getProbability(game) {
-        return BaseBonus.prototype.probability;
+    static getProbability(game) {
+        return BaseBonus.probability;
     }
 }
-
-/**
- * Target affected
- *
- * @type {String}
- */
-BaseBonus.prototype.affect = 'self';
-
-/**
- * Radius
- *
- * @type {Number}
- */
-BaseBonus.prototype.radius = 3;
-
-/**
- * Effect duration
- *
- * @type {Number}
- */
-BaseBonus.prototype.duration = 5000;
-
-/**
- * Probability to appear
- *
- * @type {Number}
- */
-BaseBonus.prototype.probability = 1;

@@ -8,6 +8,13 @@ import { Collection } from '../../shared/Collection.js';
  * @param {Number} total
  */
 export class KickVote extends EventEmitter {
+    /**
+     * Time before an empty vote is closed
+     *
+     * @type {Number}
+     */
+    timeToClose = 10000;
+
     constructor(player, total) {
         super();
 
@@ -125,10 +132,3 @@ export class KickVote extends EventEmitter {
         };
     }
 }
-
-/**
- * Time before an empty vote is closed
- *
- * @type {Number}
- */
-KickVote.prototype.timeToClose = 10000;

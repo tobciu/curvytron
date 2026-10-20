@@ -7,6 +7,13 @@ import { Bonus } from './Bonus.js';
  * @param {Number} y
  */
 export class BonusEnemy extends Bonus {
+    /**
+     * Affect enemy
+     *
+     * @type {String}
+     */
+    affect = 'enemy';
+
     constructor(x, y) {
         super(x, y);
 
@@ -45,10 +52,3 @@ export class BonusEnemy extends Bonus {
         }
     }
 }
-
-/**
- * Affect enemy
- *
- * @type {String}
- */
-BonusEnemy.prototype.affect = 'enemy';

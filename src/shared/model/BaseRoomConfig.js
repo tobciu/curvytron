@@ -4,6 +4,13 @@ import { EventEmitter } from '#event-emitter';
  * Base room configuration
  */
 export class BaseRoomConfig extends EventEmitter {
+    /**
+     * Password length
+     *
+     * @type {Number}
+     */
+    passwordLength = 4;
+
     constructor(room) {
         super();
 
@@ -220,10 +227,3 @@ export class BaseRoomConfig extends EventEmitter {
         };
     }
 }
-
-/**
- * Password length
- *
- * @type {Number}
- */
-BaseRoomConfig.prototype.passwordLength = 4;

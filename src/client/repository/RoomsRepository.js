@@ -71,7 +71,7 @@ export class RoomsRepository extends EventEmitter {
      */
     create(name, callback) {
         if (typeof name === 'string') {
-            name = name.substr(0, Room.prototype.maxLength).trim();
+            name = name.substr(0, Room.maxLength).trim();
         }
 
         this.client.addEvent('room:create', { name }, callback);

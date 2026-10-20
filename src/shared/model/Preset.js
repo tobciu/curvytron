@@ -3,6 +3,13 @@
  */
 export class Preset {
     /**
+     * Bonuses
+     *
+     * @type {Array}
+     */
+    bonuses = [];
+
+    /**
      * Has onus
      *
      * @param {String} bonus
@@ -13,10 +20,3 @@ export class Preset {
         return this.bonuses.indexOf(bonus) > -1;
     }
 }
-
-/**
- * Bonuses
- *
- * @type {Array}
- */
-Preset.prototype.bonuses = [];

@@ -5,6 +5,13 @@ import { gamepadListener } from '../gamepadListener.js';
  * Player input
  */
 export class PlayerInput extends EventEmitter {
+    /**
+     * Key binding
+     *
+     * @type {Object}
+     */
+    defaultBinding = [37, 39];
+
     constructor(avatar, binding) {
         super();
 
@@ -255,10 +262,3 @@ export class PlayerInput extends EventEmitter {
         this.width = width;
     }
 }
-
-/**
- * Key binding
- *
- * @type {Object}
- */
-PlayerInput.prototype.defaultBinding = [37, 39];

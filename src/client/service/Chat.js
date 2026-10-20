@@ -138,17 +138,13 @@ export class Chat extends BaseChat {
         const chat = this;
 
         if (this.message.content && this.message.content.length) {
-            this.client.addEvent(
-                'room:talk',
-                this.message.content.substr(0, Message.prototype.maxLength),
-                function (result) {
-                    if (result.success) {
-                        chat.message.clear();
-                    } else {
-                        console.error('Could not send %s', chat.message);
-                    }
+            this.client.addEvent('room:talk', this.message.content.substr(0, Message.maxLength), function (result) {
+                if (result.success) {
+                    chat.message.clear();
+                } else {
+                    console.error('Could not send %s', chat.message);
                 }
-            );
+            });
         }
     }
 
@@ -180,8 +176,8 @@ export class Chat extends BaseChat {
         }
 
         return {
-            name: typeof data.name === 'string' ? data.name : `${Message.prototype.name} ${data.client}`,
-            color: typeof data.color === 'string' ? data.color : Message.prototype.color
+            name: typeof data.name === 'string' ? data.name : `${Message.anonymousName} ${data.client}`,
+            color: typeof data.color === 'string' ? data.color : Message.anonymousColor
         };
     }
 

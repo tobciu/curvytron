@@ -7,6 +7,13 @@ import { BonusLeader } from './BonusLeader.js';
  * @param {Number} y
  */
 export class BonusLeaderInverse extends BonusLeader {
+    /**
+     * Probability
+     *
+     * @type {Number}
+     */
+    static probability = 0.8;
+
     constructor(x, y) {
         super(x, y);
     }
@@ -29,14 +36,7 @@ export class BonusLeaderInverse extends BonusLeader {
      *
      * @return {Number}
      */
-    getProbability(game) {
-        return BonusLeader.prototype.probability * BonusLeaderInverse.prototype.probability;
+    static getProbability(game) {
+        return BonusLeader.probability * BonusLeaderInverse.probability;
     }
 }
-
-/**
- * Probability
- *
- * @type {Number}
- */
-BonusLeaderInverse.prototype.probability = 0.8;

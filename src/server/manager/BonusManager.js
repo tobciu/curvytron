@@ -63,7 +63,7 @@ export class BonusManager extends BaseBonusManager {
                 const bonusType = this.getRandomBonusType();
 
                 if (bonusType) {
-                    const position = this.getRandomPosition(BaseBonus.prototype.radius, this.bonusPopingMargin),
+                    const position = this.getRandomPosition(BaseBonus.radius, this.bonusPopingMargin),
                         bonus = new bonusType(position[0], position[1]);
                     this.add(bonus);
                 }
@@ -166,7 +166,7 @@ export class BonusManager extends BaseBonusManager {
 
         for (let i = 0; i < total; i++) {
             bonusType = this.bonusTypes[i];
-            probability = bonusType.prototype.getProbability(this.game);
+            probability = bonusType.getProbability(this.game);
 
             if (probability > 0) {
                 bonuses.push(bonusType);

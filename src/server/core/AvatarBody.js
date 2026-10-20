@@ -8,6 +8,13 @@ import { Body } from './Body.js';
  * @param {Avatar} avatar
  */
 export class AvatarBody extends Body {
+    /**
+     * Age considered old
+     *
+     * @type {Number}
+     */
+    oldAge = 2000;
+
     constructor(x, y, avatar) {
         super(x, y, avatar.radius, avatar);
 
@@ -39,10 +46,3 @@ export class AvatarBody extends Body {
         return new Date().getTime() - this.birth >= this.oldAge;
     }
 }
-
-/**
- * Age considered old
- *
- * @type {Number}
- */
-AvatarBody.prototype.oldAge = 2000;

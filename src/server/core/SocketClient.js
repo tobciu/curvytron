@@ -11,6 +11,13 @@ import { BaseTickrateLogger } from '../../shared/service/BaseTickrateLogger.js';
  * @param {String} ip
  */
 export class SocketClient extends BaseSocketClient {
+    /**
+     * Ping interval
+     *
+     * @type {Number}
+     */
+    pingInterval = 1000;
+
     constructor(socket, interval, ip) {
         super(socket, interval);
 
@@ -105,10 +112,3 @@ export class SocketClient extends BaseSocketClient {
         return data;
     }
 }
-
-/**
- * Ping interval
- *
- * @type {Number}
- */
-SocketClient.prototype.pingInterval = 1000;

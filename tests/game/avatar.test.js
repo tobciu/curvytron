@@ -131,9 +131,9 @@ describe('Avatar', () => {
         expect(second.velocity).toBe(16);
         expect(second.radius).toBe(0.6);
         expect(second.inverse).toBe(false);
-        expect(BaseAvatar.prototype.velocity).toBe(16);
-        expect(BaseAvatar.prototype.radius).toBe(0.6);
-        expect(BaseAvatar.prototype.inverse).toBe(false);
+        expect(BaseAvatar.defaults.velocity).toBe(16);
+        expect(BaseAvatar.defaults.radius).toBe(0.6);
+        expect(BaseAvatar.defaults.inverse).toBe(false);
     });
 
     it('goes back to the defaults on a new round', () => {

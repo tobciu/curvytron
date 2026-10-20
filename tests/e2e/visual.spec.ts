@@ -88,7 +88,7 @@ test('room and parameters', async ({ browser }) => {
     await bob.locator('tr.local .player-ready').click();
     await expect(alice.locator('tr:not(.local) .player-ready.ready')).toBeVisible();
 
-    const masked = ['.room h2.header', '.room-chat'];
+    const masked = ['.room h2.header', '#chat-feed'];
 
     await expect(alice).toHaveScreenshot('room.png', snapshotOptions(alice, masked));
 
@@ -120,7 +120,7 @@ test('game screen', async ({ browser }) => {
             '#game-infos h3',
             '#render',
             '#warmup',
-            '.room-chat',
+            '#chat-feed',
             '#kill-log-feed',
             '#game-infos footer'
         ])

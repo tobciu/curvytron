@@ -22,6 +22,6 @@ export class Chat extends BaseChat {
     isValid(message) {
         const length = message.content.length;
 
-        return length > 0 && length <= Message.prototype.maxLength && this.floodFilter.isValid(message);
+        return length > 0 && length <= Message.maxLength && this.floodFilter.isValid(message);
     }
 }

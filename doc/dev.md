@@ -27,6 +27,12 @@ The model is made of mutable objects that emit events. Vue can not see changes i
 each time one of the events is emitted (or `bump()` is called).
 `types.ts` describes the part of the model the components rely on.
 
+### Defaults and constants
+
+Default values are class fields (`duration = 4000;`). Constants that are read from outside of the class are `static`
+(`Player.maxLength`, `BonusSelfFast.probability`, `BaseAvatar.defaults`). A subclass can override a field, but the
+constructor of the base class does not see the override: read it later (methods, not constructor).
+
 ### Shared
 
 The shared classes can not reference client or server classes directly: they call factory methods

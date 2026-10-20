@@ -4,6 +4,20 @@
  * @param {Number} duration
  */
 export class BounceIn {
+    /**
+     * Target value
+     *
+     * @type {Number}
+     */
+    target = 1;
+
+    /**
+     * Easing constant
+     *
+     * @type {Number}
+     */
+    factor = 1.77635683940025e-15;
+
     constructor(duration) {
         this.duration = duration;
         this.created = null;
@@ -67,17 +81,3 @@ export class BounceIn {
         return begin + target * (factor * tc * ts + 4 * tc + -9 * ts + 6 * time);
     }
 }
-
-/**
- * Target value
- *
- * @type {Number}
- */
-BounceIn.prototype.target = 1;
-
-/**
- * Easing constant
- *
- * @type {Number}
- */
-BounceIn.prototype.factor = 1.77635683940025e-15;

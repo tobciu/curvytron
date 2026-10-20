@@ -8,6 +8,34 @@ import { Canvas } from '../core/Canvas.js';
  * @param {Canvas} effect
  */
 export class Explode {
+    /**
+     * Canvas width
+     *
+     * @type {Number}
+     */
+    width = 10;
+
+    /**
+     * Angle variation
+     *
+     * @type {Float}
+     */
+    angleVariation = Math.PI / 8;
+
+    /**
+     * Number of particles to generate
+     *
+     * @type {Number}
+     */
+    particleTotal = 20;
+
+    /**
+     * Animation duration
+     *
+     * @type {Number}
+     */
+    duration = 500;
+
     constructor(avatar, effect) {
         this.effect = effect;
         this.particles = new Array(this.particleTotal);
@@ -61,7 +89,7 @@ export class Explode {
         if (age <= this.duration) {
             const step = age / this.duration;
 
-            this.effect.setOpacity(ExplodeParticle.prototype.opacity * (1.2 - step));
+            this.effect.setOpacity(ExplodeParticle.opacity * (1.2 - step));
 
             for (let particle, i = this.particles.length - 1; i >= 0; i--) {
                 particle = this.particles[i];
@@ -92,31 +120,3 @@ export class Explode {
         this.cleared = true;
     }
 }
-
-/**
- * Canvas width
- *
- * @type {Number}
- */
-Explode.prototype.width = 10;
-
-/**
- * Angle variation
- *
- * @type {Float}
- */
-Explode.prototype.angleVariation = Math.PI / 8;
-
-/**
- * Number of particles to generate
- *
- * @type {Number}
- */
-Explode.prototype.particleTotal = 20;
-
-/**
- * Animation duration
- *
- * @type {Number}
- */
-Explode.prototype.duration = 500;

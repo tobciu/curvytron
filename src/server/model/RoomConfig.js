@@ -25,6 +25,33 @@ import { BaseRoomConfig } from '../../shared/model/BaseRoomConfig.js';
  * @param {Room} room
  */
 export class RoomConfig extends BaseRoomConfig {
+    /**
+     * Bonus types
+     *
+     * @type {Array}
+     */
+    bonusTypes = {
+        BonusSelfSmall,
+        BonusSelfSlow,
+        BonusSelfFast,
+        BonusSelfMaster,
+        BonusEnemySlow,
+        BonusEnemyFast,
+        BonusEnemyBig,
+        BonusEnemyInverse,
+        BonusGameBorderless,
+        BonusAllColor,
+        BonusGameClear,
+        BonusEnemyStraightAngle,
+        BonusSelfRandom,
+        BonusLeaderRandom,
+        BonusEnemyRandom,
+        BonusLeaderFast,
+        BonusLeaderInverse,
+        BonusLeaderSlow,
+        BonusSelfBorderless
+    };
+
     constructor(room) {
         super(room);
     }
@@ -64,30 +91,3 @@ export class RoomConfig extends BaseRoomConfig {
         return bonuses;
     }
 }
-
-/**
- * Bonus types
- *
- * @type {Array}
- */
-RoomConfig.prototype.bonusTypes = {
-    BonusSelfSmall,
-    BonusSelfSlow,
-    BonusSelfFast,
-    BonusSelfMaster,
-    BonusEnemySlow,
-    BonusEnemyFast,
-    BonusEnemyBig,
-    BonusEnemyInverse,
-    BonusGameBorderless,
-    BonusAllColor,
-    BonusGameClear,
-    BonusEnemyStraightAngle,
-    BonusSelfRandom,
-    BonusLeaderRandom,
-    BonusEnemyRandom,
-    BonusLeaderFast,
-    BonusLeaderInverse,
-    BonusLeaderSlow,
-    BonusSelfBorderless
-};

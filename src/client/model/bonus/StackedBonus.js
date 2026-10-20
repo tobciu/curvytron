@@ -9,12 +9,24 @@ import { BonusManager } from '../../manager/BonusManager.js';
  * @param {Number} duration
  */
 export class StackedBonus extends EventEmitter {
+    /**
+     * Assets
+     *
+     * @type {Object}
+     */
+    /**
+     * Opacity
+     *
+     * @type {Number}
+     */
+    opacity = 1;
+
     constructor(id, type, duration) {
         super();
 
         this.id = id;
         this.duration = duration;
-        this.asset = this.assets[type];
+        this.asset = BonusManager.assets[type];
         this.changed = true;
 
         this.setEnding = this.setEnding.bind(this);
@@ -55,17 +67,3 @@ export class StackedBonus extends EventEmitter {
         this.emit('change');
     }
 }
-
-/**
- * Assets
- *
- * @type {Object}
- */
-StackedBonus.prototype.assets = BonusManager.prototype.assets;
-
-/**
- * Opacity
- *
- * @type {Number}
- */
-StackedBonus.prototype.opacity = 1;

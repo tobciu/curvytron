@@ -6,6 +6,13 @@ import { Collection } from '../../shared/Collection.js';
  * World
  */
 export class World {
+    /**
+     * Island grid size (width of the island)
+     *
+     * @type {Number}
+     */
+    islandGridSize = 40;
+
     constructor(size, islands) {
         islands = typeof islands === 'number' ? islands : Math.round(size / this.islandGridSize);
 
@@ -354,10 +361,3 @@ export class World {
         this.active = true;
     }
 }
-
-/**
- * Island grid size (width of the island)
- *
- * @type {Number}
- */
-World.prototype.islandGridSize = 40;

@@ -7,6 +7,13 @@ import { BonusLeader } from './BonusLeader.js';
  * @param {Number} y
  */
 export class BonusLeaderRandom extends BonusLeader {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    duration = 7500;
+
     constructor(x, y) {
         super(x, y);
     }
@@ -25,10 +32,3 @@ export class BonusLeaderRandom extends BonusLeader {
         ];
     }
 }
-
-/**
- * Duration
- *
- * @type {Number}
- */
-BonusLeaderRandom.prototype.duration = 7500;

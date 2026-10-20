@@ -6,6 +6,27 @@
  * @param {Profile} profile
  */
 export class SoundManager {
+    /**
+     * Volume
+     *
+     * @type {Number}
+     */
+    volume = 0.5;
+
+    /**
+     * Sounds (files in public/sounds, in .ogg and .mp3)
+     *
+     * @type {Array}
+     */
+    sounds = ['death', 'win', 'notice', 'bonus-clear', 'bonus-pop'];
+
+    /**
+     * Directory
+     *
+     * @type {String}
+     */
+    directory = 'sounds/';
+
     constructor(profile) {
         this.profile = profile;
         this.active = this.profile.sound;
@@ -115,24 +136,3 @@ export class SoundManager {
         }
     }
 }
-
-/**
- * Volume
- *
- * @type {Number}
- */
-SoundManager.prototype.volume = 0.5;
-
-/**
- * Sounds (files in public/sounds, in .ogg and .mp3)
- *
- * @type {Array}
- */
-SoundManager.prototype.sounds = ['death', 'win', 'notice', 'bonus-clear', 'bonus-pop'];
-
-/**
- * Directory
- *
- * @type {String}
- */
-SoundManager.prototype.directory = 'sounds/';

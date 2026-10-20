@@ -7,6 +7,13 @@ import { Bonus } from './Bonus.js';
  * @param {Number} y
  */
 export class BonusSelf extends Bonus {
+    /**
+     * Affect self
+     *
+     * @type {String}
+     */
+    affect = 'self';
+
     constructor(x, y) {
         super(x, y);
 
@@ -43,10 +50,3 @@ export class BonusSelf extends Bonus {
         }
     }
 }
-
-/**
- * Affect self
- *
- * @type {String}
- */
-BonusSelf.prototype.affect = 'self';

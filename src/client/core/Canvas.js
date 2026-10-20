@@ -6,6 +6,13 @@
  * @param {Element} element
  */
 export class Canvas {
+    /**
+     * Two pi
+     *
+     * @type {Number}
+     */
+    twoPi = 2 * Math.PI;
+
     constructor(width, height, element) {
         this.element = typeof element !== 'undefined' ? element : document.createElement('canvas');
         this.context = this.element.getContext('2d');
@@ -333,10 +340,3 @@ export class Canvas {
         return ((0.5 + value * coef) | 0) / coef;
     }
 }
-
-/**
- * Two pi
- *
- * @type {Number}
- */
-Canvas.prototype.twoPi = 2 * Math.PI;

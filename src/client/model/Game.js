@@ -10,6 +10,20 @@ import { BonusManager } from '../manager/BonusManager.js';
  * @param {Room} room
  */
 export class Game extends BaseGame {
+    /**
+     * Margin between player an bonus stack
+     *
+     * @type {Number}
+     */
+    stackMargin = 15;
+
+    /**
+     * Background color
+     *
+     * @type {String}
+     */
+    backgroundColor = '#222222';
+
     constructor(room) {
         super(room);
 
@@ -326,17 +340,3 @@ export class Game extends BaseGame {
         }
     }
 }
-
-/**
- * Margin between player an bonus stack
- *
- * @type {Number}
- */
-Game.prototype.stackMargin = 15;
-
-/**
- * Background color
- *
- * @type {String}
- */
-Game.prototype.backgroundColor = '#222222';

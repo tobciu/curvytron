@@ -5,6 +5,13 @@
  * @param {SocketClient} client
  */
 export class Message {
+    /**
+     * Message max length
+     *
+     * @type {Number}
+     */
+    static maxLength = 140;
+
     constructor(client, content) {
         this.client = client;
         this.content = content;
@@ -46,10 +53,3 @@ export class Message {
         };
     }
 }
-
-/**
- * Message max length
- *
- * @type {Number}
- */
-Message.prototype.maxLength = 140;

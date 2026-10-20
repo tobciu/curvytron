@@ -7,6 +7,13 @@ import { BonusSelf } from './BonusSelf.js';
  * @param {Number} y
  */
 export class BonusSelfBorderless extends BonusSelf {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    duration = 7500;
+
     constructor(x, y) {
         super(x, y);
     }
@@ -22,10 +29,3 @@ export class BonusSelfBorderless extends BonusSelf {
         return [['ghost', true]];
     }
 }
-
-/**
- * Duration
- *
- * @type {Number}
- */
-BonusSelfBorderless.prototype.duration = 7500;

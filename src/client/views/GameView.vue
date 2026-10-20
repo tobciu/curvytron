@@ -16,7 +16,7 @@ import type { Avatar, Game } from '../types';
 
 const CONFIRMATION = 'Are you sure you want to leave the game?';
 
-const { client, gameRepository: repository, chat, radio, sound } = useServices();
+const { client, gameRepository: repository, chat, sound } = useServices();
 const route = useRoute();
 const router = useRouter();
 
@@ -27,7 +27,6 @@ const bump = () => triggerRef(game);
 const spectating = ref(false);
 const borderless = ref(false);
 const soundActive = shallowRef(sound);
-const radioEnabled = shallowRef(radio);
 
 let setup = false;
 let destination = '';
@@ -117,8 +116,6 @@ onMounted(() => {
         }
     }
 
-    radio.setActive(true);
-
     setup = true;
     checkReady();
 });
@@ -142,11 +139,6 @@ onBeforeUnmount(() => {
 function toggleSound(): void {
     sound.toggle();
     triggerRef(soundActive);
-}
-
-function toggleRadio(): void {
-    radio.toggle();
-    triggerRef(radioEnabled);
 }
 
 function backToRoom(): void {
@@ -177,14 +169,6 @@ function backToRoom(): void {
 
                 <span id="sound" class="btn-toggle sound pull-right" :class="{ active: soundActive.active }" @click="toggleSound">
                     <i class="icon-volume"></i>
-                </span>
-                <span
-                    id="radio-sound"
-                    class="btn-toggle radio-sound pull-right"
-                    :class="{ active: radioEnabled.enabled }"
-                    @click="toggleRadio"
-                >
-                    <i class="icon-radio"></i>
                 </span>
 
                 <PlayerList :game="game" />

@@ -7,6 +7,20 @@ import { BonusEnemy } from './BonusEnemy.js';
  * @param {Number} y
  */
 export class BonusEnemyStraightAngle extends BonusEnemy {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    duration = 5000;
+
+    /**
+     * Probability
+     *
+     * @type {Number}
+     */
+    static probability = 0.6;
+
     constructor(x, y) {
         super(x, y);
     }
@@ -32,21 +46,7 @@ export class BonusEnemyStraightAngle extends BonusEnemy {
      *
      * @return {Number}
      */
-    getProbability(game) {
-        return BonusEnemyStraightAngle.prototype.probability;
+    static getProbability(game) {
+        return BonusEnemyStraightAngle.probability;
     }
 }
-
-/**
- * Duration
- *
- * @type {Number}
- */
-BonusEnemyStraightAngle.prototype.duration = 5000;
-
-/**
- * Probability
- *
- * @type {Number}
- */
-BonusEnemyStraightAngle.prototype.probability = 0.6;

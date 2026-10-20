@@ -1,4 +1,4 @@
-import { Avatar } from './Avatar.js';
+import { BaseAvatar } from '../../shared/model/BaseAvatar.js';
 import { BaseBonusStack } from '../../shared/model/BaseBonusStack.js';
 
 /**
@@ -40,7 +40,7 @@ export class BonusStack extends BaseBonusStack {
     apply(property, value) {
         switch (property) {
             case 'radius':
-                this.target.setRadius(Avatar.prototype.radius * Math.pow(2, value));
+                this.target.setRadius(BaseAvatar.defaults.radius * Math.pow(2, value));
                 break;
             case 'velocity':
                 this.target.setVelocity(value);
@@ -82,7 +82,7 @@ export class BonusStack extends BaseBonusStack {
             case 'color':
                 return this.target.player.color;
             default:
-                return Avatar.prototype[property];
+                return BaseAvatar.defaults[property];
         }
     }
 

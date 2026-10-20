@@ -5,6 +5,13 @@
  * @param {ActivityWatcher} watcher
  */
 export class Notifier {
+    /**
+     * Default message duration
+     *
+     * @type {Number}
+     */
+    duration = 5000;
+
     constructor(sound, watcher) {
         this.sound = sound;
         this.watcher = watcher;
@@ -82,10 +89,3 @@ export class Notifier {
         }
     }
 }
-
-/**
- * Default message duration
- *
- * @type {Number}
- */
-Notifier.prototype.duration = 5000;

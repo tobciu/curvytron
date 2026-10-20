@@ -70,11 +70,6 @@
                 top: $game-header-height + 80px;
             }
 
-            &.radio-sound {
-                left: $aside-width - $aside-border-size - 100px;
-                top: $game-header-height + 80px;
-            }
-
             &::after {
                 top: 40px;
                 left: 7px;
@@ -247,12 +242,6 @@
                     bottom: 0;
                 }
             }
-        }
-
-        #radio {
-            position: fixed;
-            left: 0;
-            bottom: 0;
         }
 
         .spectators {
@@ -684,14 +673,6 @@
     margin: 40px 0;
     display: inline-block;
     font-size: $font-size-h4;
-}
-
-/* Radio */
-
-.radio-player {
-    width: 0;
-    height: 0;
-    visibility: hidden;
 }
 
 /* Toggle public/private room */

@@ -8,6 +8,13 @@ import { BaseAvatar } from '../../../shared/model/BaseAvatar.js';
  * @param {Number} y
  */
 export class BonusSelfFast extends BonusSelf {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    duration = 4000;
+
     constructor(x, y) {
         super(x, y);
     }
@@ -20,13 +27,6 @@ export class BonusSelfFast extends BonusSelf {
      * @return {Array}
      */
     getEffects(avatar) {
-        return [['velocity', 0.75 * BaseAvatar.prototype.velocity]];
+        return [['velocity', 0.75 * BaseAvatar.defaults.velocity]];
     }
 }
-
-/**
- * Duration
- *
- * @type {Number}
- */
-BonusSelfFast.prototype.duration = 4000;

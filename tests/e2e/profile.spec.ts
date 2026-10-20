@@ -75,27 +75,22 @@ test('picks a color with the color picker', async ({ browser }) => {
     await expect(page.locator('.profile-link .circle')).toHaveCSS('background-color', 'rgb(0, 255, 0)');
 });
 
-test('toggles sound and radio', async ({ browser }) => {
+test('toggles sound effects', async ({ browser }) => {
     const page = await openPlayer(browser, 'Alice');
 
     await page.goto('/');
     await page.locator('.profile-link').click();
 
     const sound = page.locator('#profile-sound');
-    const radio = page.locator('#profile-radio');
 
     await expect(sound).not.toHaveClass(/active/);
-    await expect(radio).not.toHaveClass(/active/);
 
     await sound.click();
     await expect(sound).toHaveClass(/active/);
 
-    await radio.click();
-    await expect(radio).toHaveClass(/active/);
-
     const stored = await page.evaluate(() => JSON.parse(window.localStorage.getItem('PROFILE') as string));
 
-    expect(stored).toMatchObject({ sound: true, radio: true });
+    expect(stored).toMatchObject({ sound: true });
 });
 
 test('re-assigns controls', async ({ browser }) => {

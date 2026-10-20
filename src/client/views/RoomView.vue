@@ -16,10 +16,7 @@ const { client, profile, profilePanel, roomRepository: repository, chat, notifie
 const route = useRoute();
 const router = useRouter();
 
-const { maxLength: nameMaxLength, colorMaxLength } = BasePlayer.prototype as unknown as {
-    maxLength: number;
-    colorMaxLength: number;
-};
+const { maxLength: nameMaxLength, colorMaxLength } = BasePlayer as unknown as { maxLength: number; colorMaxLength: number };
 
 const name = String(route.params.name);
 const password = typeof route.query.password === 'string' ? route.query.password : null;

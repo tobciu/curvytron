@@ -2,6 +2,13 @@
  * Explode particle
  */
 export class ExplodeParticle {
+    /**
+     * Opacity
+     *
+     * @type {Number}
+     */
+    static opacity = 1;
+
     constructor(x, y, velocity, angle, radius) {
         this.x = this.round(x);
         this.y = this.round(y);
@@ -33,10 +40,3 @@ export class ExplodeParticle {
         return (0.5 + value) | 0;
     }
 }
-
-/**
- * Opacity
- *
- * @type {Number}
- */
-ExplodeParticle.prototype.opacity = 1;

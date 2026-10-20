@@ -7,6 +7,13 @@ import { BonusEnemy } from './BonusEnemy.js';
  * @param {Number} y
  */
 export class BonusEnemyInverse extends BonusEnemy {
+    /**
+     * Probability
+     *
+     * @type {Number}
+     */
+    static probability = 0.8;
+
     constructor(x, y) {
         super(x, y);
     }
@@ -29,14 +36,7 @@ export class BonusEnemyInverse extends BonusEnemy {
      *
      * @return {Number}
      */
-    getProbability(game) {
-        return BonusEnemyInverse.prototype.probability;
+    static getProbability(game) {
+        return BonusEnemyInverse.probability;
     }
 }
-
-/**
- * Probability
- *
- * @type {Number}
- */
-BonusEnemyInverse.prototype.probability = 0.8;

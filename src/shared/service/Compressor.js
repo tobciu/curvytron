@@ -3,6 +3,13 @@
  */
 export class Compressor {
     /**
+     * Float precision
+     *
+     * @type {Number}
+     */
+    precision = 100;
+
+    /**
      * Compress a float into an integer
      *
      * @param {Float} value
@@ -24,10 +31,3 @@ export class Compressor {
         return value / this.precision;
     }
 }
-
-/**
- * Float precision
- *
- * @type {Number}
- */
-Compressor.prototype.precision = 100;

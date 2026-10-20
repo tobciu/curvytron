@@ -6,13 +6,19 @@ import { BasePlayer } from '../../shared/model/BasePlayer.js';
  * Remembered profile
  */
 export class Profile extends EventEmitter {
+    /**
+     * Local storage key
+     *
+     * @type {String}
+     */
+    localKey = 'PROFILE';
+
     constructor() {
         super();
 
         this.name = null;
         this.color = null;
         this.sound = true;
-        this.radio = false;
         this.loading = false;
         this.controls = [new PlayerControl(37, 'icon-left-dir'), new PlayerControl(39, 'icon-right-dir')];
 
@@ -40,7 +46,6 @@ export class Profile extends EventEmitter {
             name: this.name,
             color: this.color,
             sound: this.sound,
-            radio: this.radio,
             controls: this.getMapping()
         };
     }
@@ -61,10 +66,6 @@ export class Profile extends EventEmitter {
 
         if (typeof data.sound !== 'undefined') {
             this.setSound(data.sound);
-        }
-
-        if (typeof data.radio !== 'undefined') {
-            this.setRadio(data.radio);
         }
 
         if (typeof data.controls !== 'undefined') {
@@ -174,18 +175,6 @@ export class Profile extends EventEmitter {
     }
 
     /**
-     * Set radio
-     *
-     * @param {Boolean} radio
-     */
-    setRadio(radio) {
-        if (this.radio !== radio) {
-            this.radio = radio;
-            this.persist();
-        }
-    }
-
-    /**
      *
      * Profile
      *
@@ -220,10 +209,3 @@ export class Profile extends EventEmitter {
         return true;
     }
 }
-
-/**
- * Local storage key
- *
- * @type {String}
- */
-Profile.prototype.localKey = 'PROFILE';

@@ -12,6 +12,13 @@ import { Collection } from '../../shared/Collection.js';
  * @param {Room} room
  */
 export class RoomController extends EventEmitter {
+    /**
+     * Time before closing an empty room
+     *
+     * @type {Number}
+     */
+    timeToClose = 10000;
+
     constructor(room) {
         super();
 
@@ -407,7 +414,7 @@ export class RoomController extends EventEmitter {
      * @param {Function} callback
      */
     onPlayerAdd(client, data, callback) {
-        const name = data.name.substr(0, Player.prototype.maxLength).trim(),
+        const name = data.name.substr(0, Player.maxLength).trim(),
             color = typeof data.color !== 'undefined' ? data.color : null;
 
         if (!name.length) {
@@ -465,7 +472,7 @@ export class RoomController extends EventEmitter {
      * @param {Function} callback
      */
     onTalk(client, content, callback) {
-        const message = new Message(client, content.substr(0, Message.prototype.maxLength)),
+        const message = new Message(client, content.substr(0, Message.maxLength)),
             success = this.chat.addMessage(message);
 
         callback({ success });
@@ -507,7 +514,7 @@ export class RoomController extends EventEmitter {
      */
     onName(client, data, callback) {
         const player = client.players.getById(data.player),
-            name = data.name.substr(0, Player.prototype.maxLength).trim();
+            name = data.name.substr(0, Player.maxLength).trim();
 
         if (!player) {
             return callback({ success: false, error: `Unknown player: "${name}"` });
@@ -732,10 +739,3 @@ export class RoomController extends EventEmitter {
         this.socketGroup.addEvent('vote:close', kickVote.serialize());
     }
 }
-
-/**
- * Time before closing an empty room
- *
- * @type {Number}
- */
-RoomController.prototype.timeToClose = 10000;

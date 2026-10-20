@@ -7,6 +7,13 @@ import { BonusAll } from './BonusAll.js';
  * @param {Number} y
  */
 export class BonusAllColor extends BonusAll {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    duration = 7500;
+
     constructor(x, y) {
         super(x, y);
 
@@ -59,10 +66,3 @@ export class BonusAllColor extends BonusAll {
         return this.colors[(index + 1) % this.colors.length];
     }
 }
-
-/**
- * Duration
- *
- * @type {Number}
- */
-BonusAllColor.prototype.duration = 7500;

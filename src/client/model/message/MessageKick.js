@@ -6,23 +6,23 @@ import { Message } from './Message.js';
  * @param {Player} target
  */
 export class MessageKick extends Message {
+    /**
+     * Message type
+     *
+     * @type {String}
+     */
+    type = 'kick';
+
+    /**
+     * Default icon
+     *
+     * @type {String}
+     */
+    icon = 'icon-megaphone';
+
     constructor(target) {
         super();
 
         this.target = target;
     }
 }
-
-/**
- * Message type
- *
- * @type {String}
- */
-MessageKick.prototype.type = 'kick';
-
-/**
- * Default icon
- *
- * @type {String}
- */
-MessageKick.prototype.icon = 'icon-megaphone';

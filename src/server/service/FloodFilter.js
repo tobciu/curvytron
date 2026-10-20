@@ -4,6 +4,20 @@
  * @param {Array} messages
  */
 export class FloodFilter {
+    /**
+     * Number of message allowed
+     *
+     * @type {Number}
+     */
+    toleranceTotal = 3;
+
+    /**
+     * Range of time for tolerance
+     *
+     * @type {Number}
+     */
+    toleranceRange = 2000;
+
     constructor(messages) {
         this.messages = messages;
     }
@@ -48,17 +62,3 @@ export class FloodFilter {
         return history;
     }
 }
-
-/**
- * Number of message allowed
- *
- * @type {Number}
- */
-FloodFilter.prototype.toleranceTotal = 3;
-
-/**
- * Range of time for tolerance
- *
- * @type {Number}
- */
-FloodFilter.prototype.toleranceRange = 2000;

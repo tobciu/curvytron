@@ -7,6 +7,13 @@ import { BonusEnemy } from './BonusEnemy.js';
  * @param {Number} y
  */
 export class BonusEnemyBig extends BonusEnemy {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    duration = 7500;
+
     constructor(x, y) {
         super(x, y);
     }
@@ -22,10 +29,3 @@ export class BonusEnemyBig extends BonusEnemy {
         return [['radius', 1]];
     }
 }
-
-/**
- * Duration
- *
- * @type {Number}
- */
-BonusEnemyBig.prototype.duration = 7500;

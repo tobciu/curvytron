@@ -7,6 +7,20 @@ import { BaseBonusStack } from '../../shared/model/BaseBonusStack.js';
  * @param {Avatar} avatar
  */
 export class BonusStack extends BaseBonusStack {
+    /**
+     * Bonus width
+     *
+     * @type {Number}
+     */
+    bonusWidth = 20;
+
+    /**
+     * Warning time
+     *
+     * @type {Number}
+     */
+    warning = 1000;
+
     constructor(avatar) {
         super(avatar);
 
@@ -87,17 +101,3 @@ export class BonusStack extends BaseBonusStack {
         this.changed = false;
     }
 }
-
-/**
- * Bonus width
- *
- * @type {Number}
- */
-BonusStack.prototype.bonusWidth = 20;
-
-/**
- * Warning time
- *
- * @type {Number}
- */
-BonusStack.prototype.warning = 1000;

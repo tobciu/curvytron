@@ -20,6 +20,6 @@ export class BonusSelfSlow extends BonusSelf {
      * @return {Array}
      */
     getEffects(avatar) {
-        return [['velocity', -BaseAvatar.prototype.velocity / 2]];
+        return [['velocity', -BaseAvatar.defaults.velocity / 2]];
     }
 }

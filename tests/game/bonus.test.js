@@ -14,7 +14,7 @@ import { BonusGameBorderless } from '../../src/server/model/Bonus/BonusGameBorde
 import { BonusGameClear } from '../../src/server/model/Bonus/BonusGameClear.js';
 import { createGame, snapshot } from '../helpers/game.js';
 
-const bonusTypes = Object.entries(RoomConfig.prototype.bonusTypes);
+const bonusTypes = Object.entries(new RoomConfig({ players: { count: () => 0 } }).bonusTypes);
 
 let game;
 let nextId = 1;
@@ -61,14 +61,14 @@ describe('bonus list', () => {
         expect(bonus.y).toBe(20);
         expect(bonus.body.radius).toBe(3);
         expect(bonus.duration).toBeGreaterThanOrEqual(0);
-        expect(bonus.getProbability(game)).toBeGreaterThanOrEqual(0);
-        expect(bonus.getProbability(game)).toBeLessThanOrEqual(1);
+        expect(Bonus.getProbability(game)).toBeGreaterThanOrEqual(0);
+        expect(Bonus.getProbability(game)).toBeLessThanOrEqual(1);
     });
 
     it('knows the name of every bonus on the client side too', async () => {
         const { RoomConfig: ClientRoomConfig } = await import('../../src/client/model/RoomConfig.js');
 
-        expect(Object.keys(ClientRoomConfig.prototype.bonusClasses).sort()).toEqual(
+        expect(Object.keys(new ClientRoomConfig({ players: { count: () => 0 } }).bonusClasses).sort()).toEqual(
             bonusTypes.map(([name]) => name).sort()
         );
     });
@@ -247,13 +247,11 @@ describe('bonus effects', () => {
     });
 
     it('is more likely to clear the trails when many avatars are dead', () => {
-        const bonus = new BonusGameClear(0, 0);
-
-        expect(bonus.getProbability(game)).toBe(0);
+        expect(BonusGameClear.getProbability(game)).toBe(0);
 
         bob.die();
         carl.die();
 
-        expect(bonus.getProbability(game)).toBeCloseTo(0.7);
+        expect(BonusGameClear.getProbability(game)).toBeCloseTo(0.7);
     });
 });

@@ -25,18 +25,16 @@ describe('Profile', () => {
         profile.setName('  Alice ');
         profile.setColor('#ff0000');
         profile.setSound(false);
-        profile.setRadio(true);
 
         const saved = JSON.parse(window.localStorage.getItem('PROFILE'));
 
-        expect(saved).toMatchObject({ name: 'Alice', color: '#ff0000', sound: false, radio: true });
+        expect(saved).toMatchObject({ name: 'Alice', color: '#ff0000', sound: false });
 
         const again = new Profile();
 
         expect(again.name).toBe('Alice');
         expect(again.color).toBe('#ff0000');
         expect(again.sound).toBe(false);
-        expect(again.radio).toBe(true);
         expect(again.isComplete()).toBeTruthy();
     });
 

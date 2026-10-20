@@ -4,6 +4,20 @@ import { gamepadListener } from '../gamepadListener.js';
  * Activity watcher
  */
 export class ActivityWatcher {
+    /**
+     * Tolerated time away from keyboard
+     *
+     * @type {Number}
+     */
+    tolerance = 60000;
+
+    /**
+     * Activity check interval
+     *
+     * @type {Number}
+     */
+    checkInterval = 10000;
+
     constructor(client) {
         this.client = client;
         this.focused = true;
@@ -109,17 +123,3 @@ export class ActivityWatcher {
         }
     }
 }
-
-/**
- * Tolerated time away from keyboard
- *
- * @type {Number}
- */
-ActivityWatcher.prototype.tolerance = 60000;
-
-/**
- * Activity check interval
- *
- * @type {Number}
- */
-ActivityWatcher.prototype.checkInterval = 10000;

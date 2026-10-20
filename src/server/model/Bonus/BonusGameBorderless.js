@@ -7,6 +7,20 @@ import { BonusGame } from './BonusGame.js';
  * @param {Number} y
  */
 export class BonusGameBorderless extends BonusGame {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    duration = 10000;
+
+    /**
+     * Probability
+     *
+     * @type {Number}
+     */
+    static probability = 0.8;
+
     constructor(x, y) {
         super(x, y);
     }
@@ -29,21 +43,7 @@ export class BonusGameBorderless extends BonusGame {
      *
      * @return {Number}
      */
-    getProbability(game) {
-        return BonusGameBorderless.prototype.probability;
+    static getProbability(game) {
+        return BonusGameBorderless.probability;
     }
 }
-
-/**
- * Duration
- *
- * @type {Number}
- */
-BonusGameBorderless.prototype.duration = 10000;
-
-/**
- * Probability
- *
- * @type {Number}
- */
-BonusGameBorderless.prototype.probability = 0.8;

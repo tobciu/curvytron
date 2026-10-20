@@ -8,6 +8,13 @@ import { BaseAvatar } from '../../../shared/model/BaseAvatar.js';
  * @param {Number} y
  */
 export class BonusLeaderFast extends BonusLeader {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    duration = 6000;
+
     constructor(x, y) {
         super(x, y);
     }
@@ -20,13 +27,6 @@ export class BonusLeaderFast extends BonusLeader {
      * @return {Array}
      */
     getEffects(avatar) {
-        return [['velocity', 0.75 * BaseAvatar.prototype.velocity]];
+        return [['velocity', 0.75 * BaseAvatar.defaults.velocity]];
     }
 }
-
-/**
- * Duration
- *
- * @type {Number}
- */
-BonusLeaderFast.prototype.duration = 6000;

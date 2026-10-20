@@ -6,10 +6,10 @@ import { useServices } from '../services';
 import { useLive } from '../composables/useEmitter';
 import ColorPicker from './ColorPicker.vue';
 
-const { profile: model, profilePanel: panel, radio, sound } = useServices();
+const { profile: model, profilePanel: panel, sound } = useServices();
 const { live: profile, bump } = useLive(model, model, ['change']);
 
-const { maxLength: nameMaxLength, colorMaxLength } = BasePlayer.prototype as unknown as {
+const { maxLength: nameMaxLength, colorMaxLength } = BasePlayer as unknown as {
     maxLength: number;
     colorMaxLength: number;
 };
@@ -123,17 +123,6 @@ onBeforeUnmount(() => panel.reset());
                         <legend>Options:</legend>
 
                         <div class="form-row clearfix">
-                            <div class="col">
-                                <label for="profile-radio">Radio:</label>
-                                <span
-                                    id="profile-radio"
-                                    class="btn-toggle radio-sound"
-                                    :class="{ active: profile.radio }"
-                                    @click="toggle(() => radio.toggle())"
-                                >
-                                    <i class="icon-radio"></i>
-                                </span>
-                            </div>
                             <div class="col">
                                 <label for="profile-sound">Sound effects:</label>
                                 <span

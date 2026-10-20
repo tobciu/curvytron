@@ -6,6 +6,13 @@ import { EventEmitter } from '#event-emitter';
  * @param {Socket} socket
  */
 export class PingLogger extends EventEmitter {
+    /**
+     * Ping frequency in milliseconds
+     *
+     * @type {Number}
+     */
+    frequency = 1000;
+
     constructor(socket) {
         super();
 
@@ -60,10 +67,3 @@ export class PingLogger extends EventEmitter {
         }
     }
 }
-
-/**
- * Ping frequency in milliseconds
- *
- * @type {Number}
- */
-PingLogger.prototype.frequency = 1000;

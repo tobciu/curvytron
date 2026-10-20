@@ -7,6 +7,13 @@ import { BonusGame } from './BonusGame.js';
  * @param {Number} y
  */
 export class BonusGameClear extends BonusGame {
+    /**
+     * Duration
+     *
+     * @type {Number}
+     */
+    duration = 0;
+
     constructor(x, y) {
         super(x, y);
     }
@@ -18,7 +25,7 @@ export class BonusGameClear extends BonusGame {
      *
      * @return {Number}
      */
-    getProbability(game) {
+    static getProbability(game) {
         const ratio = 1 - game.getAliveAvatars().count() / game.getPresentAvatars().count();
 
         return Math.round(ratio * 10) / 10;
@@ -31,10 +38,3 @@ export class BonusGameClear extends BonusGame {
         this.target.clearTrails();
     }
 }
-
-/**
- * Duration
- *
- * @type {Number}
- */
-BonusGameClear.prototype.duration = 0;

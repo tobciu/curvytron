@@ -8,6 +8,42 @@ import { SpriteAsset } from '../lib/SpriteAsset.js';
  * @param {Game} game
  */
 export class BonusManager extends BaseBonusManager {
+    /**
+     * Assets
+     *
+     * @type {Object}
+     */
+    static assets = {};
+
+    assets = BonusManager.assets;
+
+    /**
+     * Bonuses position on the sprite
+     *
+     * @type {Array}
+     */
+    spritePosition = [
+        'BonusSelfFast',
+        'BonusEnemyFast',
+        'BonusSelfSlow',
+        'BonusEnemySlow',
+        'BonusGameBorderless',
+        'BonusSelfMaster',
+        'BonusEnemyBig',
+        'BonusAllColor',
+        'BonusEnemyInverse',
+        'BonusSelfSmall',
+        'BonusGameClear',
+        'BonusEnemyStraightAngle',
+        'BonusSelfRandom',
+        'BonusLeaderRandom',
+        'BonusEnemyRandom',
+        'BonusLeaderFast',
+        'BonusLeaderInverse',
+        'BonusLeaderSlow',
+        'BonusSelfBorderless'
+    ];
+
     constructor(game) {
         super(game);
 
@@ -33,7 +69,7 @@ export class BonusManager extends BaseBonusManager {
         const images = this.sprite.getImages();
 
         for (let i = this.spritePosition.length - 1; i >= 0; i--) {
-            this.assets[this.spritePosition[i]] = images[i];
+            BonusManager.assets[this.spritePosition[i]] = images[i];
         }
 
         this.loaded = true;
@@ -109,37 +145,3 @@ export class BonusManager extends BaseBonusManager {
         this.draw();
     }
 }
-
-/**
- * Assets
- *
- * @type {Object}
- */
-BonusManager.prototype.assets = {};
-
-/**
- * Bonuses position on the sprite
- *
- * @type {Array}
- */
-BonusManager.prototype.spritePosition = [
-    'BonusSelfFast',
-    'BonusEnemyFast',
-    'BonusSelfSlow',
-    'BonusEnemySlow',
-    'BonusGameBorderless',
-    'BonusSelfMaster',
-    'BonusEnemyBig',
-    'BonusAllColor',
-    'BonusEnemyInverse',
-    'BonusSelfSmall',
-    'BonusGameClear',
-    'BonusEnemyStraightAngle',
-    'BonusSelfRandom',
-    'BonusLeaderRandom',
-    'BonusEnemyRandom',
-    'BonusLeaderFast',
-    'BonusLeaderInverse',
-    'BonusLeaderSlow',
-    'BonusSelfBorderless'
-];

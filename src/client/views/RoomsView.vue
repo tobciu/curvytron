@@ -23,7 +23,7 @@ const { version, bump } = useEmitterVersion(repository, [
 ]);
 
 const roomName = ref('');
-const roomMaxLength = (Room.prototype as unknown as { maxLength: number }).maxLength;
+const roomMaxLength = (Room as unknown as { maxLength: number }).maxLength;
 
 const rooms = computed(() => (version.value >= 0 ? repository.rooms.items.slice() : []));
 const waiting = computed(() => rooms.value.filter((room) => !room.game));

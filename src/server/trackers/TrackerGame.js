@@ -7,6 +7,13 @@ import { Tracker } from './Tracker.js';
  * @param {Game} game
  */
 export class GameTracker extends Tracker {
+    /**
+     * FPS log frequency
+     *
+     * @type {Number}
+     */
+    fpsFrequency = 1000;
+
     constructor(inspector, game) {
         super(inspector, game.name);
 
@@ -95,10 +102,3 @@ export class GameTracker extends Tracker {
         return data;
     }
 }
-
-/**
- * FPS log frequency
- *
- * @type {Number}
- */
-GameTracker.prototype.fpsFrequency = 1000;

@@ -20,6 +20,6 @@ export class BonusEnemySlow extends BonusEnemy {
      * @return {Array}
      */
     getEffects(avatar) {
-        return [['velocity', -BaseAvatar.prototype.velocity / 2]];
+        return [['velocity', -BaseAvatar.defaults.velocity / 2]];
     }
 }

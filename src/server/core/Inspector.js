@@ -12,6 +12,37 @@ import { Collection } from '../../shared/Collection.js';
  * @param {Object} config
  */
 export class Inspector {
+    DEPLOY = 'deploy';
+
+    CLIENT = 'client';
+
+    CLIENTS = 'client.total';
+
+    CLIENT_PLAYER = 'client.player';
+
+    CLIENT_GAME_PLAYER = 'client.game.player';
+
+    CLIENT_LATENCY = 'client.latency';
+
+    ROOM = 'room';
+
+    ROOMS = 'room.total';
+
+    GAME = 'game';
+
+    GAME_FPS = 'game.fps';
+
+    USAGE_MEMORY = 'usage.memory';
+
+    USAGE_CPU = 'usage.cpu';
+
+    /**
+     * Usage log frequency
+     *
+     * @type {Number}
+     */
+    logFrequency = 1000;
+
     constructor(server, config, packageInfo) {
         this.server = server;
         this.lastUsage = { cpu: process.cpuUsage(), time: process.hrtime.bigint() };
@@ -247,23 +278,3 @@ export class Inspector {
         this.writePoint(this.USAGE_MEMORY, process.memoryUsage().rss);
     }
 }
-
-Inspector.prototype.DEPLOY = 'deploy';
-Inspector.prototype.CLIENT = 'client';
-Inspector.prototype.CLIENTS = 'client.total';
-Inspector.prototype.CLIENT_PLAYER = 'client.player';
-Inspector.prototype.CLIENT_GAME_PLAYER = 'client.game.player';
-Inspector.prototype.CLIENT_LATENCY = 'client.latency';
-Inspector.prototype.ROOM = 'room';
-Inspector.prototype.ROOMS = 'room.total';
-Inspector.prototype.GAME = 'game';
-Inspector.prototype.GAME_FPS = 'game.fps';
-Inspector.prototype.USAGE_MEMORY = 'usage.memory';
-Inspector.prototype.USAGE_CPU = 'usage.cpu';
-
-/**
- * Usage log frequency
- *
- * @type {Number}
- */
-Inspector.prototype.logFrequency = 1000;

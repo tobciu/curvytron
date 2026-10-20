@@ -6,6 +6,13 @@ import { Compressor } from '../../shared/service/Compressor.js';
  * Game Controller
  */
 export class GameController {
+    /**
+     * Waiting time
+     *
+     * @type {Number}
+     */
+    waitingTime = 30000;
+
     constructor(game) {
         const controller = this;
 
@@ -500,10 +507,3 @@ export class GameController {
         this.unloadGame();
     }
 }
-
-/**
- * Waiting time
- *
- * @type {Number}
- */
-GameController.prototype.waitingTime = 30000;
