@@ -163,6 +163,21 @@ describe('RoomConfig', () => {
         expect(room.password).toBeNull();
     });
 
+    it('generates private room passwords from a cryptographically secure source', () => {
+        const room = config();
+
+        room.passwordLength = 12;
+
+        const passwords = [];
+
+        for (let i = 0; i < 50; i += 1) {
+            passwords.push(room.generatePassword());
+        }
+
+        expect(passwords.every((password) => /^[1-9]{12}$/.test(password))).toBe(true);
+        expect(new Set(passwords).size).toBe(50);
+    });
+
     it('announces when the room is opened or closed', () => {
         const room = config();
         const events = [];

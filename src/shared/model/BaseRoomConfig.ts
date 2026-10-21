@@ -149,13 +149,12 @@ export class BaseRoomConfig extends EventEmitter {
      * Generate password
      */
     generatePassword(): string {
-        let password = '';
+        // The join password guards the room, so use a cryptographically secure generator
+        const digits = new Uint8Array(this.passwordLength);
 
-        for (let i = 0; i < this.passwordLength; i++) {
-            password += Math.ceil(Math.random() * 9).toString();
-        }
+        globalThis.crypto.getRandomValues(digits);
 
-        return password;
+        return Array.from(digits, (byte) => String((byte % 9) + 1)).join('');
     }
 
     /**
