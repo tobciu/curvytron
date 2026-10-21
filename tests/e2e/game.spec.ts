@@ -68,6 +68,24 @@ test('plays a round until the game is over, then goes back to the room', async (
     await expect(playerRows(page)).toHaveCount(2);
 });
 
+test('shows the recap between two rounds, and goes on with the next one', async ({ browser }) => {
+    const name = roomName('rounds');
+    const alice = await openPlayer(browser, 'Alice', { color: '#ff0000' });
+
+    await createRoom(alice, name);
+    await addLocalPlayer(alice, 'Bob');
+    await alice.locator('.icon-params').click();
+    await alice.locator('#max-score').fill('9');
+    await alice.locator('.icon-params').click();
+    await readyAll(alice);
+
+    await expect(alice.locator('#end .recap-view')).toHaveClass(/round/, { timeout: 45_000 });
+    await expect(alice.locator('#end .victory')).toContainText('won the round');
+
+    // The next round starts: countdown again, the recap goes away
+    await expect(alice.locator('#end')).toBeHidden({ timeout: 15_000 });
+});
+
 test('shows the connecting players while the game loads, scores and metrics', async ({ browser }) => {
     const name = roomName('scores');
     const page = await startShortGame(browser, name);

@@ -3,7 +3,8 @@
 import { computed } from 'vue';
 import type { GameStatsData } from '../../../shared/model/GameStats';
 
-const props = defineProps<{ stats: GameStatsData }>();
+/** `compact`: the awards only (between the rounds) */
+const props = defineProps<{ stats: GameStatsData; compact?: boolean }>();
 
 const awardLabels: Record<string, string> = {
     bonusHunter: 'Bonus hunter',
@@ -40,7 +41,7 @@ function seconds(ms: number): string {
                 <span class="value">{{ award.text }}</span>
             </li>
         </ul>
-        <table class="table table-hover stats">
+        <table v-if="!compact" class="table table-hover stats">
             <thead>
                 <tr>
                     <th class="name">Player</th>
