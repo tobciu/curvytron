@@ -240,7 +240,11 @@ describe('wrong data from the clients', () => {
         const client = await connect();
         const before = metrics.eventErrors.values.get('')?.value ?? 0;
 
-        client.socket.send('[["room:create",null,1]]');
+        // The handlers check the data: make one fail on purpose
+        server.clients.items.at(-1).on('boom', () => {
+            throw new Error('boom');
+        });
+        client.send('boom');
         await client.request('whoami');
 
         expect(metrics.eventErrors.values.get('').value).toBeGreaterThan(before);
@@ -257,5 +261,137 @@ describe('wrong data from the clients', () => {
 
         expect(await closed).toBe(1009);
         await expectAlive();
+    });
+});
+
+describe('validation of the events', () => {
+    const invalid = [
+        ['room:create', null],
+        ['room:create', {}],
+        ['room:create', { name: 5 }],
+        ['room:create', { name: 'x'.repeat(500) }],
+        ['room:join', {}],
+        ['room:join', { name: 'a', password: 5 }]
+    ];
+
+    it.each(invalid)('answers %s with %j with an error, and not with a crash', async (name, data) => {
+        const client = await connect();
+        const errors = metrics.eventErrors.values.get('')?.value ?? 0;
+
+        expect(await client.request(name, data)).toEqual({ success: false, error: 'Invalid data.' });
+        expect(metrics.eventErrors.values.get('')?.value ?? 0).toBe(errors);
+    });
+
+    const inRoom = [
+        ['player:add', null],
+        ['player:add', { name: 5 }],
+        ['player:add', { name: 'x', color: 5 }],
+        ['player:add', { name: 'x'.repeat(500) }],
+        ['player:remove', { player: 'a' }],
+        ['player:remove', { player: -1 }],
+        ['room:ready', {}],
+        ['room:ready', { player: 1.5 }],
+        ['room:name', { player: 1, name: 5 }],
+        ['room:color', { player: 1, color: {} }],
+        ['player:kick', { player: null }],
+        ['room:config:open', { open: 'yes' }],
+        ['room:config:max-score', { maxScore: {} }],
+        ['room:config:variable', { variable: 5, value: 1 }],
+        ['room:config:variable', { variable: 'bonusRate', value: 'x'.repeat(50) }],
+        ['room:config:bonus', { bonus: [] }]
+    ];
+
+    it.each(inRoom)('answers %s with %j with an error, in a room', async (name, data) => {
+        const client = await connect();
+        const errors = metrics.eventErrors.values.get('')?.value ?? 0;
+
+        await client.request('room:create', { name: 'valid' });
+        await client.request('room:join', { name: 'valid', password: null });
+        // The room master is the one who can change the configuration
+        await client.request('player:add', { name: 'Master' });
+
+        const answer = await client.request(name, data);
+
+        expect(answer).toMatchObject({ success: false });
+        expect(metrics.eventErrors.values.get('')?.value ?? 0).toBe(errors);
+    });
+
+    it('ignores wrong steering and wrong activity', async () => {
+        const client = await connect();
+        const errors = metrics.eventErrors.values.get('')?.value ?? 0;
+
+        for (const data of [null, 5, {}, { avatar: 1, move: 5 }, { avatar: 'a', move: 0 }, { avatar: 1, move: 0.5 }]) {
+            client.send('player:move', data);
+        }
+
+        client.send('activity', 'yes');
+        await client.request('whoami');
+
+        expect(metrics.eventErrors.values.get('')?.value ?? 0).toBe(errors);
+        expect(server.clients.items.at(-1).active).toBe(true);
+    });
+});
+
+describe('limits', () => {
+    it('drops the events of a client that sends too many', async () => {
+        const client = await connect();
+        const dropped = metrics.eventsDropped.values.get('')?.value ?? 0;
+
+        for (let i = 0; i < 400; i++) {
+            client.send('whoami');
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        expect(metrics.eventsDropped.values.get('').value).toBeGreaterThan(dropped + 100);
+
+        // Slow down, and the client is served again
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        expect(await client.request('whoami')).toEqual(expect.any(Number));
+    });
+
+    it('disconnects a client that goes on', async () => {
+        const client = await connect();
+        const closed = new Promise((resolve) => client.socket.once('close', (code) => resolve(code)));
+
+        for (let i = 0; i < 2000; i++) {
+            client.send('whoami');
+        }
+
+        expect(await closed).toBe(1008);
+    });
+
+    it('limits the players of a client', async () => {
+        const client = await connect();
+
+        await client.request('room:create', { name: 'crowd' });
+        await client.request('room:join', { name: 'crowd', password: null });
+
+        const answers = [];
+
+        for (let i = 0; i < 18; i++) {
+            answers.push(await client.request('player:add', { name: `P${i}` }));
+            // Stay under the limit of the events
+            await new Promise((resolve) => setTimeout(resolve, 5));
+        }
+
+        expect(answers.filter((answer) => answer.success)).toHaveLength(16);
+        expect(answers.at(-1)).toMatchObject({ success: false, error: 'Too many players.' });
+    });
+
+    it('limits the rooms', async () => {
+        const client = await connect();
+        const { RoomRepository } = await import('../src/server/repository/RoomRepository.ts');
+        const max = RoomRepository.maxRooms;
+
+        RoomRepository.maxRooms = 2;
+
+        try {
+            expect(await client.request('room:create', { name: 'one' })).toMatchObject({ success: true });
+            expect(await client.request('room:create', { name: 'two' })).toMatchObject({ success: true });
+            expect(await client.request('room:create', { name: 'three' })).toMatchObject({ success: false });
+        } finally {
+            RoomRepository.maxRooms = max;
+        }
     });
 });

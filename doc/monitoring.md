@@ -17,6 +17,7 @@ Grafana draws them.
 | `curvytron_rounds_total`           | counter   | Rounds started                                                         |
 | `curvytron_bonuses_caught_total`   | counter   | Bonuses caught, label `type`                                           |
 | `curvytron_event_errors_total`     | counter   | Events of the clients whose handler failed (wrong data, or a bug)      |
+| `curvytron_events_dropped_total`   | counter   | Events dropped because a client sent too many                          |
 | `curvytron_deaths_total`           | counter   | Deaths, label `cause` (`wall`, `self`, `trail`)                        |
 | `curvytron_tick_duration_seconds`  | histogram | Time the server needs to compute a frame (should stay far below 16 ms) |
 | `curvytron_tick_interval_seconds`  | histogram | Time between two frames (more than ~17 ms: the game loop is late)      |

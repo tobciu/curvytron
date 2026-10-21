@@ -211,6 +211,10 @@ export class BaseSocketClient extends EventEmitter {
 
             name = source[0];
 
+            if (!this.acceptsEvent(name)) {
+                continue;
+            }
+
             // A bad event must not stop the others, nor the process
             try {
                 if (typeof name === 'string') {
@@ -226,6 +230,13 @@ export class BaseSocketClient extends EventEmitter {
                 this.onEventError(name, error);
             }
         }
+    }
+
+    /**
+     * Should this event be handled? The server drops the events of the clients that send too many.
+     */
+    acceptsEvent(name: unknown): boolean {
+        return true;
     }
 
     /**

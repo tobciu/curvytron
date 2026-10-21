@@ -37,8 +37,7 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [ ] Test the launcher with the Inspector enabled (the path of the dynamic import is only checked by reading the code)
     - [ ] Coverage report in CI (`vitest --coverage`), look at the holes: controllers, kick votes, flood filter, trackers
     - [x] Protocol tests with several clients (`tests/protocol.test.js`): a whole game, a client that leaves, a spectator, ~50 kinds of wrong data. This found that one `[null]` message crashed the whole server: fixed
-    - [ ] Validate the data of the handlers properly (they fail with a TypeError that is caught and counted in `curvytron_event_errors_total`, the client gets no answer)
-    - [ ] Limit the rate of the events per client
+    - [x] The handlers validate the data and answer with an error; limits for the events per second, the players and the rooms (see `doc/dev.md`)
     - [ ] Run the visual tests in CI without `continue-on-error` (needs stable fonts / screenshots in the CI image)
     - [ ] Dependabot or Renovate for the dependencies, `npm audit` in CI
 

@@ -7,7 +7,19 @@ import { BaseTickrateLogger } from '../../shared/service/BaseTickrateLogger.ts';
 /**
  * Socket Client
  */
+/**
+ * Events a client may send: `burst` at once, then `rate` per second.
+ * The game itself sends a few per second (steering, chat, ready), this is far above it.
+ */
+export const eventLimit = { burst: 120, rate: 60, violationsToClose: 300 };
+
 export class SocketClient extends BaseSocketClient {
+    /** Events that can still be sent, refilled with time */
+    tokens: number = eventLimit.burst;
+    tokensUpdated: number = Date.now();
+    /** Events dropped since the last time the client sent in the limits */
+    violations: number = 0;
+
     ip: any;
     id: any;
     active: any;
@@ -37,6 +49,32 @@ export class SocketClient extends BaseSocketClient {
         this.on('whoami', this.identify);
         this.on('activity', this.onActivity);
         this.pingLogger.on('latency', this.onLatency);
+    }
+
+    /**
+     * Token bucket: the events over the limit are dropped, a client that keeps sending too many is disconnected
+     */
+    acceptsEvent(name: unknown): boolean {
+        const now = Date.now();
+
+        this.tokens = Math.min(eventLimit.burst, this.tokens + ((now - this.tokensUpdated) / 1000) * eventLimit.rate);
+        this.tokensUpdated = now;
+
+        if (this.tokens >= 1) {
+            this.tokens--;
+            this.violations = Math.max(0, this.violations - 1);
+
+            return true;
+        }
+
+        metrics.eventsDropped.inc();
+
+        if (++this.violations > eventLimit.violationsToClose) {
+            console.warn('Client %s disconnected: too many events.', this.id);
+            this.socket.close(1008, 'Too many events');
+        }
+
+        return false;
     }
 
     /**
@@ -79,8 +117,10 @@ export class SocketClient extends BaseSocketClient {
     /**
      * On activity change
      */
-    onActivity(active: any) {
-        this.active = active;
+    onActivity(active: unknown) {
+        if (typeof active === 'boolean') {
+            this.active = active;
+        }
     }
 
     /**

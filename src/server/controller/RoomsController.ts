@@ -1,6 +1,7 @@
 import { EventEmitter } from '#event-emitter';
 import { SocketGroup } from '../core/SocketGroup.ts';
 import { Room } from '../model/Room.ts';
+import { invalidData, isShape, rules } from '../core/validate.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
 
 /**
@@ -98,7 +99,11 @@ export class RoomsController extends EventEmitter {
     /**
      * On new room
      */
-    onCreateRoom(client: SocketClient, data: any, callback: (...args: any[]) => any) {
+    onCreateRoom(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { name: rules.string() })) {
+            return callback?.(invalidData);
+        }
+
         const name = data.name.substr(0, Room.maxLength).trim(),
             room = this.repository.create(name);
 
@@ -113,6 +118,10 @@ export class RoomsController extends EventEmitter {
      * On join room
      */
     onJoinRoom(client: SocketClient, data?: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { name: rules.string(), password: rules.optional(rules.string(40)) })) {
+            return callback?.(invalidData);
+        }
+
         const room = this.repository.get(data.name);
 
         if (!room) {

@@ -5,6 +5,7 @@ import { Message } from '../model/Message.ts';
 import { Player } from '../model/Player.ts';
 import { Chat } from '../service/Chat.ts';
 import { Collection } from '../../shared/Collection.ts';
+import { invalidData, isShape, rules } from '../core/validate.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
 
 /**
@@ -19,6 +20,11 @@ export class RoomController extends EventEmitter {
     roomMaster: any;
     launching: any;
     callbacks: any;
+
+    /** Players a client can have in a room, and players in a room */
+    static maxPlayersPerClient: number = 16;
+
+    static maxPlayers: number = 64;
 
     /**
      * Time before closing an empty room
@@ -391,6 +397,10 @@ export class RoomController extends EventEmitter {
      * On add player to room
      */
     onPlayerAdd(client: SocketClient, data?: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { name: rules.string(), color: rules.optional(rules.string(40)) })) {
+            return callback?.(invalidData);
+        }
+
         const name = data.name.substr(0, Player.maxLength).trim(),
             color = typeof data.color !== 'undefined' ? data.color : null;
 
@@ -400,6 +410,13 @@ export class RoomController extends EventEmitter {
 
         if (this.room.game) {
             return callback?.({ success: false, error: 'Game already started.' });
+        }
+
+        if (
+            client.players.count() >= RoomController.maxPlayersPerClient ||
+            this.room.players.count() >= RoomController.maxPlayers
+        ) {
+            return callback?.({ success: false, error: 'Too many players.' });
         }
 
         if (!this.room.isNameAvailable(name)) {
@@ -426,7 +443,11 @@ export class RoomController extends EventEmitter {
     /**
      * On remove player from room
      */
-    onPlayerRemove(client: SocketClient, data: any, callback: (...args: any[]) => any) {
+    onPlayerRemove(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { player: rules.id })) {
+            return callback?.(invalidData);
+        }
+
         const player = client.players.getById(data.player);
 
         if (player) {
@@ -440,7 +461,11 @@ export class RoomController extends EventEmitter {
     /**
      * On talk
      */
-    onTalk(client: SocketClient, content: string, callback: (...args: any[]) => any) {
+    onTalk(client: SocketClient, content: string, callback?: (...args: any[]) => any) {
+        if (typeof content !== 'string') {
+            return callback?.({ success: false });
+        }
+
         const message = new Message(client, content.substr(0, Message.maxLength)),
             success = this.chat.addMessage(message);
 
@@ -454,7 +479,11 @@ export class RoomController extends EventEmitter {
     /**
      * On player change color
      */
-    onColor(client: SocketClient, data: any, callback: (...args: any[]) => any) {
+    onColor(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { player: rules.id, color: rules.string(40) })) {
+            return callback?.(invalidData);
+        }
+
         const player = client.players.getById(data.player),
             color = data.color;
 
@@ -473,7 +502,11 @@ export class RoomController extends EventEmitter {
     /**
      * On player change name
      */
-    onName(client: SocketClient, data: any, callback: (...args: any[]) => any) {
+    onName(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { player: rules.id, name: rules.string() })) {
+            return callback?.(invalidData);
+        }
+
         const player = client.players.getById(data.player),
             name = data.name.substr(0, Player.maxLength).trim();
 
@@ -497,7 +530,11 @@ export class RoomController extends EventEmitter {
     /**
      * On player ready
      */
-    onReady(client: SocketClient, data: any, callback: (...args: any[]) => any) {
+    onReady(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { player: rules.id })) {
+            return callback?.(invalidData);
+        }
+
         const player = client.players.getById(data.player);
 
         if (player) {
@@ -517,7 +554,11 @@ export class RoomController extends EventEmitter {
     /**
      * On kick vote
      */
-    onKickVote(client: SocketClient, data: any, callback: (...args: any[]) => any) {
+    onKickVote(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { player: rules.id })) {
+            return callback?.(invalidData);
+        }
+
         if (client.isPlaying()) {
             const player = this.room.players.getById(data.player);
 
@@ -540,7 +581,11 @@ export class RoomController extends EventEmitter {
     /**
      * On config open
      */
-    onConfigOpen(client: SocketClient, data: any, callback: (...args: any[]) => any) {
+    onConfigOpen(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { open: rules.boolean })) {
+            return callback?.(invalidData);
+        }
+
         const success = this.isRoomMaster(client) && this.room.config.setOpen(data.open);
 
         callback?.({
@@ -560,7 +605,11 @@ export class RoomController extends EventEmitter {
     /**
      * On config max score
      */
-    onConfigMaxScore(client: SocketClient, data: any, callback: (...args: any[]) => any) {
+    onConfigMaxScore(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { maxScore: rules.either(rules.number, rules.string(10)) })) {
+            return callback?.(invalidData);
+        }
+
         const success = this.isRoomMaster(client) && this.room.config.setMaxScore(data.maxScore);
 
         callback?.({ success, maxScore: this.room.config.maxScore });
@@ -573,7 +622,11 @@ export class RoomController extends EventEmitter {
     /**
      * On config speed
      */
-    onConfigVariable(client: SocketClient, data: any, callback: (...args: any[]) => any) {
+    onConfigVariable(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { variable: rules.string(40), value: rules.either(rules.number, rules.string(20)) })) {
+            return callback?.(invalidData);
+        }
+
         const success = this.isRoomMaster(client) && this.room.config.setVariable(data.variable, data.value);
 
         callback?.({ success, value: this.room.config.getVariable(data.variable) });
@@ -589,7 +642,11 @@ export class RoomController extends EventEmitter {
     /**
      * On config bonus
      */
-    onConfigBonus(client: SocketClient, data: any, callback: (...args: any[]) => any) {
+    onConfigBonus(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+        if (!isShape(data, { bonus: rules.string(60) })) {
+            return callback?.(invalidData);
+        }
+
         const success = this.isRoomMaster(client) && this.room.config.toggleBonus(data.bonus);
 
         callback?.({ success, enabled: this.room.config.getBonus(data.bonus) });

@@ -7,6 +7,9 @@ import { Collection } from '../../shared/Collection.ts';
  * Room Repository
  */
 export class RoomRepository extends EventEmitter {
+    /** Rooms that can be open at the same time */
+    static maxRooms: number = 500;
+
     generator: RoomNameGenerator;
     rooms: Collection;
 
@@ -25,6 +28,10 @@ export class RoomRepository extends EventEmitter {
     create(name?: string) {
         if (typeof name === 'undefined' || !name) {
             name = this.getRandomRoomName();
+        }
+
+        if (this.rooms.count() >= RoomRepository.maxRooms) {
+            return false;
         }
 
         const room = new Room(name);

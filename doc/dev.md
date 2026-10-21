@@ -29,6 +29,15 @@ The model is made of mutable objects that emit events. Vue can not see changes i
 each time one of the events is emitted (or `bump()` is called).
 `types.ts` re-exports the model classes as types for the components.
 
+### Data of the clients
+
+The server does not trust the clients. The handlers check the shape of the data with `src/server/core/validate.ts`
+(`isShape(data, { name: rules.string() })`) and answer `{ success: false, error: 'Invalid data.' }` when it is wrong.
+An event whose handler fails anyway is logged and counted in `curvytron_event_errors_total`; it never stops the server.
+Limits (all in the code, as constants): messages of 64 KiB (`Server.ts`), 60 events per second with bursts of 120, and a
+client that goes on is disconnected (`eventLimit` in `SocketClient.ts`, counted in `curvytron_events_dropped_total`),
+16 players per client and 64 per room (`RoomController.ts`), 500 rooms (`RoomRepository.ts`).
+
 ### Load test
 
 `npm run load-test -- --rooms 6 --players 8 --duration 30` starts a server, plays that many games with simulated

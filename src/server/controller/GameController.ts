@@ -1,6 +1,7 @@
 import { SocketGroup } from '../core/SocketGroup.ts';
 import { Collection } from '../../shared/Collection.ts';
 import { Compressor } from '../../shared/service/Compressor.ts';
+import { isShape, rules } from '../core/validate.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
 import type { Avatar } from '../model/Avatar.ts';
 import type { Bonus } from '../model/Bonus/Bonus.ts';
@@ -316,6 +317,10 @@ export class GameController {
      * On move
      */
     onMove(client: SocketClient, data: any) {
+        if (!isShape(data, { avatar: rules.id, move: rules.integer(-1, 1) })) {
+            return;
+        }
+
         const player = client.players.getById(data.avatar);
 
         if (player && player.avatar) {
