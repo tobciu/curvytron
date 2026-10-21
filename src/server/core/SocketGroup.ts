@@ -1,3 +1,4 @@
+import type { ServerEventName, ServerEvents } from '../../shared/protocol.ts';
 import { Collection } from '../../shared/Collection.ts';
 
 /**
@@ -40,7 +41,12 @@ export class SocketGroup {
     /**
      * Add an event to the list
      */
-    addEvent(name: string, data?: any, callback?: (...args: any[]) => any, force?: boolean) {
+    addEvent<K extends ServerEventName>(
+        name: K,
+        data?: ServerEvents[K],
+        callback?: (...args: any[]) => any,
+        force?: boolean
+    ) {
         for (let i = this.clients.items.length - 1; i >= 0; i--) {
             this.clients.items[i].addEvent(name, data, callback, force);
         }

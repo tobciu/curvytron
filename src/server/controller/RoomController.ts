@@ -701,7 +701,7 @@ export class RoomController extends EventEmitter {
      * On kick
      */
     onKick(player: Player) {
-        this.socketGroup.addEvent('room:kick', player.id);
+        this.socketGroup.addEvent('room:kick', player.id as number);
         this.removePlayer(player);
     }
 

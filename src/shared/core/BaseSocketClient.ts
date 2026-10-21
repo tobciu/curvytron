@@ -1,3 +1,4 @@
+import type { ClientData } from '../protocol.ts';
 import { EventEmitter } from '#event-emitter';
 
 /**
@@ -8,7 +9,10 @@ const WEBSOCKET_OPEN = 1;
 /**
  * Base Socket Client
  */
-export class BaseSocketClient extends EventEmitter {
+/**
+ * @typeParam Sends The events this side sends, with their data (see `shared/protocol.ts`)
+ */
+export class BaseSocketClient<Sends extends object = Record<string, any>> extends EventEmitter {
     /** Identifier given by the server */
     id: number | null = null;
     socket: any;
@@ -99,7 +103,12 @@ export class BaseSocketClient extends EventEmitter {
     /**
      * Add an event to the list
      */
-    addEvent(name: string, data?: any, callback?: ((...args: any[]) => any) | null, force?: boolean) {
+    addEvent<K extends keyof Sends & string>(
+        name: K,
+        data?: Sends[K],
+        callback?: ((...args: any[]) => any) | null,
+        force?: boolean
+    ) {
         const event: any[] = [name];
 
         if (typeof data !== 'undefined') {
@@ -275,7 +284,7 @@ export class BaseSocketClient extends EventEmitter {
     /**
      * Object version of the client
      */
-    serialize(): Record<string, any> {
+    serialize(): ClientData {
         return { id: this.id };
     }
 }

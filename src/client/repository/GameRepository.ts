@@ -2,18 +2,22 @@ import { EventEmitter } from '#event-emitter';
 import { MapBonus } from '../model/bonus/MapBonus.ts';
 import { StackedBonus } from '../model/bonus/StackedBonus.ts';
 import { Compressor } from '../../shared/service/Compressor.ts';
+import type { SocketClient } from '../core/SocketClient.ts';
+import type { RoomRepository } from './RoomRepository.ts';
+import type { SoundManager } from '../service/SoundManager.ts';
+import type { ServerEvent } from '../../shared/protocol.ts';
 
 /**
  * GameRepository
  */
 export class GameRepository extends EventEmitter {
-    client: any;
-    parent: any;
-    sound: any;
+    client: SocketClient;
+    parent: RoomRepository;
+    sound: SoundManager;
     compressor: any;
     game: any;
 
-    constructor(client: any, parent: any, sound: any) {
+    constructor(client: SocketClient, parent: RoomRepository, sound: SoundManager) {
         super();
 
         this.client = client;
@@ -143,7 +147,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On game start
      */
-    onGameStart(e: any) {
+    onGameStart(e: ServerEvent<'game:start'>) {
         this.game.start();
         this.detachIdleEvents();
         this.emit('game:start');
@@ -152,7 +156,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On game stop
      */
-    onGameStop(e: any) {
+    onGameStop(e: ServerEvent<'game:stop'>) {
         this.game.stop();
         this.attachIdleEvents();
         this.emit('game:stop');
@@ -161,7 +165,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On property
      */
-    onProperty(e: any) {
+    onProperty(e: ServerEvent<'property'>) {
         const data = e.detail,
             avatar = this.game.avatars.getById(data[0]);
 
@@ -173,7 +177,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On position
      */
-    onPosition(e: any) {
+    onPosition(e: ServerEvent<'position'>) {
         const avatar = this.game.avatars.getById(e.detail[0]);
 
         if (avatar) {
@@ -187,7 +191,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On point
      */
-    onPoint(e: any) {
+    onPoint(e: ServerEvent<'point'>) {
         const avatar = this.game.avatars.getById(e.detail);
 
         if (avatar) {
@@ -198,7 +202,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On angle
      */
-    onAngle(e: any) {
+    onAngle(e: ServerEvent<'angle'>) {
         const avatar = this.game.avatars.getById(e.detail[0]);
 
         if (avatar) {
@@ -209,7 +213,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On die
      */
-    onDie(e: any) {
+    onDie(e: ServerEvent<'die'>) {
         const avatar = this.game.avatars.getById(e.detail[0]);
 
         if (avatar) {
@@ -221,7 +225,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On bonus pop
      */
-    onBonusPop(e: any) {
+    onBonusPop(e: ServerEvent<'bonus:pop'>) {
         const bonus = new MapBonus(
             e.detail[0],
             this.compressor.decompress(e.detail[1]),
@@ -236,7 +240,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On bonus clear
      */
-    onBonusClear(e: any) {
+    onBonusClear(e: ServerEvent<'bonus:clear'>) {
         const bonus = this.game.bonusManager.bonuses.getById(e.detail);
 
         if (bonus) {
@@ -248,7 +252,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On bonus stack
      */
-    onBonusStack(e: any) {
+    onBonusStack(e: ServerEvent<'bonus:stack'>) {
         const avatar = this.game.avatars.getById(e.detail[0]);
 
         if (avatar && avatar.local) {
@@ -259,7 +263,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On round new
      */
-    onRoundNew(e: any) {
+    onRoundNew(e: ServerEvent<'round:new'>) {
         this.game.newRound();
         this.emit('round:new');
     }
@@ -267,7 +271,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On round new
      */
-    onRoundEnd(e: any) {
+    onRoundEnd(e: ServerEvent<'round:end'>) {
         this.game.endRound();
         this.game.roundWinner = e.detail ? this.game.avatars.getById(e.detail) : null;
         this.emit('round:end');
@@ -276,14 +280,14 @@ export class GameRepository extends EventEmitter {
     /**
      * On clear
      */
-    onClear(e: any) {
+    onClear(e: ServerEvent<'clear'>) {
         this.game.clearTrails();
     }
 
     /**
      * On borderless
      */
-    onBorderless(e: any) {
+    onBorderless(e: ServerEvent<'borderless'>) {
         this.game.setBorderless(e.detail);
         this.emit('borderless');
     }
@@ -291,7 +295,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On statistics
      */
-    onStats(e: any) {
+    onStats(e: ServerEvent<'game:stats'>) {
         this.game.stats = e.detail;
         this.emit('stats');
     }
@@ -299,7 +303,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On game end
      */
-    onEnd(e: any) {
+    onEnd(e: ServerEvent<'end'>) {
         this.game.end();
         this.sound.play('win');
         this.emit('end');
@@ -308,7 +312,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On leave
      */
-    onLeave(e: any) {
+    onLeave(e: ServerEvent<'game:leave'>) {
         const avatar = this.game.avatars.getById(e.detail);
 
         if (avatar) {
@@ -319,7 +323,7 @@ export class GameRepository extends EventEmitter {
     /**
      * On spectate
      */
-    onSpectate(e: any) {
+    onSpectate(e: ServerEvent<'spectate'>) {
         const data = e.detail;
 
         this.game.maxScore = data.maxScore;

@@ -1,9 +1,13 @@
+import type { ClientEventName, ClientEvents } from '../../shared/protocol.ts';
 import { BaseSocketClient } from '../../shared/core/BaseSocketClient.ts';
 
 /**
  * SocketClient
  */
-export class SocketClient extends BaseSocketClient {
+/** The data of the events the client sends */
+type Sent = { [K in ClientEventName]: ClientEvents[K]['data'] };
+
+export class SocketClient extends BaseSocketClient<Sent> {
     override id: any;
     override connected: boolean;
 
@@ -29,7 +33,19 @@ export class SocketClient extends BaseSocketClient {
      */
     onOpen(e: any) {
         console.info('Socket open.');
-        this.addEvent('whoami', null, this.onConnection);
+        this.addEvent('whoami', undefined, this.onConnection);
+    }
+
+    /**
+     * Send an event; the answer of the server, if there is one, goes to the callback
+     */
+    override addEvent<K extends ClientEventName>(
+        name: K,
+        data?: ClientEvents[K]['data'],
+        callback?: ((reply: ClientEvents[K]['reply']) => void) | null,
+        force?: boolean
+    ) {
+        super.addEvent(name, data as Sent[K], callback, force);
     }
 
     /**

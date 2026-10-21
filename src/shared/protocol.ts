@@ -70,13 +70,16 @@ export interface ClientEvents {
     'room:create': { data: { name: string }; reply: Result & { room?: RoomData } };
     'room:join': {
         data: { name: string; password: string | null };
-        reply: Result & {
-            room?: RoomData;
-            master?: number | null;
-            clients?: ClientData[];
-            messages?: MessageData[];
-            votes?: VoteData[];
-        };
+        reply:
+            | {
+                  success: true;
+                  room: RoomData;
+                  master: number | null;
+                  clients: ClientData[];
+                  messages: MessageData[];
+                  votes: VoteData[];
+              }
+            | { success: false; error?: string };
     };
     'room:leave': { data: void; reply: void };
     'player:add': { data: { name: string; color?: string | null }; reply: Result };
@@ -166,6 +169,9 @@ export interface ServerEvents {
     /** What a client that comes in the middle of a game needs to know */
     spectate: { inRound: boolean; rendered: boolean; maxScore: number };
 }
+
+/** An event as it is in a message: `[name, data]` */
+export type ServerMessage = { [K in ServerEventName]: [K, ServerEvents[K]] }[ServerEventName];
 
 export type ClientEventName = keyof ClientEvents;
 export type ServerEventName = keyof ServerEvents;

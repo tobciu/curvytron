@@ -3,18 +3,20 @@ import { Client } from '../model/Client.ts';
 import { Player } from '../model/Player.ts';
 import { Room } from '../model/Room.ts';
 import { Collection } from '../../shared/Collection.ts';
+import type { SocketClient } from '../core/SocketClient.ts';
+import type { ServerEvent } from '../../shared/protocol.ts';
 
 /**
  * RoomRepository
  */
 export class RoomRepository extends EventEmitter {
-    client: any;
+    client: SocketClient;
     room: any;
     master: any;
     clients: any;
     playerCache: Collection;
 
-    constructor(client: any) {
+    constructor(client: SocketClient) {
         super();
 
         this.client = client;
@@ -103,7 +105,7 @@ export class RoomRepository extends EventEmitter {
             return callback({ success: true, room: repository.room });
         }
 
-        this.client.addEvent('room:join', { name, password }, function (result: any) {
+        this.client.addEvent('room:join', { name, password }, function (result) {
             if (result.success) {
                 const clients = repository.createClients(result.clients),
                     master = clients.getById(result.master),
@@ -250,7 +252,7 @@ export class RoomRepository extends EventEmitter {
      * Kick player
      */
     kickPlayer(player: Player, callback: (...args: any[]) => any) {
-        this.client.addEvent('player:kick', { player: player.id }, function (result: any) {
+        this.client.addEvent('player:kick', { player: player.id }, function (result) {
             player.kicked = result.kicked;
             callback(result);
         });
@@ -275,11 +277,11 @@ export class RoomRepository extends EventEmitter {
                 player: player.id,
                 color: color.substr(0, Player.colorMaxLength)
             },
-            function (result: any) {
+            function (result) {
                 if (!result.success) {
                     console.error('Could not set color %s for player %s', player.color, player.name);
                 }
-                player.color = result.color;
+                player.color = result.color ?? player.color;
                 callback(result);
             }
         );
@@ -341,21 +343,21 @@ export class RoomRepository extends EventEmitter {
     /**
      * On client add
      */
-    onClientAdd(e: any) {
+    onClientAdd(e: ServerEvent<'client:add'>) {
         this.clients.add(new Client(e.detail));
     }
 
     /**
      * On client remove
      */
-    onClientRemove(e: any) {
+    onClientRemove(e: ServerEvent<'client:remove'>) {
         this.clients.removeById(e.detail);
     }
 
     /**
      * On join room
      */
-    onJoinRoom(e: any): void {
+    onJoinRoom(e: ServerEvent<'room:join'>): void {
         const data = e.detail,
             player = new Player(
                 data.player.id,
@@ -373,7 +375,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On leave room
      */
-    onLeaveRoom(e: any): void {
+    onLeaveRoom(e: ServerEvent<'room:leave'>): void {
         const player = this.room.players.getById(e.detail.player);
 
         if (player && this.room.removePlayer(player)) {
@@ -385,7 +387,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On client changes activity
      */
-    onClientActivity(e: any): void {
+    onClientActivity(e: ServerEvent<'client:activity'>): void {
         const client = this.clients.getById(e.detail.client);
 
         if (client) {
@@ -397,7 +399,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On player change color
      */
-    onPlayerColor(e: any) {
+    onPlayerColor(e: ServerEvent<'player:color'>) {
         const data = e.detail,
             player = this.room.players.getById(data.player);
 
@@ -410,7 +412,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On player change name
      */
-    onPlayerName(e: any) {
+    onPlayerName(e: ServerEvent<'player:name'>) {
         const data = e.detail,
             player = this.room.players.getById(data.player);
 
@@ -423,7 +425,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On player toggle ready
      */
-    onPlayerReady(e: any) {
+    onPlayerReady(e: ServerEvent<'player:ready'>) {
         const data = e.detail,
             player = this.room.players.getById(data.player);
 
@@ -436,7 +438,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On game master
      */
-    onRoomMaster(e: any) {
+    onRoomMaster(e: ServerEvent<'room:master'>) {
         const master = this.clients.getById(e.detail.client);
 
         if (master) {
@@ -447,7 +449,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On config open
      */
-    onConfigOpen(e: any) {
+    onConfigOpen(e: ServerEvent<'room:config:open'>) {
         const data = e.detail;
 
         this.room.config.setOpen(data.open);
@@ -459,7 +461,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On config max score
      */
-    onConfigMaxScore(e: any) {
+    onConfigMaxScore(e: ServerEvent<'room:config:max-score'>) {
         const data = e.detail;
 
         this.room.config.setMaxScore(data.maxScore);
@@ -469,7 +471,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On config variable
      */
-    onConfigVariable(e: any) {
+    onConfigVariable(e: ServerEvent<'room:config:variable'>) {
         const data = e.detail;
 
         this.room.config.setVariable(data.variable, data.value);
@@ -479,7 +481,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On config bonus
      */
-    onConfigBonus(e: any) {
+    onConfigBonus(e: ServerEvent<'room:config:bonus'>) {
         const data = e.detail;
 
         this.room.config.setBonus(data.bonus, data.enabled);
@@ -489,7 +491,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On room game start
      */
-    onGameStart(e: any) {
+    onGameStart(e: ServerEvent<'room:game:start'>) {
         this.room.newGame();
         this.emit('room:game:start');
     }
@@ -513,7 +515,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * On kick
      */
-    onKick(e: any) {
+    onKick(e: ServerEvent<'room:kick'>) {
         let player = this.room.players.getById(e.detail);
 
         if (!player) {

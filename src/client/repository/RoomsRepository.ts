@@ -2,15 +2,17 @@ import { EventEmitter } from '#event-emitter';
 import { Room } from '../model/Room.ts';
 import { RoomListItem } from '../model/RoomListItem.ts';
 import { Collection } from '../../shared/Collection.ts';
+import type { SocketClient } from '../core/SocketClient.ts';
+import type { ServerEvent } from '../../shared/protocol.ts';
 
 /**
  * RoomsRepository
  */
 export class RoomsRepository extends EventEmitter {
-    client: any;
+    client: SocketClient;
     rooms: Collection;
 
-    constructor(client: any) {
+    constructor(client: SocketClient) {
         super();
 
         this.client = client;
@@ -64,11 +66,8 @@ export class RoomsRepository extends EventEmitter {
      * Create
      */
     create(name?: string, callback?: (...args: any[]) => any) {
-        if (typeof name === 'string') {
-            name = name.substr(0, Room.maxLength).trim();
-        }
-
-        this.client.addEvent('room:create', { name }, callback);
+        // Without a name the server picks one
+        this.client.addEvent('room:create', { name: (name ?? '').substr(0, Room.maxLength).trim() }, callback);
     }
 
     /**
@@ -83,7 +82,7 @@ export class RoomsRepository extends EventEmitter {
     /**
      * On room open
      */
-    onRoomOpen(e: any): void {
+    onRoomOpen(e: ServerEvent<'room:open'>): void {
         const room = this.createRoom(e.detail);
 
         if (this.rooms.add(room)) {
@@ -94,7 +93,7 @@ export class RoomsRepository extends EventEmitter {
     /**
      * On close room
      */
-    onRoomClose(e: any): void {
+    onRoomClose(e: ServerEvent<'room:close'>): void {
         const room = this.get(e.detail.name);
 
         if (room && this.rooms.remove(room)) {
@@ -105,7 +104,7 @@ export class RoomsRepository extends EventEmitter {
     /**
      * On room config open change
      */
-    onRoomConfigOpen(e: any): void {
+    onRoomConfigOpen(e: ServerEvent<'room:config:open'>): void {
         const room = this.get(e.detail.name);
 
         if (room) {
@@ -117,7 +116,7 @@ export class RoomsRepository extends EventEmitter {
     /**
      * On room players change
      */
-    onRoomPlayers(e: any): void {
+    onRoomPlayers(e: ServerEvent<'room:players'>): void {
         const room = this.get(e.detail.name);
 
         if (room) {
@@ -129,7 +128,7 @@ export class RoomsRepository extends EventEmitter {
     /**
      * On room game change
      */
-    onRoomGame(e: any): void {
+    onRoomGame(e: ServerEvent<'room:game'>): void {
         const room = this.get(e.detail.name);
 
         if (room) {

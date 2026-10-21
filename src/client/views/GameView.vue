@@ -71,8 +71,8 @@ function checkReady(): void {
     }
 }
 
-function onMove({ detail }: { detail: { avatar: Avatar; move: number } }): void {
-    client.addEvent('player:move', { avatar: detail.avatar.id, move: detail.move ? detail.move : 0 });
+function onMove({ detail }: { detail: { avatar: Avatar; move: -1 | 0 | 1 | boolean } }): void {
+    client.addEvent('player:move', { avatar: detail.avatar.id, move: detail.move ? (detail.move as -1 | 1) : 0 });
 }
 
 function updateBorders(): void {

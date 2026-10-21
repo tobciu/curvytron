@@ -1,6 +1,7 @@
 import { metrics } from '../service/Metrics.ts';
 import { PingLogger } from './PingLogger.ts';
 import { Collection } from '../../shared/Collection.ts';
+import type { ClientData, ServerEvents } from '../../shared/protocol.ts';
 import { BaseSocketClient } from '../../shared/core/BaseSocketClient.ts';
 import { BaseTickrateLogger } from '../../shared/service/BaseTickrateLogger.ts';
 
@@ -13,7 +14,7 @@ import { BaseTickrateLogger } from '../../shared/service/BaseTickrateLogger.ts';
  */
 export const eventLimit = { burst: 120, rate: 60, violationsToClose: 300 };
 
-export class SocketClient extends BaseSocketClient {
+export class SocketClient extends BaseSocketClient<ServerEvents> {
     /** Events that can still be sent, refilled with time */
     tokens: number = eventLimit.burst;
     tokensUpdated: number = Date.now();
@@ -143,11 +144,7 @@ export class SocketClient extends BaseSocketClient {
     /**
      * Object version of the client
      */
-    override serialize() {
-        const data = super.serialize();
-
-        data.active = this.active;
-
-        return data;
+    override serialize(): ClientData {
+        return { ...super.serialize(), active: this.active };
     }
 }

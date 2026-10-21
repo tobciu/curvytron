@@ -140,6 +140,15 @@ describe('a whole game over the socket', () => {
         spectator.send('ready');
 
         expect(await spectate).toMatchObject({ inRound: expect.any(Boolean), maxScore: expect.any(Number) });
+
+        // The state of the avatars comes in the same form as the events during the game: [id, property, value]
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        const properties = spectator.events.filter(([name]) => name === 'property').map(([, data]) => data);
+
+        expect(properties.length).toBeGreaterThanOrEqual(10);
+        expect(properties.every((data) => Array.isArray(data) && data.length === 3)).toBe(true);
+        expect(properties.map(([, property]) => property)).toContain('color');
     }, 20000);
 });
 

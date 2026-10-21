@@ -2,6 +2,7 @@ import { SocketGroup } from '../core/SocketGroup.ts';
 import { Collection } from '../../shared/Collection.ts';
 import { Compressor } from '../../shared/service/Compressor.ts';
 import { isShape, rules } from '../core/validate.ts';
+import type { ServerMessage } from '../../shared/protocol.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
 import type { Avatar } from '../model/Avatar.ts';
 import type { Bonus } from '../model/Bonus/Bonus.ts';
@@ -203,7 +204,7 @@ export class GameController {
             score: 'score'
         };
 
-        const events: [string, any][] = [
+        const events: ServerMessage[] = [
             [
                 'spectate',
                 {
@@ -227,12 +228,12 @@ export class GameController {
 
             for (const property in properties) {
                 if (Object.hasOwn(properties, property)) {
-                    events.push(['property', { avatar: avatar.id, property, value: avatar[properties[property]] }]);
+                    events.push(['property', [avatar.id, property, avatar[properties[property]]]]);
                 }
             }
 
             if (!avatar.alive) {
-                events.push(['die', { avatar: avatar.id }]);
+                events.push(['die', [avatar.id, null, null]]);
             }
         }
 
@@ -242,7 +243,7 @@ export class GameController {
                 events.push([
                     'bonus:pop',
                     [
-                        bonus.id,
+                        bonus.id as number,
                         this.compressor.compress(bonus.x),
                         this.compressor.compress(bonus.y),
                         bonus.constructor.name
@@ -250,7 +251,7 @@ export class GameController {
                 ]);
             }
         } else {
-            this.socketGroup.addEvent('round:end', this.game.roundWinner ? this.game.roundWinner.id : null);
+            events.push(['round:end', this.game.roundWinner ? this.game.roundWinner.id : null]);
         }
 
         events.push(['game:spectators', this.countSpectators()]);
@@ -367,7 +368,7 @@ export class GameController {
      */
     onBonusPop(bonus: Bonus) {
         this.socketGroup.addEvent('bonus:pop', [
-            bonus.id,
+            bonus.id as number,
             this.compressor.compress(bonus.x),
             this.compressor.compress(bonus.y),
             bonus.constructor.name
@@ -378,7 +379,7 @@ export class GameController {
      * On bonus clear
      */
     onBonusClear(bonus: Bonus) {
-        this.socketGroup.addEvent('bonus:clear', bonus.id);
+        this.socketGroup.addEvent('bonus:clear', bonus.id as number);
     }
 
     /**

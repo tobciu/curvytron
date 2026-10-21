@@ -1,10 +1,12 @@
+import type { SocketClient } from '../core/SocketClient.ts';
+
 import { gamepadListener } from '../gamepadListener.ts';
 
 /**
  * Activity watcher
  */
 export class ActivityWatcher {
-    client: any;
+    client: SocketClient;
     focused: any;
     active: any;
     lastActivity: any;
@@ -20,7 +22,7 @@ export class ActivityWatcher {
      */
     checkInterval: number = 10000;
 
-    constructor(client: any) {
+    constructor(client: SocketClient) {
         this.client = client;
         this.focused = true;
         this.active = true;

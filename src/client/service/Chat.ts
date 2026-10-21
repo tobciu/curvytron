@@ -7,13 +7,15 @@ import { MessageVoteKick } from '../model/message/MessageVoteKick.ts';
 import { Collection } from '../../shared/Collection.ts';
 import { BaseChat } from '../../shared/service/BaseChat.ts';
 import type { Player } from '../model/Player.ts';
+import type { SocketClient } from '../core/SocketClient.ts';
+import type { RoomRepository } from '../repository/RoomRepository.ts';
 
 /**
  * Chat system
  */
 export class Chat extends BaseChat {
-    client: any;
-    repository: any;
+    client: SocketClient;
+    repository: RoomRepository;
     message: MessagePlayer;
     room: any;
     element: any;
@@ -21,7 +23,7 @@ export class Chat extends BaseChat {
     sources: Collection;
     muted: any[];
 
-    constructor(client: any, repository: any) {
+    constructor(client: SocketClient, repository: RoomRepository) {
         super();
 
         this.messages.index = false;
@@ -141,17 +143,13 @@ export class Chat extends BaseChat {
         const chat = this;
 
         if (this.message.content && this.message.content.length) {
-            this.client.addEvent(
-                'room:talk',
-                this.message.content.substr(0, Message.maxLength),
-                function (result: any) {
-                    if (result.success) {
-                        chat.message.clear();
-                    } else {
-                        console.error('Could not send %s', chat.message);
-                    }
+            this.client.addEvent('room:talk', this.message.content.substr(0, Message.maxLength), function (result) {
+                if (result.success) {
+                    chat.message.clear();
+                } else {
+                    console.error('Could not send %s', chat.message);
                 }
-            );
+            });
         }
     }
 
