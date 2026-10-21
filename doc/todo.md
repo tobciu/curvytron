@@ -8,7 +8,7 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [x] Counters per player from the game events: bonuses caught (per type), deaths by wall / own trail / other trail, kills, distance driven, trail length, longest time alive, rounds won
     - [x] `game:stats` event at the end of every round, with awards (bonus hunter, wall lover, own worst enemy, hunter, marathon driver, survivor)
     - [x] Vue component `GameStats.vue` below the ranking, unit tests and e2e check
-    - [x] The awards are shown at the end of every round, the table at the end of the game
+    - [x] The awards and the table are shown at the end of the game only (between two rounds there are 5 s, too short to read them)
     - [ ] Statistics per bonus type in the UI (the data is already sent: `bonusesByType`)
 - [ ] Statistics: more details on hover (the titles and awards have explanations, the bonus count shows the types): per-round values, icons in the titles (the icon font has only a few glyphs, a new set is needed)
 - [ ] Statistics: skill measures (not urgent)

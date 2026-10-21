@@ -4,8 +4,7 @@ import { computed } from 'vue';
 import { bonusDefinitions } from '../../../shared/bonuses';
 import type { GameStatsData, PlayerStats } from '../../../shared/model/GameStats';
 
-/** `compact`: the awards only (between the rounds) */
-const props = defineProps<{ stats: GameStatsData; compact?: boolean }>();
+const props = defineProps<{ stats: GameStatsData }>();
 
 /** What the awards are given for */
 const awardInfo: Record<string, { label: string; description: string }> = {
@@ -78,7 +77,7 @@ function bonusDetails(player: PlayerStats): string[] {
                 </span>
             </li>
         </ul>
-        <table v-if="!compact" class="table table-hover stats">
+        <table class="table table-hover stats">
             <thead>
                 <tr>
                     <th class="name">Player</th>

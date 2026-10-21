@@ -110,7 +110,6 @@ onBeforeUnmount(clearWarmup);
                     <i class="icon-dead"></i>
                     Oops, everybody died...
                 </p>
-                <GameStats v-if="game.started && game.stats" :stats="game.stats" compact />
                 <div v-if="!game.started">
                     <button type="button" class="btn btn-hero btn-back-to-room" @click="emit('backToRoom')">
                         Back to the room
