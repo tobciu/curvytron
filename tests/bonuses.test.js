@@ -47,6 +47,49 @@ describe('bonus registry', () => {
         }
     });
 
+    it('gives the presets the bonuses they always had', () => {
+        const client = new ClientRoomConfig({});
+        const preset = (name) => client.presets.find((candidate) => candidate.name === name).bonuses.toSorted();
+
+        expect(preset('All')).toEqual(
+            [
+                'BonusSelfSmall',
+                'BonusSelfSlow',
+                'BonusSelfFast',
+                'BonusSelfMaster',
+                'BonusEnemySlow',
+                'BonusEnemyFast',
+                'BonusEnemyBig',
+                'BonusEnemyInverse',
+                'BonusEnemyStraightAngle',
+                'BonusGameBorderless',
+                'BonusAllColor',
+                'BonusGameClear'
+            ].toSorted()
+        );
+        expect(preset('Speed of light')).toEqual(['BonusEnemyFast', 'BonusSelfFast']);
+        expect(preset('Super size me')).toEqual(['BonusEnemyBig']);
+        expect(preset('Solo')).toEqual(
+            [
+                'BonusSelfSmall',
+                'BonusSelfSlow',
+                'BonusSelfFast',
+                'BonusSelfMaster',
+                'BonusGameBorderless',
+                'BonusGameClear'
+            ].toSorted()
+        );
+        expect(preset('No bonuses')).toEqual([]);
+    });
+
+    it('loads the class of every bonus, with the name of the bonus', () => {
+        const config = new RoomConfig({});
+
+        for (const { name } of bonusDefinitions) {
+            expect(config.bonusTypes[name].name).toBe(name);
+        }
+    });
+
     it('finds the position of a bonus in the sprite', () => {
         expect(spritePosition('BonusSelfFast')).toEqual({ column: 0, line: 0 });
         expect(spritePosition('BonusSelfSlow')).toEqual({ column: 2, line: 0 });

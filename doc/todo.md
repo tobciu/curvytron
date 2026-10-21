@@ -47,8 +47,7 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [ ] Keep the `GameStats` result format serializable so that storing it is only an adapter
     - [ ] Database file in a Docker volume
 - [x] Bonus registry (`src/shared/bonuses.ts`) and sprite built from one image per bonus (`npm run sprite`), see `doc/bonuses.md`
-- [ ] Presets: use the registry too (they list the bonuses by name, a test checks that they are valid)
-- [ ] Server: derive `bonusTypes` from the registry (a test checks that the two lists match)
+- [x] Presets and the server classes come from the registry (a new bonus: a class, an entry in the list, an image)
 - [ ] Share the network protocol types (event names and payloads) between client and server
 - [ ] Replace the remaining `any` in the client model; enable `noImplicitOverride`
 - [ ] Convert `src/client/lib` to TypeScript

@@ -1,3 +1,4 @@
+import { presetBonuses } from '../../../shared/bonuses.ts';
 import { Preset } from '../../../shared/model/Preset.ts';
 
 /**
@@ -12,14 +13,7 @@ export class SoloPreset extends Preset {
     /**
      * Bonuses
      */
-    bonuses: any[] = [
-        'BonusSelfSmall',
-        'BonusSelfSlow',
-        'BonusSelfFast',
-        'BonusSelfMaster',
-        'BonusGameBorderless',
-        'BonusGameClear'
-    ];
+    bonuses: string[] = presetBonuses('solo');
 
     constructor() {
         super();

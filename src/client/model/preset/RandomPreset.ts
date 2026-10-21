@@ -1,3 +1,4 @@
+import { bonusNames } from '../../../shared/bonuses.ts';
 import { Preset } from '../../../shared/model/Preset.ts';
 
 /**
@@ -12,27 +13,7 @@ export class RandomPreset extends Preset {
     /**
      * All bonuses
      */
-    allBonuses: any[] = [
-        'BonusSelfFast',
-        'BonusEnemyFast',
-        'BonusSelfSlow',
-        'BonusEnemySlow',
-        'BonusGameBorderless',
-        'BonusSelfMaster',
-        'BonusEnemyBig',
-        'BonusAllColor',
-        'BonusEnemyInverse',
-        'BonusSelfSmall',
-        'BonusGameClear',
-        'BonusEnemyStraightAngle',
-        'BonusSelfRandom',
-        'BonusLeaderRandom',
-        'BonusEnemyRandom',
-        'BonusLeaderFast',
-        'BonusLeaderInverse',
-        'BonusLeaderSlow',
-        'BonusSelfBorderless'
-    ];
+    allBonuses: string[] = [...bonusNames];
 
     constructor() {
         super();

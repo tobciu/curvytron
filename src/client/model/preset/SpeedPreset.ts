@@ -1,3 +1,4 @@
+import { presetBonuses } from '../../../shared/bonuses.ts';
 import { Preset } from '../../../shared/model/Preset.ts';
 
 /**
@@ -12,7 +13,7 @@ export class SpeedPreset extends Preset {
     /**
      * Bonuses
      */
-    bonuses: any[] = ['BonusSelfFast', 'BonusEnemyFast'];
+    bonuses: string[] = presetBonuses('speed');
 
     constructor() {
         super();
