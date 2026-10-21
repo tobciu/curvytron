@@ -577,6 +577,9 @@
                             left: 50%;
                             z-index: 10;
                             width: 220px;
+                            // The column headers (`th`) and award buttons are `nowrap`;
+                            // without this the explanation would run out of the box
+                            white-space: normal;
                             margin: 8px 0 0 -110px;
                             padding: 10px 12px;
                             background: #fff;

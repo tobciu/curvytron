@@ -47,7 +47,7 @@ test('plays a round until the game is over, then goes back to the room', async (
     });
     await expect(page.locator('#end')).toBeVisible({ timeout: 45_000 });
     await expect(page.locator('#end .recap-view')).toHaveClass(/game/);
-    await expect(page.locator('#end .recap tr')).toHaveCount(2);
+    await expect(page.locator('#end .recap tbody tr')).toHaveCount(2);
     await expect(page.locator('#end .btn-back-to-room').first()).toBeVisible();
 
     // Statistics: a line per player; one of them won the only round (who depends on the crash order)
@@ -69,6 +69,11 @@ test('plays a round until the game is over, then goes back to the room', async (
     await closeCalls.hover();
     await expect(closeCalls.locator('.tip')).toBeVisible();
     await expect(closeCalls.locator('.tip')).toContainText('very close to the trail of another player');
+
+    // the explanation wraps inside the tooltip, and never runs out of its box
+    expect(
+        await closeCalls.locator('.tip').evaluate((tip) => (tip as HTMLElement).scrollWidth <= (tip as HTMLElement).clientWidth + 1)
+    ).toBe(true);
 
     await page.locator('#end .btn-back-to-room').first().click();
 
