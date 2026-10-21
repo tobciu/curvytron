@@ -9,7 +9,7 @@ services:
             PORT: 8080
         ports:
             # Behind a reverse proxy on a VPS, bind to localhost only: '127.0.0.1:8080:8080'
-            - '8080:8080'
+            - '28080:8080'
         # Optional configuration (see config.json.sample):
         # volumes:
         #     - ./config.json:/curvytron/config.json:ro
