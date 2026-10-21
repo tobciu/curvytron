@@ -10,6 +10,10 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [x] Vue component `GameStats.vue` below the ranking, unit tests and e2e check
     - [ ] Show the statistics of a round at the end of the round too (only the game end shows them for now)
     - [ ] Statistics per bonus type in the UI (the data is already sent: `bonusesByType`)
+- [ ] Statistics: skill measures (not urgent)
+    - [ ] Near misses: smallest distance to a foreign trail per tick, count the passes under a threshold (about half an avatar radius); award "close call"
+    - [ ] Driving through gaps of a foreign trail (needs gap detection in the trails)
+    - [ ] Count what an avatar survived thanks to the invincibility (crown bonus)
 - [ ] **Operational metrics** for Grafana
     - [ ] `/metrics` endpoint in the Prometheus format (decided: nothing reads Curvytron data yet, pull is the simplest: no credentials in the game, one scrape job in the Prometheus of the Grafana stack; check that the stack has Prometheus)
     - [ ] Tick duration (average, p99), players, rooms, games, ping per client
