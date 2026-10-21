@@ -66,7 +66,12 @@ export default defineConfig({
                 // The browser flavor of the shared code: DOM, and the client event emitter (`{ type, detail }` events)
                 extends: true,
                 resolve: { alias: { '#event-emitter': path.resolve(root, 'EventEmitter.ts') } },
-                test: { name: 'client', environment: 'jsdom', include: ['tests/client/**/*.test.{js,ts}'] }
+                test: {
+                    name: 'client',
+                    environment: 'jsdom',
+                    include: ['tests/client/**/*.test.{js,ts}'],
+                    setupFiles: ['tests/helpers/canvas-stub.ts']
+                }
             }
         ]
     },
