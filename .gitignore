@@ -6,4 +6,6 @@ config.json
 *.sublime-*
 test-results/
 playwright-report/
+coverage/
+.scannerwork/
 logs

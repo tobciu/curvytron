@@ -44,6 +44,14 @@ export default defineConfig({
     },
     test: {
         root: path.resolve(root, '../..'),
+        // lcov for SonarQube (sonar.javascript.lcov.reportPaths); all:true also counts never-loaded files
+        coverage: {
+            provider: 'v8',
+            all: true,
+            include: ['src/**'],
+            reporter: ['text', 'lcov'],
+            reportsDirectory: 'coverage'
+        },
         projects: [
             {
                 extends: true,
