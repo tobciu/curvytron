@@ -10,7 +10,7 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [ ] Vue component showing the results (table, awards such as "bonus hunter", "wall lover")
     - [ ] Unit tests for the counters
 - [ ] **Operational metrics** for Grafana
-    - [ ] Decide the data source of the Grafana stack on the VPS: Prometheus (`/metrics` endpoint) or the existing InfluxDB inspector
+    - [ ] `/metrics` endpoint in the Prometheus format (decided: nothing reads Curvytron data yet, pull is the simplest: no credentials in the game, one scrape job in the Prometheus of the Grafana stack; check that the stack has Prometheus)
     - [ ] Tick duration (average, p99), players, rooms, games, ping per client
     - [ ] No per-tick console output
     - [ ] Example Grafana dashboard in `doc/`
