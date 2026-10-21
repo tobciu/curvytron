@@ -9,7 +9,7 @@ export class BonusSelfFast extends BonusSelf {
     /**
      * Duration
      */
-    duration: number = 4000;
+    override duration: number = 4000;
 
     constructor(x: any, y: any) {
         super(x, y);
@@ -18,7 +18,7 @@ export class BonusSelfFast extends BonusSelf {
     /**
      * Get effects
      */
-    getEffects(avatar: Avatar): Array<[string, any]> {
+    override getEffects(avatar: Avatar): Array<[string, any]> {
         return [['velocity', 0.75 * BaseAvatar.defaults.velocity]];
     }
 }

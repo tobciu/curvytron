@@ -11,7 +11,7 @@ export class FPSLogger extends BaseFPSLogger {
     /**
      * Load FPS
      */
-    log() {
+    override log() {
         super.log();
         this.emit('fps', this.frequency);
     }

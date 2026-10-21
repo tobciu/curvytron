@@ -9,12 +9,12 @@ export class MessageTip extends Message {
     /**
      * Message type
      */
-    type: string = 'tip';
+    override type: string = 'tip';
 
     /**
      * Default icon
      */
-    icon: string = 'icon-megaphone';
+    override icon: string = 'icon-megaphone';
 
     /**
      * Tips

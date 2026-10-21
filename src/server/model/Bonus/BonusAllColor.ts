@@ -12,7 +12,7 @@ export class BonusAllColor extends BonusAll {
     /**
      * Duration
      */
-    duration: number = 7500;
+    override duration: number = 7500;
 
     constructor(x: any, y: any) {
         super(x, y);
@@ -23,7 +23,7 @@ export class BonusAllColor extends BonusAll {
     /**
      * Get target
      */
-    getTarget(avatar: Avatar, game: Game) {
+    override getTarget(avatar: Avatar, game: Game) {
         const targets = super.getTarget(avatar, game);
 
         this.avatars = new Array(targets.length);
@@ -40,7 +40,7 @@ export class BonusAllColor extends BonusAll {
     /**
      * Get effects
      */
-    getEffects(avatar: Avatar): Array<[string, any]> {
+    override getEffects(avatar: Avatar): Array<[string, any]> {
         return [['color', this.getColor(avatar)]];
     }
 

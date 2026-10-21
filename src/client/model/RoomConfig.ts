@@ -78,7 +78,7 @@ export class RoomConfig extends BaseRoomConfig {
     /**
      * Set bonus value
      */
-    setBonus(bonus: string, value: boolean): void {
+    override setBonus(bonus: string, value: boolean): void {
         super.setBonus(bonus, value);
         this.checkPresets();
     }

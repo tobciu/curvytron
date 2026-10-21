@@ -9,7 +9,7 @@ export class BonusEnemyFast extends BonusEnemy {
     /**
      * Duration
      */
-    duration: number = 6000;
+    override duration: number = 6000;
 
     constructor(x: any, y: any) {
         super(x, y);
@@ -18,7 +18,7 @@ export class BonusEnemyFast extends BonusEnemy {
     /**
      * Get effects
      */
-    getEffects(avatar: Avatar): Array<[string, any]> {
+    override getEffects(avatar: Avatar): Array<[string, any]> {
         return [['velocity', 0.75 * BaseAvatar.defaults.velocity]];
     }
 }

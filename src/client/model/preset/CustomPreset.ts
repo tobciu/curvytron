@@ -7,7 +7,7 @@ export class CustomPreset extends Preset {
     /**
      * Name
      */
-    name: string = 'Custom';
+    override name: string = 'Custom';
 
     constructor() {
         super();

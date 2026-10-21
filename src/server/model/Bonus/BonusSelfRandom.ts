@@ -8,7 +8,7 @@ export class BonusSelfRandom extends BonusSelf {
     /**
      * Duration
      */
-    duration: number = 7500;
+    override duration: number = 7500;
 
     constructor(x: any, y: any) {
         super(x, y);
@@ -17,7 +17,7 @@ export class BonusSelfRandom extends BonusSelf {
     /**
      * Get effects
      */
-    getEffects(avatar: Avatar): Array<[string, any]> {
+    override getEffects(avatar: Avatar): Array<[string, any]> {
         return [
             ['directionInLoop', false],
             ['angularVelocityBase', Math.PI / 4]

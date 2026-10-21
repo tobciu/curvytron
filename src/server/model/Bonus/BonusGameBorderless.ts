@@ -8,12 +8,12 @@ export class BonusGameBorderless extends BonusGame {
     /**
      * Duration
      */
-    duration: number = 10000;
+    override duration: number = 10000;
 
     /**
      * Probability
      */
-    static probability: any = 0.8;
+    static override probability: any = 0.8;
 
     constructor(x: any, y: any) {
         super(x, y);
@@ -22,14 +22,14 @@ export class BonusGameBorderless extends BonusGame {
     /**
      * Get effects
      */
-    getEffects(game: Game): Array<[string, any]> {
+    override getEffects(game: Game): Array<[string, any]> {
         return [['borderless', true]];
     }
 
     /**
      * Get probability
      */
-    static getProbability(game: Game): number {
+    static override getProbability(game: Game): number {
         return BonusGameBorderless.probability;
     }
 }

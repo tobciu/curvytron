@@ -29,7 +29,7 @@ export class ClientTracker extends Tracker {
     /**
      * @inheritDoc
      */
-    getValues() {
+    override getValues() {
         const data = super.getValues();
 
         data.ip = md5(this.ip);

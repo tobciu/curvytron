@@ -13,7 +13,7 @@ export class BonusSelfSlow extends BonusSelf {
     /**
      * Get effects
      */
-    getEffects(avatar: Avatar): Array<[string, any]> {
+    override getEffects(avatar: Avatar): Array<[string, any]> {
         return [['velocity', -BaseAvatar.defaults.velocity / 2]];
     }
 }

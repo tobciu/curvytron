@@ -8,12 +8,12 @@ export class SizePreset extends Preset {
     /**
      * Name
      */
-    name: string = 'Super size me';
+    override name: string = 'Super size me';
 
     /**
      * Bonuses
      */
-    bonuses: string[] = presetBonuses('size');
+    override bonuses: string[] = presetBonuses('size');
 
     constructor() {
         super();

@@ -9,12 +9,12 @@ export class BonusLeader extends Bonus {
     /**
      * Affect leader
      */
-    affect: string = 'leader';
+    override affect: string = 'leader';
 
     /**
      * Probability
      */
-    static probability: any = 0.5;
+    static override probability: any = 0.5;
 
     constructor(x: any, y: any) {
         super(x, y);
@@ -61,7 +61,7 @@ export class BonusLeader extends Bonus {
     /**
      * Get probability
      */
-    static getProbability(game: Game): number {
+    static override getProbability(game: Game): number {
         const leader = game
             .sortAvatars(
                 game.avatars.filter(function () {

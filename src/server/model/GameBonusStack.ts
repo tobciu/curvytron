@@ -12,21 +12,21 @@ export class GameBonusStack extends BaseBonusStack {
     /**
      * Add bonus to the stack
      */
-    add(bonus: Bonus) {
+    override add(bonus: Bonus) {
         super.add(bonus);
     }
 
     /**
      * Remove bonus from the stack
      */
-    remove(bonus: Bonus) {
+    override remove(bonus: Bonus) {
         super.remove(bonus);
     }
 
     /**
      * Apply the value to target's property
      */
-    apply(property: string, value: number) {
+    override apply(property: string, value: number) {
         switch (property) {
             case 'borderless':
                 this.target.setBorderless(value ? true : false);

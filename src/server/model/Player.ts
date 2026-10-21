@@ -22,7 +22,7 @@ export class Player extends BasePlayer {
     /**
      * Serialize
      */
-    serialize() {
+    override serialize() {
         const data: Record<string, any> = super.serialize();
 
         data.active = this.client.active;

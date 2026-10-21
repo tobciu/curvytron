@@ -10,12 +10,12 @@ export class MessageMute extends Message {
     /**
      * Message type
      */
-    type: string = 'mute';
+    override type: string = 'mute';
 
     /**
      * Default icon
      */
-    icon: string = 'icon-megaphone';
+    override icon: string = 'icon-megaphone';
 
     constructor(client: any, player: any) {
         super();

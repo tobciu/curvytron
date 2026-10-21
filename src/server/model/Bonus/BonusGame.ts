@@ -9,7 +9,7 @@ export class BonusGame extends Bonus {
     /**
      * Affect game
      */
-    affect: string = 'game';
+    override affect: string = 'game';
 
     constructor(x: any, y: any) {
         super(x, y);

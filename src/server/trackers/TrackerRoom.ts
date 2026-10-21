@@ -28,7 +28,7 @@ export class RoomTracker extends Tracker {
     /**
      * @inheritDoc
      */
-    destroy() {
+    override destroy() {
         this.room.off('game:new', this.onGame);
 
         return super.destroy();
@@ -37,7 +37,7 @@ export class RoomTracker extends Tracker {
     /**
      * @inheritDoc
      */
-    getValues() {
+    override getValues() {
         const data = super.getValues();
 
         data.games = this.games;

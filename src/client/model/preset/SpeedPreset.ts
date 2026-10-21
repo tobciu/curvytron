@@ -8,12 +8,12 @@ export class SpeedPreset extends Preset {
     /**
      * Name
      */
-    name: string = 'Speed of light';
+    override name: string = 'Speed of light';
 
     /**
      * Bonuses
      */
-    bonuses: string[] = presetBonuses('speed');
+    override bonuses: string[] = presetBonuses('speed');
 
     constructor() {
         super();

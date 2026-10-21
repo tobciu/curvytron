@@ -29,7 +29,7 @@ export class BonusManager extends BaseBonusManager {
     /**
      * Start
      */
-    start() {
+    override start() {
         super.start();
 
         this.world.activate();
@@ -42,7 +42,7 @@ export class BonusManager extends BaseBonusManager {
     /**
      * Stop
      */
-    stop() {
+    override stop() {
         if (this.popingTimeout) {
             this.popingTimeout = clearTimeout(this.popingTimeout);
         }
@@ -53,7 +53,7 @@ export class BonusManager extends BaseBonusManager {
     /**
      * Clear
      */
-    clear() {
+    override clear() {
         this.world.clear();
         super.clear();
     }
@@ -110,7 +110,7 @@ export class BonusManager extends BaseBonusManager {
     /**
      * Add bonus
      */
-    add(bonus: Bonus) {
+    override add(bonus: Bonus) {
         if (super.add(bonus)) {
             this.world.addBody(bonus.body);
             this.emit('bonus:pop', bonus);
@@ -124,7 +124,7 @@ export class BonusManager extends BaseBonusManager {
     /**
      *  Remove bonus
      */
-    remove(bonus: Bonus) {
+    override remove(bonus: Bonus) {
         if (super.remove(bonus)) {
             this.world.removeBody(bonus.body);
             this.emit('bonus:clear', bonus);

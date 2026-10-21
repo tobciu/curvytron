@@ -11,7 +11,7 @@ export class Trail extends BaseTrail {
     /**
      * Clear
      */
-    clear() {
+    override clear() {
         super.clear();
         this.emit('clear', { avatar: this.avatar });
     }

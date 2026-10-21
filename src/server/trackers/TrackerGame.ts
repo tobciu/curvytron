@@ -81,7 +81,7 @@ export class GameTracker extends Tracker {
     /**
      * @inheritDoc
      */
-    destroy() {
+    override destroy() {
         this.onStop();
 
         this.game.off('end', this.onEnd);
@@ -93,7 +93,7 @@ export class GameTracker extends Tracker {
     /**
      * @inheritDoc
      */
-    getValues() {
+    override getValues() {
         const data = super.getValues();
 
         data.size = this.size;

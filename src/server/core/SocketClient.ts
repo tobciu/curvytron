@@ -21,7 +21,7 @@ export class SocketClient extends BaseSocketClient {
     violations: number = 0;
 
     ip: any;
-    id: any;
+    override id: any;
     active: any;
     players: Collection;
     pingLogger: PingLogger;
@@ -54,7 +54,7 @@ export class SocketClient extends BaseSocketClient {
     /**
      * Token bucket: the events over the limit are dropped, a client that keeps sending too many is disconnected
      */
-    acceptsEvent(name: unknown): boolean {
+    override acceptsEvent(name: unknown): boolean {
         const now = Date.now();
 
         this.tokens = Math.min(eventLimit.burst, this.tokens + ((now - this.tokensUpdated) / 1000) * eventLimit.rate);
@@ -80,7 +80,7 @@ export class SocketClient extends BaseSocketClient {
     /**
      * An event handler failed: count it, the data of the client was most likely wrong
      */
-    onEventError(name: unknown, error: unknown) {
+    override onEventError(name: unknown, error: unknown) {
         metrics.eventErrors.inc();
         super.onEventError(name, error);
     }
@@ -126,7 +126,7 @@ export class SocketClient extends BaseSocketClient {
     /**
      * Send an event
      */
-    sendEvents(events: any) {
+    override sendEvents(events: any) {
         this.tickrate.tick(events);
         super.sendEvents(events);
     }
@@ -134,7 +134,7 @@ export class SocketClient extends BaseSocketClient {
     /**
      * Stop
      */
-    stop() {
+    override stop() {
         super.stop();
         this.pingLogger.stop();
         this.tickrate.stop();
@@ -143,7 +143,7 @@ export class SocketClient extends BaseSocketClient {
     /**
      * Object version of the client
      */
-    serialize() {
+    override serialize() {
         const data = super.serialize();
 
         data.active = this.active;

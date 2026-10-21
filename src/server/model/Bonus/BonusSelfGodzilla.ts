@@ -12,7 +12,7 @@ export class BonusSelfGodzilla extends BonusSelf {
     /**
      * Get effects
      */
-    getEffects(avatar: Avatar): Array<[string, any]> {
+    override getEffects(avatar: Avatar): Array<[string, any]> {
         return [
             ['invincible', true],
             ['printing', 100],

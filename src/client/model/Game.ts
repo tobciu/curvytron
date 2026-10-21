@@ -83,14 +83,14 @@ export class Game extends BaseGame {
     /**
      * Get new frame
      */
-    newFrame() {
+    override newFrame() {
         this.frame = window.requestAnimationFrame(this.loop);
     }
 
     /**
      * Clear frame
      */
-    clearFrame() {
+    override clearFrame() {
         window.cancelAnimationFrame(this.frame as number);
         this.frame = null;
     }
@@ -98,14 +98,14 @@ export class Game extends BaseGame {
     /**
      * On frame
      */
-    onFrame(step: number) {
+    override onFrame(step: number) {
         this.draw(step);
     }
 
     /**
      * On round new
      */
-    onRoundNew() {
+    override onRoundNew() {
         super.onRoundNew();
         this.repaint();
     }
@@ -113,7 +113,7 @@ export class Game extends BaseGame {
     /**
      * On start
      */
-    onStart() {
+    override onStart() {
         this.effect.clear();
         super.onStart();
     }
@@ -134,7 +134,7 @@ export class Game extends BaseGame {
     /**
      * Are all avatars ready?
      */
-    isReady(): boolean {
+    override isReady(): boolean {
         return this.started ? true : super.isReady();
     }
 
@@ -148,7 +148,7 @@ export class Game extends BaseGame {
     /**
      * End
      */
-    end(): boolean {
+    override end(): boolean {
         const ended = super.end();
 
         if (ended) {
@@ -162,7 +162,7 @@ export class Game extends BaseGame {
     /**
      * Update size
      */
-    setSize() {
+    override setSize() {
         super.setSize();
         this.onResize();
     }

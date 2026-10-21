@@ -10,12 +10,12 @@ export class MessageRoomMaster extends Message {
     /**
      * Message type
      */
-    type: string = 'room-master';
+    override type: string = 'room-master';
 
     /**
      * Default icon
      */
-    icon: string = 'icon-megaphone';
+    override icon: string = 'icon-megaphone';
 
     constructor(client: any) {
         super();

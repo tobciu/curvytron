@@ -9,7 +9,7 @@ import type { Client } from './Client.ts';
 export class Player extends BasePlayer {
     declare client: Client;
     declare avatar: Avatar | null;
-    id: any;
+    override id: any;
     local: any;
     controls: any;
     vote: boolean;

@@ -22,7 +22,7 @@ export class AvatarBody extends Body {
     /**
      * Match?
      */
-    match(body: Body): boolean {
+    override match(body: Body): boolean {
         if (body instanceof AvatarBody && this.data.equal(body.data)) {
             return body.num - this.num > this.data.trailLatency;
         }

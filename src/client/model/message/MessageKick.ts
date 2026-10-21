@@ -9,12 +9,12 @@ export class MessageKick extends Message {
     /**
      * Message type
      */
-    type: string = 'kick';
+    override type: string = 'kick';
 
     /**
      * Default icon
      */
-    icon: string = 'icon-megaphone';
+    override icon: string = 'icon-megaphone';
 
     constructor(target: any) {
         super();

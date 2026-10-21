@@ -15,10 +15,10 @@ export abstract class Bonus extends BaseBonus {
     abstract getTarget(avatar: Avatar, game: Game): any;
 
     /** Apply the effect */
-    abstract on(): void;
+    abstract override on(): void;
 
     /** Remove the effect */
-    abstract off(): void;
+    abstract override off(): void;
 
     constructor(x: number, y: number) {
         super(x, y);
@@ -31,7 +31,7 @@ export abstract class Bonus extends BaseBonus {
     /**
      * Apply bonus callback
      */
-    applyTo(avatar: Avatar, game: Game) {
+    override applyTo(avatar: Avatar, game: Game) {
         this.target = this.getTarget(avatar, game);
 
         if (this.duration) {

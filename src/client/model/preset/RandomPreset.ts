@@ -8,7 +8,7 @@ export class RandomPreset extends Preset {
     /**
      * Name
      */
-    name: string = 'Random';
+    override name: string = 'Random';
 
     /**
      * All bonuses
@@ -19,7 +19,7 @@ export class RandomPreset extends Preset {
         super();
     }
 
-    calculateRandom() {
+    override calculateRandom() {
         this.bonuses = [...this.allBonuses]
             .sort(function () {
                 return 0.5 - Math.random();

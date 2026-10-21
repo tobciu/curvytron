@@ -105,7 +105,7 @@ export class Chat extends BaseChat {
     /**
      * Add message
      */
-    addMessage(message: Message): boolean {
+    override addMessage(message: Message): boolean {
         this.sources.add(message);
 
         const added = super.addMessage(message);
@@ -224,7 +224,7 @@ export class Chat extends BaseChat {
     /**
      * Is message valid
      */
-    isValid(message: Message): boolean {
+    override isValid(message: Message): boolean {
         if (!(message instanceof MessagePlayer)) {
             return true;
         }
@@ -235,7 +235,7 @@ export class Chat extends BaseChat {
     /**
      * Clear messages
      */
-    clearMessages() {
+    override clearMessages() {
         super.clearMessages();
         this.sources.clear();
         this.addTip();

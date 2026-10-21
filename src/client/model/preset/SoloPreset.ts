@@ -8,12 +8,12 @@ export class SoloPreset extends Preset {
     /**
      * Name
      */
-    name: string = 'Solo';
+    override name: string = 'Solo';
 
     /**
      * Bonuses
      */
-    bonuses: string[] = presetBonuses('solo');
+    override bonuses: string[] = presetBonuses('solo');
 
     constructor() {
         super();

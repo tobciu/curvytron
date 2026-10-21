@@ -4,8 +4,8 @@ import { BaseSocketClient } from '../../shared/core/BaseSocketClient.ts';
  * SocketClient
  */
 export class SocketClient extends BaseSocketClient {
-    id: any;
-    connected: boolean;
+    override id: any;
+    override connected: boolean;
 
     constructor() {
         const protocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
@@ -48,7 +48,7 @@ export class SocketClient extends BaseSocketClient {
     /**
      * On open
      */
-    onClose() {
+    override onClose() {
         console.info('Disconnected.');
 
         this.connected = false;

@@ -75,7 +75,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Update
      */
-    update(step: number) {
+    override update(step: number) {
         if (!this.changed && this.alive) {
             this.updateAngle(step);
             this.updatePosition(step);
@@ -114,7 +114,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set radius
      */
-    setRadius(radius: number) {
+    override setRadius(radius: number) {
         super.setRadius(radius);
         this.updateWidth();
         this.drawHead();
@@ -123,7 +123,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set color
      */
-    setColor(color: string) {
+    override setColor(color: string) {
         super.setColor(color);
         this.drawHead();
     }
@@ -131,7 +131,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set borderColor
      */
-    setBorderColor(borderColor: string) {
+    override setBorderColor(borderColor: string) {
         super.setBorderColor(borderColor);
         this.drawHead();
     }
@@ -139,7 +139,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set score
      */
-    setScore(score: number) {
+    override setScore(score: number) {
         const diff = score - this.score;
 
         super.setScore(score);
@@ -150,7 +150,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Die
      */
-    die() {
+    override die() {
         super.die();
         this.emit('die', this);
     }
@@ -203,7 +203,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Destroy
      */
-    destroy() {
+    override destroy() {
         this.trail.clear();
         this.canvas.clear();
         this.arrow.clear();
@@ -219,7 +219,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Clear
      */
-    clear() {
+    override clear() {
         super.clear();
         this.updateWidth();
         this.drawHead();

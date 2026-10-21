@@ -62,7 +62,7 @@ export class BonusManager extends BaseBonusManager {
     /**
      * Remove bonus
      */
-    remove(bonus: MapBonus) {
+    override remove(bonus: MapBonus) {
         this.clearBonus(bonus);
 
         return super.remove(bonus);
@@ -71,7 +71,7 @@ export class BonusManager extends BaseBonusManager {
     /**
      * Clear
      */
-    clear() {
+    override clear() {
         this.canvas.clear();
         super.clear();
     }

@@ -11,7 +11,7 @@ export class MessagePlayer extends Message {
     /**
      * Message type
      */
-    type: string = 'player';
+    override type: string = 'player';
 
     constructor(client: any, content?: any, player?: any, creation?: any) {
         super(creation);

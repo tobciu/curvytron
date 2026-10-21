@@ -6,7 +6,7 @@ import { BaseBonus } from '../../../shared/model/BaseBonus.ts';
  * Map Bonus
  */
 export class MapBonus extends BaseBonus {
-    id: any;
+    override id: any;
     asset: any;
     animation: BounceIn;
     changed: boolean;

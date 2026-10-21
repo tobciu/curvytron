@@ -13,7 +13,7 @@ export class BonusStack extends BaseBonusStack {
     /**
      * Add bonus to the stack
      */
-    add(bonus: Bonus) {
+    override add(bonus: Bonus) {
         super.add(bonus);
         this.emit('change', { avatar: this.target, method: 'add', bonus });
     }
@@ -21,7 +21,7 @@ export class BonusStack extends BaseBonusStack {
     /**
      * Remove bonus from the stack
      */
-    remove(bonus: Bonus) {
+    override remove(bonus: Bonus) {
         super.remove(bonus);
         this.emit('change', { avatar: this.target, method: 'remove', bonus });
     }
@@ -29,7 +29,7 @@ export class BonusStack extends BaseBonusStack {
     /**
      * Apply the value to target's property
      */
-    apply(property: string, value: number) {
+    override apply(property: string, value: number) {
         switch (property) {
             case 'radius':
                 this.target.setRadius(BaseAvatar.defaults.radius * Math.pow(2, value));
@@ -61,7 +61,7 @@ export class BonusStack extends BaseBonusStack {
     /**
      * Get default property
      */
-    getDefaultProperty(property: string): number {
+    override getDefaultProperty(property: string): number {
         switch (property) {
             case 'printing':
                 return 1;
@@ -77,7 +77,7 @@ export class BonusStack extends BaseBonusStack {
     /**
      * Append
      */
-    append(properties: any, property: string, value: number) {
+    override append(properties: any, property: string, value: number) {
         switch (property) {
             case 'directionInLoop':
             case 'angularVelocityBase':

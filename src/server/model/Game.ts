@@ -71,7 +71,7 @@ export class Game extends BaseGame {
     /**
      * On frame: measure it for the metrics
      */
-    onFrame(step: number) {
+    override onFrame(step: number) {
         const start = performance.now();
 
         super.onFrame(step);
@@ -83,7 +83,7 @@ export class Game extends BaseGame {
     /**
      * Update
      */
-    update(step: number) {
+    override update(step: number) {
         const score = this.deaths.count();
         let avatar;
         let border;
@@ -144,7 +144,7 @@ export class Game extends BaseGame {
     /**
      * Remove a avatar from the game
      */
-    removeAvatar(avatar: Avatar) {
+    override removeAvatar(avatar: Avatar) {
         super.removeAvatar(avatar);
         this.emit('player:leave', { player: avatar.player });
         this.checkRoundEnd();
@@ -249,7 +249,7 @@ export class Game extends BaseGame {
     /**
      * Update size
      */
-    setSize() {
+    override setSize() {
         super.setSize();
 
         this.world.clear();
@@ -261,7 +261,7 @@ export class Game extends BaseGame {
     /**
      * Check end of round
      */
-    onRoundEnd() {
+    override onRoundEnd() {
         this.resolveScores();
         this.emit('round:end', { winner: this.roundWinner });
     }
@@ -269,7 +269,7 @@ export class Game extends BaseGame {
     /**
      * New round
      */
-    onRoundNew() {
+    override onRoundNew() {
         metrics.rounds.inc();
         this.emit('round:new', { game: this });
         super.onRoundNew();
@@ -300,7 +300,7 @@ export class Game extends BaseGame {
     /**
      * On start
      */
-    onStart() {
+    override onStart() {
         this.emit('game:start', { game: this });
 
         for (let avatar, i = this.avatars.items.length - 1; i >= 0; i--) {
@@ -316,7 +316,7 @@ export class Game extends BaseGame {
     /**
      * On stop
      */
-    onStop() {
+    override onStop() {
         this.emit('game:stop', { game: this });
 
         super.onStop();
@@ -336,7 +336,7 @@ export class Game extends BaseGame {
     /**
      * Set borderless
      */
-    setBorderless(borderless: boolean) {
+    override setBorderless(borderless: boolean) {
         if (this.borderless !== borderless) {
             super.setBorderless(borderless);
             this.emit('borderless', this.borderless);
@@ -346,7 +346,7 @@ export class Game extends BaseGame {
     /**
      * FIN DU GAME
      */
-    end(): boolean {
+    override end(): boolean {
         if (super.end()) {
             this.stats.destroy();
             this.avatars.clear();

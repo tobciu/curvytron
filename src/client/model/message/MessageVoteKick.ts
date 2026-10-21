@@ -9,12 +9,12 @@ export class MessageVoteKick extends Message {
     /**
      * Message type
      */
-    type: string = 'vote-kick';
+    override type: string = 'vote-kick';
 
     /**
      * Default icon
      */
-    icon: string = 'icon-megaphone';
+    override icon: string = 'icon-megaphone';
 
     constructor(target: any) {
         super();

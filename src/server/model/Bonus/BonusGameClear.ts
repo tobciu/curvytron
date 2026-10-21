@@ -8,7 +8,7 @@ export class BonusGameClear extends BonusGame {
     /**
      * Duration
      */
-    duration: number = 0;
+    override duration: number = 0;
 
     constructor(x: any, y: any) {
         super(x, y);
@@ -17,7 +17,7 @@ export class BonusGameClear extends BonusGame {
     /**
      * Get probability
      */
-    static getProbability(game: Game): number {
+    static override getProbability(game: Game): number {
         const ratio = 1 - game.getAliveAvatars().count() / game.getPresentAvatars().count();
 
         return Math.round(ratio * 10) / 10;
@@ -26,7 +26,7 @@ export class BonusGameClear extends BonusGame {
     /**
      * Apply on
      */
-    on() {
+    override on() {
         this.target.clearTrails();
     }
 }

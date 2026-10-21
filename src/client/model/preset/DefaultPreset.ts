@@ -8,12 +8,12 @@ export class DefaultPreset extends Preset {
     /**
      * Name
      */
-    name: string = 'All';
+    override name: string = 'All';
 
     /**
      * Bonuses
      */
-    bonuses: string[] = presetBonuses('all');
+    override bonuses: string[] = presetBonuses('all');
 
     constructor() {
         super();

@@ -9,7 +9,7 @@ export class BonusSelf extends Bonus {
     /**
      * Affect self
      */
-    affect: string = 'self';
+    override affect: string = 'self';
 
     constructor(x: any, y: any) {
         super(x, y);

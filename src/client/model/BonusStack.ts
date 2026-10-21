@@ -36,7 +36,7 @@ export class BonusStack extends BaseBonusStack<StackedBonus> {
     /**
      * Add bonus to the stack
      */
-    add(bonus: any) {
+    override add(bonus: any) {
         bonus.on('change', this.draw);
         bonus.setEndingTimeout(this.warning);
         this.bonuses.add(bonus);
@@ -46,7 +46,7 @@ export class BonusStack extends BaseBonusStack<StackedBonus> {
     /**
      * Remove bonus from the stack
      */
-    remove(bonus: any) {
+    override remove(bonus: any) {
         bonus.clear();
         bonus.off('change', this.draw);
         this.bonuses.remove(bonus);
@@ -56,7 +56,7 @@ export class BonusStack extends BaseBonusStack<StackedBonus> {
     /**
      * Clear
      */
-    clear() {
+    override clear() {
         for (let i = this.bonuses.items.length - 1; i >= 0; i--) {
             this.bonuses.items[i].clear();
         }

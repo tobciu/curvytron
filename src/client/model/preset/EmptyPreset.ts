@@ -7,7 +7,7 @@ export class EmptyPreset extends Preset {
     /**
      * Name
      */
-    name: string = 'No bonuses';
+    override name: string = 'No bonuses';
 
     constructor() {
         super();

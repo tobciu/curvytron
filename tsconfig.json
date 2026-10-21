@@ -15,7 +15,7 @@
         "types": ["vite/client", "node"],
         "allowImportingTsExtensions": true,
         "erasableSyntaxOnly": true,
-        "noImplicitOverride": false
+        "noImplicitOverride": true
     },
     "include": [
         "src/**/*.ts",

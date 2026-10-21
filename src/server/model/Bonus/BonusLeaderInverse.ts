@@ -9,7 +9,7 @@ export class BonusLeaderInverse extends BonusLeader {
     /**
      * Probability
      */
-    static probability: any = 0.8;
+    static override probability: any = 0.8;
 
     constructor(x: any, y: any) {
         super(x, y);
@@ -18,14 +18,14 @@ export class BonusLeaderInverse extends BonusLeader {
     /**
      * Get effects
      */
-    getEffects(avatar: Avatar): Array<[string, any]> {
+    override getEffects(avatar: Avatar): Array<[string, any]> {
         return [['inverse', 1]];
     }
 
     /**
      * Get probability
      */
-    static getProbability(game: Game): number {
+    static override getProbability(game: Game): number {
         return BonusLeader.probability * BonusLeaderInverse.probability;
     }
 }

@@ -9,12 +9,12 @@ export class BonusEnemyStraightAngle extends BonusEnemy {
     /**
      * Duration
      */
-    duration: number = 5000;
+    override duration: number = 5000;
 
     /**
      * Probability
      */
-    static probability: any = 0.6;
+    static override probability: any = 0.6;
 
     constructor(x: any, y: any) {
         super(x, y);
@@ -23,7 +23,7 @@ export class BonusEnemyStraightAngle extends BonusEnemy {
     /**
      * Get effects
      */
-    getEffects(avatar: Avatar): Array<[string, any]> {
+    override getEffects(avatar: Avatar): Array<[string, any]> {
         return [
             ['directionInLoop', false],
             ['angularVelocityBase', Math.PI / 2]
@@ -33,7 +33,7 @@ export class BonusEnemyStraightAngle extends BonusEnemy {
     /**
      * Get probability
      */
-    static getProbability(game: Game): number {
+    static override getProbability(game: Game): number {
         return BonusEnemyStraightAngle.probability;
     }
 }

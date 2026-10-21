@@ -44,7 +44,7 @@ export class Room extends BaseRoom {
     /**
      * Add player
      */
-    addPlayer(player: Player) {
+    override addPlayer(player: Player) {
         const result = super.addPlayer(player);
 
         if (result) {
@@ -57,7 +57,7 @@ export class Room extends BaseRoom {
     /**
      * Remove player
      */
-    removePlayer(player: Player) {
+    override removePlayer(player: Player) {
         const result = super.removePlayer(player);
 
         if (result) {

@@ -37,7 +37,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Update
      */
-    update(step: number) {
+    override update(step: number) {
         if (this.alive) {
             this.updateAngle(step);
             this.updatePosition(step);
@@ -62,7 +62,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set position
      */
-    setPosition(x: number, y: number) {
+    override setPosition(x: number, y: number) {
         super.setPosition(x, y);
 
         this.body.x = this.x;
@@ -75,7 +75,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set velocity
      */
-    setVelocity(velocity: any) {
+    override setVelocity(velocity: any) {
         if (this.velocity !== velocity) {
             super.setVelocity(velocity);
             this.emit('property', { avatar: this, property: 'velocity', value: this.velocity });
@@ -85,7 +85,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set angle
      */
-    setAngle(angle: any) {
+    override setAngle(angle: any) {
         if (this.angle !== angle) {
             super.setAngle(angle);
             this.emit('angle', this);
@@ -95,7 +95,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set angular velocity
      */
-    setAngularVelocity(angularVelocity: any) {
+    override setAngularVelocity(angularVelocity: any) {
         if (this.angularVelocity !== angularVelocity) {
             super.setAngularVelocity(angularVelocity);
         }
@@ -104,7 +104,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set angular velocity
      */
-    setRadius(radius: any) {
+    override setRadius(radius: any) {
         if (this.radius !== radius) {
             super.setRadius(radius);
             this.body.radius = this.radius;
@@ -115,7 +115,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set invincible
      */
-    setInvincible(invincible: boolean) {
+    override setInvincible(invincible: boolean) {
         super.setInvincible(invincible);
         this.emit('property', { avatar: this, property: 'invincible', value: this.invincible });
     }
@@ -123,7 +123,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set ghost
      */
-    setGhost(ghost: boolean) {
+    override setGhost(ghost: boolean) {
         super.setGhost(ghost);
         this.emit('property', { avatar: this, property: 'ghost', value: this.ghost });
     }
@@ -131,7 +131,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set inverse
      */
-    setInverse(inverse: boolean) {
+    override setInverse(inverse: boolean) {
         super.setInverse(inverse);
         this.emit('property', { avatar: this, property: 'inverse', value: this.inverse });
     }
@@ -139,7 +139,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set color
      */
-    setColor(color: string) {
+    override setColor(color: string) {
         this.color = color;
         this.emit('property', { avatar: this, property: 'color', value: this.color });
     }
@@ -147,7 +147,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set borderColor
      */
-    setBorderColor(borderColor: string) {
+    override setBorderColor(borderColor: string) {
         this.borderColor = borderColor;
         this.emit('property', { avatar: this, property: 'borderColor', value: this.borderColor });
     }
@@ -155,7 +155,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Add point
      */
-    addPoint(x: number, y: number, important?: boolean) {
+    override addPoint(x: number, y: number, important?: boolean) {
         super.addPoint(x, y);
         this.emit('point', { avatar: this, x, y, important });
     }
@@ -163,7 +163,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set printing
      */
-    setPrinting(printing: boolean) {
+    override setPrinting(printing: boolean) {
         super.setPrinting(printing);
         this.emit('property', { avatar: this, property: 'printing', value: this.printing });
     }
@@ -171,7 +171,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Die
      */
-    die(body?: any) {
+    override die(body?: any) {
         super.die(body);
         this.printManager.stop();
         this.emit('die', {
@@ -184,7 +184,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set score
      */
-    setScore(score: number) {
+    override setScore(score: number) {
         super.setScore(score);
         this.emit('score', this);
     }
@@ -192,7 +192,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Set round score
      */
-    setRoundScore(score: number) {
+    override setRoundScore(score: number) {
         super.setRoundScore(score);
         this.emit('score:round', this);
     }
@@ -200,7 +200,7 @@ export class Avatar extends BaseAvatar {
     /**
      * Clear
      */
-    clear() {
+    override clear() {
         super.clear();
         this.printManager.stop();
         this.bodyCount = 0;

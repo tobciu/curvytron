@@ -50,7 +50,7 @@ export class Trail extends BaseTrail {
     /**
      * Add point
      */
-    addPoint(x: number, y: number) {
+    override addPoint(x: number, y: number) {
         if (
             this.lastX !== null &&
             (Math.abs(this.lastX - x) > this.tolerance || Math.abs((this.lastY as number) - y) > this.tolerance)
@@ -66,7 +66,7 @@ export class Trail extends BaseTrail {
     /**
      * Clear
      */
-    clear() {
+    override clear() {
         this.clearAsked = true;
     }
 }
