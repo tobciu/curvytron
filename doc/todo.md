@@ -14,7 +14,7 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
 - [ ] Statistics: skill measures (not urgent)
     - [x] Near misses: one more look in the islands of the world per avatar and frame (`GameStats.testNearMiss`), counted once per approach to a foreign trail closer than half an avatar radius; award "close call"
     - [x] Squeezes: foreign trails on both sides of the avatar (looks at the sides with two probes), award "Needle's eye"
-    - [x] Saves: trails an invincible avatar went through, award "Untouchable"
+    - [x] Nothing counts while an avatar is invincible (no farming with the crown bonus); there is no statistic for the trails it goes through
     - [x] Result of every round (winner, duration) and bars in the table
     - [ ] Values per round (who did what in a round), shown on click on a player
 - [x] **Operational metrics**: `/metrics` endpoint in the Prometheus format (see `doc/monitoring.md`)

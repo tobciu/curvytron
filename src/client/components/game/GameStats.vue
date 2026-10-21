@@ -19,10 +19,6 @@ const awardInfo: Record<string, { label: string; description: string }> = {
         label: "Needle's eye",
         description: 'Squeezed the most often between trails of other players that are close to each other.'
     },
-    untouchable: {
-        label: 'Untouchable',
-        description: 'Went the most often through the trail of another player while invincible.'
-    },
     hunter: { label: 'Hunter', description: 'Killed the most players on their trail.' },
     marathon: { label: 'Marathon driver', description: 'Drove the longest distance.' },
     survivor: { label: 'Survivor', description: 'Stayed alive the longest in a round.' }
@@ -56,11 +52,6 @@ const columns = [
         description:
             'Times the player passed between trails of other players that are close to each other, like a gap.',
         value: (player: PlayerStats) => player.squeezes
-    },
-    {
-        label: 'Saved',
-        description: 'Times the player went through the trail of another player while invincible.',
-        value: (player: PlayerStats) => player.invincibleSaves
     },
     {
         label: 'Distance',

@@ -19,7 +19,6 @@ const awardFields: Record<string, keyof PlayerStats> = {
     clumsy: 'selfDeaths',
     closeCall: 'nearMisses',
     needle: 'squeezes',
-    untouchable: 'invincibleSaves',
     hunter: 'kills',
     marathon: 'distance',
     survivor: 'longestLife'
@@ -41,7 +40,6 @@ export class GameStats {
     near: Set<number> = new Set();
     /** Avatars that are between two trails right now, or going through a trail while invincible */
     squeezing: Set<number> = new Set();
-    saved: Set<number> = new Set();
     /** Looks at the left and at the right of an avatar */
     probe: Body = new Body(0, 0, 0);
 
@@ -74,7 +72,6 @@ export class GameStats {
                 kills: 0,
                 nearMisses: 0,
                 squeezes: 0,
-                invincibleSaves: 0,
                 distance: 0,
                 trailLength: 0,
                 longestLife: 0
@@ -111,7 +108,6 @@ export class GameStats {
         this.positions.clear();
         this.near.clear();
         this.squeezing.clear();
-        this.saved.clear();
 
         for (const avatar of this.game.avatars.items) {
             this.positions.set(avatar.id, [avatar.x, avatar.y]);
@@ -140,8 +136,8 @@ export class GameStats {
 
     /**
      * What is around the avatar? Looks at the world three times at most, once per frame for the avatars that are alive:
-     * near misses (a trail of somebody else is close), squeezes (trails of others on both sides) and, for the invincible
-     * ones, the trails they go through. Every approach is counted once.
+     * near misses (a trail of somebody else is close) and squeezes (trails of others on both sides), not for the invincible
+     * avatars. Every approach is counted once.
      */
     testSurroundings(avatar: Avatar) {
         const stats = this.players.get(avatar.id);
@@ -153,15 +149,13 @@ export class GameStats {
 
         const radius = body.radius;
 
+        // Nothing counts while the avatar is invincible: it would be too easy, and it takes no courage
         if (avatar.invincible) {
             this.near.delete(avatar.id);
             this.squeezing.delete(avatar.id);
-            this.count(this.saved, stats, 'invincibleSaves', this.isForeign(this.game.world.getBody(body), avatar));
 
             return;
         }
-
-        this.saved.delete(avatar.id);
 
         // The avatar did not touch anything in this frame: anything it touches with a larger body was a near miss
         body.radius = radius * (1 + this.nearMargin);
@@ -206,7 +200,7 @@ export class GameStats {
     }
 
     /** Count a field when the condition starts to be true: the set remembers who is in that situation */
-    count(set: Set<number>, stats: PlayerStats, field: 'nearMisses' | 'squeezes' | 'invincibleSaves', now: boolean) {
+    count(set: Set<number>, stats: PlayerStats, field: 'nearMisses' | 'squeezes', now: boolean) {
         if (!now) {
             set.delete(stats.id);
         } else if (!set.has(stats.id)) {

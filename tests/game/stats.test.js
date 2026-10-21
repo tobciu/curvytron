@@ -236,7 +236,7 @@ describe('near misses', () => {
     });
 });
 
-describe('squeezes, saves and rounds', () => {
+describe('squeezes and rounds', () => {
     beforeEach(() => {
         startRound();
         place(bob, 10, 10, 1);
@@ -280,22 +280,25 @@ describe('squeezes, saves and rounds', () => {
         expect(stats(alice).squeezes).toBe(0);
     });
 
-    it('counts the trails an invincible avatar goes through, once per trail it crosses', () => {
+    it('counts nothing while the avatar is invincible: it would be too easy', () => {
+        corridor(1.4);
         game.world.addBody(new AvatarBody(50, 50, bob));
         alice.setInvincible(true);
-        place(alice, 50, 50, 0);
+        place(alice, 60, 50, 0);
         game.update(16);
+        place(alice, 50, 50, 0);
         game.update(16);
 
         expect(alice.alive).toBe(true);
-        expect(stats(alice).invincibleSaves).toBe(1);
+        expect(stats(alice).nearMisses).toBe(0);
+        expect(stats(alice).squeezes).toBe(0);
 
-        place(alice, 70, 50, 0);
-        game.update(16);
-        place(alice, 50, 50, 0);
+        // The next approach after the end of the bonus counts again
+        alice.setInvincible(false);
+        place(alice, 60, 50, 0);
         game.update(16);
 
-        expect(stats(alice).invincibleSaves).toBe(2);
+        expect(stats(alice).squeezes).toBe(1);
     });
 
     it('keeps the result of every round', () => {

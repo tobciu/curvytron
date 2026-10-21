@@ -21,8 +21,6 @@ export interface PlayerStats {
     nearMisses: number;
     /** Times the avatar passed between two trails of other players that are close to each other (a gap) */
     squeezes: number;
-    /** Times the avatar went through a trail of another player while invincible */
-    invincibleSaves: number;
     distance: number;
     /** Distance driven while leaving a trail */
     trailLength: number;
