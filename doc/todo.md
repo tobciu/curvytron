@@ -29,6 +29,16 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
 - [ ] Investigate the small stutter seen with 5 players + 1 spectator (check client FPS / ping in the metrics footer when it happens)
 - [ ] Look into the flaky e2e test `presets and individual bonuses` (fails now and then in a full run, passes alone)
 
+- [ ] **Quality**
+    - [x] Smoke test that starts the server with plain Node (`tests/launcher.test.js`): the other server tests run through Vite, which is more forgiving than Node about imports
+    - [ ] Run the Docker image in CI (build, start, `/metrics` and the home page answer), so that the Dockerfile is tested too
+    - [ ] Test the launcher with the Inspector enabled (the path of the dynamic import is only checked by reading the code)
+    - [ ] Coverage report in CI (`vitest --coverage`), look at the holes: controllers, kick votes, flood filter, trackers
+    - [ ] Protocol tests with several `TestClient`s: a whole game over the socket, a client that leaves in the middle, garbage messages
+    - [ ] Fuzz the socket input (wrong types, missing fields): the handlers read `data.name` and similar without checks
+    - [ ] Run the visual tests in CI without `continue-on-error` (needs stable fonts / screenshots in the CI image)
+    - [ ] Dependabot or Renovate for the dependencies, `npm audit` in CI
+
 ## Later
 
 - [ ] **SQLite persistence** of the game statistics (leaderboard, history)
