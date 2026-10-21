@@ -29,7 +29,7 @@ if (templates.length !== spriteTemplates) {
 export function spriteImages(): string[] {
     const extras = readdirSync(imagesPath)
         .filter((name) => name.startsWith('_') && name.endsWith('.png'))
-        .toSorted();
+        .toSorted((a, b) => a.localeCompare(b));
 
     return [...bonusDefinitions.map(bonusImage), ...extras];
 }

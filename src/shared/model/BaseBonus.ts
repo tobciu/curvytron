@@ -43,7 +43,9 @@ export class BaseBonus extends EventEmitter {
     /**
      * Clear
      */
-    clear() {}
+    clear() {
+        // Overridden by bonuses that schedule cleanup
+    }
 
     /**
      * Effects on the target: pairs of property and value
@@ -55,7 +57,9 @@ export class BaseBonus extends EventEmitter {
     /**
      * Apply to target(s)
      */
-    applyTo(avatar: BaseAvatar, game: BaseGame): void {}
+    applyTo(avatar: BaseAvatar, game: BaseGame): void {
+        // Overridden by bonuses with immediate effects
+    }
 
     /**
      * Get probability

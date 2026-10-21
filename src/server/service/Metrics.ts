@@ -7,20 +7,30 @@
 
 type Labels = Record<string, string>;
 
-/** Escape a label value as the text format requires */
+/** Escape a label value as the text format requires: JSON escapes exactly the characters Prometheus does */
 function escapeLabel(value: string): string {
-    return value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/"/g, '\\"');
+    return JSON.stringify(value).slice(1, -1);
 }
 
 /** `{a="1",b="2"}` or nothing, in a stable order */
 function formatLabels(labels: Labels): string {
-    const keys = Object.keys(labels).sort();
+    const keys = Object.keys(labels).sort((a, b) => a.localeCompare(b));
 
-    return keys.length ? `{${keys.map((key) => `${key}="${escapeLabel(labels[key])}"`).join(',')}}` : '';
+    if (!keys.length) {
+        return '';
+    }
+
+    const pairs = keys.map((key) => `${key}="${escapeLabel(labels[key])}"`);
+
+    return `{${pairs.join(',')}}`;
 }
 
 function formatNumber(value: number): string {
-    return Number.isFinite(value) ? String(value) : value > 0 ? '+Inf' : '-Inf';
+    if (Number.isFinite(value)) {
+        return String(value);
+    }
+
+    return value > 0 ? '+Inf' : '-Inf';
 }
 
 abstract class Metric {

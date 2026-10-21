@@ -9,7 +9,7 @@ export class OptionResolver {
     required: string[];
 
     constructor(allowExtra?: boolean) {
-        this.allowExtra = typeof allowExtra !== 'undefined' && allowExtra;
+        this.allowExtra = allowExtra !== undefined && allowExtra;
         this.defaults = {};
         this.types = {};
         this.optional = [];
@@ -80,8 +80,8 @@ export class OptionResolver {
 
         for (let i = this.required.length - 1; i >= 0; i--) {
             name = this.required[i];
-            if (typeof options[name] === 'undefined') {
-                throw `Option "${name}" is required.`;
+            if (options[name] === undefined) {
+                throw new Error(`Option "${name}" is required.`);
             }
         }
 
@@ -95,12 +95,12 @@ export class OptionResolver {
         let value = null;
 
         if (!this.optionExists(name)) {
-            throw `Unkown option "${name}".`;
+            throw new Error(`Unkown option "${name}".`);
         }
 
-        if (typeof options[name] !== 'undefined') {
+        if (options[name] !== undefined) {
             value = options[name];
-        } else if (typeof this.defaults[name] !== 'undefined') {
+        } else if (this.defaults[name] !== undefined) {
             value = this.defaults[name];
         }
 
@@ -111,7 +111,7 @@ export class OptionResolver {
      * Is type valid
      */
     checkType(name: string, value?: any): any {
-        const expectedType = typeof this.types[name] !== 'undefined' ? this.types[name] : false;
+        const expectedType = this.types[name] ?? false;
         let givenType = typeof value;
 
         // An option without value (and without default) stays empty
@@ -131,7 +131,9 @@ export class OptionResolver {
             givenType = typeof value;
 
             if (expectedType !== givenType) {
-                throw `Wrong type for option "${name}". Expected ${this.types[name]} but got ${typeof value}`;
+                throw new Error(
+                    `Wrong type for option "${name}". Expected ${this.types[name]} but got ${typeof value}`
+                );
             }
         }
 
@@ -146,11 +148,7 @@ export class OptionResolver {
             return true;
         }
 
-        return (
-            typeof this.defaults[name] !== 'undefined' ||
-            this.optional.indexOf(name) >= 0 ||
-            this.required.indexOf(name) >= 0
-        );
+        return this.defaults[name] !== undefined || this.optional.includes(name) || this.required.includes(name);
     }
 
     /**
@@ -162,7 +160,7 @@ export class OptionResolver {
         for (let i = values.length - 1; i >= 0; i--) {
             value = values[i];
 
-            if (array.indexOf(value) < 0) {
+            if (!array.includes(value)) {
                 array.push(value);
             }
         }

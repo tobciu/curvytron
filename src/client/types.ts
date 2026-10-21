@@ -1,12 +1,11 @@
 /**
  * Types the Vue UI relies on: the classes of the game model, plus a few shapes that are not classes.
  */
-import type { Collection } from '../shared/Collection.ts';
-import type { Preset } from '../shared/model/Preset.ts';
-import type { Client } from './model/Client.ts';
 import type { Message } from './model/message/Message.ts';
 
-export type { Collection, Preset, Client };
+export type { Collection } from '../shared/Collection.ts';
+export type { Preset } from '../shared/model/Preset.ts';
+export type { Client } from './model/Client.ts';
 export type { Avatar } from './model/Avatar.ts';
 export type { Game } from './model/Game.ts';
 export type { Player } from './model/Player.ts';

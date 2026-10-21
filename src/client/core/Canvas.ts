@@ -12,15 +12,15 @@ export class Canvas {
     twoPi: number = 2 * Math.PI;
 
     constructor(width?: any, height?: any, element?: any) {
-        this.element = typeof element !== 'undefined' ? element : document.createElement('canvas');
+        this.element = element ?? document.createElement('canvas');
         this.context = this.element.getContext('2d');
         this.scale = 1;
 
-        if (typeof width !== 'undefined' && width) {
+        if (width !== undefined && width) {
             this.setWidth(width);
         }
 
-        if (typeof height !== 'undefined' && height) {
+        if (height !== undefined && height) {
             this.setHeight(height);
         }
     }
@@ -63,7 +63,7 @@ export class Canvas {
         this.element.width = width;
         this.element.height = height;
 
-        if (typeof scale !== 'undefined') {
+        if (scale !== undefined) {
             this.setScale(scale);
         }
 
@@ -261,15 +261,15 @@ export class Canvas {
      * Round
      */
     round(value: number): number {
-        return (0.5 + value) | 0;
+        return Math.trunc(0.5 + value);
     }
 
     /**
      * Round float
      */
     roundFloat(value: number, precision?: number): number {
-        const coef = Math.pow(10, typeof precision !== 'undefined' ? precision : 2);
+        const coef = Math.pow(10, precision ?? 2);
 
-        return ((0.5 + value * coef) | 0) / coef;
+        return Math.trunc(0.5 + value * coef) / coef;
     }
 }

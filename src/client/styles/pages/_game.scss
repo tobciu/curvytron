@@ -659,6 +659,14 @@
                             font-size: 18px;
                             font-weight: 300;
 
+                            button {
+                                padding: 0;
+                                border: 0;
+                                background: none;
+                                font: inherit;
+                                color: inherit;
+                            }
+
                             .label {
                                 display: block;
                                 font-size: 13px;

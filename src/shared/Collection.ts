@@ -20,8 +20,8 @@ export class Collection<T = any> {
      * @param index Give an id to the elements that have none
      */
     constructor(items?: T[] | null, key?: string | null, index?: boolean) {
-        this.key = key ? key : 'id';
-        this.index = typeof index !== 'undefined' && index;
+        this.key = key || 'id';
+        this.index = index !== undefined && index;
 
         if (items) {
             for (let i = items.length - 1; i >= 0; i--) {
@@ -120,7 +120,7 @@ export class Collection<T = any> {
         if (this.index) {
             const indexed = element as Indexed;
 
-            if (typeof indexed[this.key] !== 'undefined' && indexed[this.key]) {
+            if (indexed[this.key]) {
                 if (indexed[this.key] > this.id) {
                     this.id = indexed[this.key];
                 }
@@ -165,7 +165,7 @@ export class Collection<T = any> {
      * Get an element by its index
      */
     getByIndex(index: number): T | null {
-        return typeof this.items[index] !== 'undefined' ? this.items[index] : null;
+        return this.items[index] ?? null;
     }
 
     /**
@@ -179,7 +179,7 @@ export class Collection<T = any> {
      * Test if the given id is in the collection
      */
     indexExists(id: any): boolean {
-        return this.ids.indexOf(id) >= 0;
+        return this.ids.includes(id);
     }
 
     /**
@@ -256,7 +256,7 @@ export class Collection<T = any> {
      * Get last item in collection
      */
     getLast(): T | null {
-        return this.items.length > 0 ? this.items[this.items.length - 1] : null;
+        return this.items.at(-1) ?? null;
     }
 
     /**

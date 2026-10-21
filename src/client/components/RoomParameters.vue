@@ -143,8 +143,8 @@ function setVariable(variable: string, event: Event): void {
 
             <div class="public-room">
                 <h2>Your room is</h2>
-                <label id="is-open" class="toggler" :class="{ active: config.open === true }" @click="setOpen(true)"
-                    >Public</label
+                <span id="is-open" class="toggler" :class="{ active: config.open === true }" @click="setOpen(true)"
+                    >Public</span
                 >
                 <div class="toggle" :class="{ active: config.open === false }">
                     <input
@@ -157,12 +157,8 @@ function setVariable(variable: string, event: Event): void {
                     />
                     <b class="b switch"></b>
                 </div>
-                <label
-                    id="is-private"
-                    class="toggler"
-                    :class="{ active: config.open === false }"
-                    @click="setOpen(false)"
-                    >Private</label
+                <span id="is-private" class="toggler" :class="{ active: config.open === false }" @click="setOpen(false)"
+                    >Private</span
                 >
                 <div v-if="!config.open" class="password-container">
                     <label for="password">Password:</label>
@@ -198,7 +194,7 @@ function setVariable(variable: string, event: Event): void {
                 </div>
             </div>
 
-            <label>Preset:</label>
+            <span class="form-caption">Preset:</span>
             <div class="bonus-selection">
                 <span
                     v-for="(preset, index) in config.presets"
@@ -219,7 +215,7 @@ function setVariable(variable: string, event: Event): void {
                 </span>
             </div>
 
-            <label>Include:</label>
+            <span class="form-caption">Include:</span>
             <div class="bonus-selection selected">
                 <span
                     v-for="bonus in included"
@@ -231,7 +227,7 @@ function setVariable(variable: string, event: Event): void {
                 ></span>
             </div>
 
-            <label>Exclude:</label>
+            <span class="form-caption">Exclude:</span>
             <div class="bonus-selection available">
                 <span
                     v-for="bonus in excluded"

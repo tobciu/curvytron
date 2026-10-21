@@ -35,7 +35,7 @@ export class SpriteAsset {
 
         this.createImages();
 
-        if (typeof load !== 'undefined' && load) {
+        if (load !== undefined && load) {
             this.load();
         }
     }

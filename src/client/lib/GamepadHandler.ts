@@ -48,12 +48,31 @@ export class GamepadHandler extends EventEmitter {
      * Resolve options
      */
     resolveOptions(source?: any) {
-        const customStick = typeof source.stick !== 'undefined',
-            customButton = typeof source.button !== 'undefined',
-            options = {
-                stick: GamepadHandler.optionResolver.resolve(customStick ? source.stick : customButton ? {} : source),
-                button: GamepadHandler.optionResolver.resolve(customButton ? source.button : customStick ? {} : source)
-            };
+        const customStick = source.stick !== undefined,
+            customButton = source.button !== undefined;
+        let stickSource;
+        let buttonSource;
+
+        if (customStick) {
+            stickSource = source.stick;
+        } else if (customButton) {
+            stickSource = {};
+        } else {
+            stickSource = source;
+        }
+
+        if (customButton) {
+            buttonSource = source.button;
+        } else if (customStick) {
+            buttonSource = {};
+        } else {
+            buttonSource = source;
+        }
+
+        const options = {
+            stick: GamepadHandler.optionResolver.resolve(stickSource),
+            button: GamepadHandler.optionResolver.resolve(buttonSource)
+        };
 
         options.stick.deadZone = Math.max(Math.min(options.stick.deadZone, 1), 0);
         options.button.deadZone = Math.max(Math.min(options.button.deadZone, 1), 0);
@@ -92,7 +111,7 @@ export class GamepadHandler extends EventEmitter {
         }
 
         if (!options.analog) {
-            value = value > 0 ? 1 : value < 0 ? -1 : 0;
+            value = Math.sign(value);
         } else if (options.precision) {
             value = Math.round(value * options.precision) / options.precision;
         }

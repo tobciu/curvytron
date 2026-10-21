@@ -69,9 +69,7 @@ export class BonusLeader extends Bonus {
                 })
             )
             .getFirst();
-        if (leader === null) {
-            return 0;
-        } else if (leader.score === 0) {
+        if (leader === null || leader.score === 0) {
             return 0;
         }
         return BonusLeader.probability;

@@ -31,7 +31,7 @@ export class BounceIn {
      * Start animation
      */
     start(): void {
-        this.created = new Date().getTime();
+        this.created = Date.now();
         this.timeout = setTimeout(this.end, this.duration);
     }
 
@@ -46,7 +46,7 @@ export class BounceIn {
      * Get age in millisecond
      */
     getAge(): number {
-        return new Date().getTime() - this.created;
+        return Date.now() - this.created;
     }
 
     /**
@@ -61,8 +61,9 @@ export class BounceIn {
      * Ease out back
      */
     easeOutBack(time: number, begin: number, target: number, duration: number, factor: number): number {
-        const ts = (time /= duration) * time,
-            tc = ts * time;
-        return begin + target * (factor * tc * ts + 4 * tc + -9 * ts + 6 * time);
+        const t = time / duration,
+            ts = t * t,
+            tc = ts * t;
+        return begin + target * (factor * tc * ts + 4 * tc + -9 * ts + 6 * t);
     }
 }

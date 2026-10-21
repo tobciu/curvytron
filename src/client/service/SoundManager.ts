@@ -35,7 +35,7 @@ export class SoundManager {
 
         this.toggle = this.toggle.bind(this);
 
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        const AudioContext = globalThis.AudioContext || (globalThis as any).webkitAudioContext;
 
         if (AudioContext) {
             this.context = new AudioContext();

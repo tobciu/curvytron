@@ -30,7 +30,7 @@ export class MessageRoomMaster extends Message {
     getTarget() {
         const player = this.getPlayer();
 
-        return player ? player : this.target;
+        return player ?? this.target;
     }
 
     /**

@@ -2,13 +2,12 @@ import { SocketGroup } from '../core/SocketGroup.ts';
 import { Collection } from '../../shared/Collection.ts';
 import { Compressor } from '../../shared/service/Compressor.ts';
 import { isShape, rules } from '../core/validate.ts';
-import type { ServerMessage } from '../../shared/protocol.ts';
+import type { ServerMessage, ClientEvents } from '../../shared/protocol.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
 import type { Avatar } from '../model/Avatar.ts';
 import type { Bonus } from '../model/Bonus/Bonus.ts';
 import type { Game } from '../model/Game.ts';
 import type { Player } from '../model/Player.ts';
-import type { ClientEvents } from '../../shared/protocol.ts';
 
 /**
  * Game Controller
@@ -27,8 +26,6 @@ export class GameController {
     waitingTime: number = 30000;
 
     constructor(game: Game) {
-        const controller = this;
-
         this.game = game;
         this.clients = new Collection();
         this.socketGroup = new SocketGroup(this.clients);
@@ -55,7 +52,16 @@ export class GameController {
         this.onEnd = this.onEnd.bind(this);
         this.stopWaiting = this.stopWaiting.bind(this);
 
-        this.callbacks = {
+        this.callbacks = this.createCallbacks(this);
+
+        this.loadGame();
+    }
+
+    /**
+     * Socket event handlers: the emitter calls them with the client as this, the controller comes in as a parameter
+     */
+    createCallbacks(controller: GameController): GameController['callbacks'] {
+        return {
             onReady: function () {
                 controller.onReady(this);
             },
@@ -63,8 +69,6 @@ export class GameController {
                 controller.onMove(this, data);
             }
         };
-
-        this.loadGame();
     }
 
     /**
@@ -212,7 +216,7 @@ export class GameController {
                 'spectate',
                 {
                     inRound: this.game.inRound,
-                    rendered: this.game.rendered ? true : false,
+                    rendered: !!this.game.rendered,
                     maxScore: this.game.maxScore
                 }
             ]
@@ -329,7 +333,7 @@ export class GameController {
 
         const player = client.players.getById(data.avatar);
 
-        if (player && player.avatar) {
+        if (player?.avatar) {
             player.avatar.updateAngularVelocity(data.move);
         }
     }

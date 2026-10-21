@@ -20,7 +20,7 @@ const { maxLength: nameMaxLength, colorMaxLength } = BasePlayer as unknown as { 
 
 const name = String(route.params.name);
 const password = typeof route.query.password === 'string' ? route.query.password : null;
-const hasTouch = typeof window.ontouchstart !== 'undefined';
+const hasTouch = window.ontouchstart !== undefined;
 
 /** The joined room (a plain model: re-rendered with `bump`) */
 const room = shallowRef<Room | null>(null);

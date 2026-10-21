@@ -101,38 +101,14 @@ export class Game extends BaseGame {
      */
     override update(step: number) {
         const score = this.deaths.count();
-        let avatar;
-        let border;
-        let i;
-        let position;
-        let killer;
 
         this.deathInFrame = false;
 
-        for (i = this.avatars.items.length - 1; i >= 0; i--) {
-            avatar = this.avatars.items[i];
+        for (let i = this.avatars.items.length - 1; i >= 0; i--) {
+            const avatar = this.avatars.items[i];
 
             if (avatar.alive) {
-                avatar.update(step);
-
-                border = this.world.getBoundIntersect(avatar.body, this.borderless || avatar.ghost ? 0 : avatar.radius);
-
-                if (border) {
-                    if (this.borderless || avatar.ghost) {
-                        position = this.world.getOposite(border[0], border[1]);
-                        avatar.setPosition(position[0], position[1]);
-                    } else {
-                        this.kill(avatar, null, score);
-                    }
-                } else {
-                    if (!avatar.invincible) {
-                        killer = this.world.getBody(avatar.body);
-
-                        if (killer) {
-                            this.kill(avatar, killer, score);
-                        }
-                    }
-                }
+                this.updateAvatar(avatar, step, score);
 
                 if (avatar.alive) {
                     avatar.printManager.test();
@@ -144,6 +120,30 @@ export class Game extends BaseGame {
 
         if (this.deathInFrame) {
             this.checkRoundEnd();
+        }
+    }
+
+    /**
+     * Move an avatar and kill it when it hits the border or another body
+     */
+    updateAvatar(avatar: Avatar, step: number, score: number) {
+        avatar.update(step);
+
+        const border = this.world.getBoundIntersect(avatar.body, this.borderless || avatar.ghost ? 0 : avatar.radius);
+
+        if (border) {
+            if (this.borderless || avatar.ghost) {
+                const position = this.world.getOposite(border[0], border[1]);
+                avatar.setPosition(position[0], position[1]);
+            } else {
+                this.kill(avatar, null, score);
+            }
+        } else if (!avatar.invincible) {
+            const killer = this.world.getBody(avatar.body);
+
+            if (killer) {
+                this.kill(avatar, killer, score);
+            }
         }
     }
 
@@ -218,11 +218,11 @@ export class Game extends BaseGame {
 
         for (let i = this.avatars.items.length - 1; i >= 0; i--) {
             if (this.avatars.items[i].alive) {
-                if (!alive) {
-                    alive = true;
-                } else {
+                if (alive) {
                     return;
                 }
+
+                alive = true;
             }
         }
 

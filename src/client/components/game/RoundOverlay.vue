@@ -68,7 +68,7 @@ useEvents(client, ['round:end'], () => {
 
     notifier.notifyInactive(roundWinner ? `${roundWinner.name} won round!` : 'Round end!');
 
-    winner.value = roundWinner ? roundWinner : false;
+    winner.value = roundWinner ?? false;
     end.value = true;
     triggerRef(game);
 });
@@ -115,6 +115,13 @@ onBeforeUnmount(clearWarmup);
                         Back to the room
                     </button>
                     <table class="table table-hover recap">
+                        <thead>
+                            <tr>
+                                <th class="rank"></th>
+                                <th class="name">Player</th>
+                                <th class="points">Score</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             <tr v-for="(avatar, index) in avatars" :key="avatar.id">
                                 <td class="rank">{{ index + 1 }}</td>

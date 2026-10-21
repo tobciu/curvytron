@@ -37,13 +37,9 @@ export class PlayerControl extends EventEmitter {
      * Create mapper
      */
     addMapper(id: string, mapper: any) {
-        const control = this;
-
         mapper.id = id;
 
-        mapper.on('change', function () {
-            return control.setMapper(mapper);
-        });
+        mapper.on('change', () => this.setMapper(mapper));
         mapper.on('listening:stop', this.stop);
 
         this.mappers.add(mapper);

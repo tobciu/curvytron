@@ -44,8 +44,8 @@ export class Game extends BaseGame {
         this.onResize = this.onResize.bind(this);
         this.onDie = this.onDie.bind(this);
 
-        window.addEventListener('error', this.stop);
-        window.addEventListener('resize', this.onResize);
+        globalThis.addEventListener('error', this.stop);
+        globalThis.addEventListener('resize', this.onResize);
 
         for (let i = this.avatars.items.length - 1; i >= 0; i--) {
             this.avatars.items[i].on('die', this.onDie);
@@ -84,14 +84,14 @@ export class Game extends BaseGame {
      * Get new frame
      */
     override newFrame() {
-        this.frame = window.requestAnimationFrame(this.loop);
+        this.frame = globalThis.requestAnimationFrame(this.loop);
     }
 
     /**
      * Clear frame
      */
     override clearFrame() {
-        window.cancelAnimationFrame(this.frame as number);
+        globalThis.cancelAnimationFrame(this.frame as number);
         this.frame = null;
     }
 
@@ -152,8 +152,8 @@ export class Game extends BaseGame {
         const ended = super.end();
 
         if (ended) {
-            window.removeEventListener('error', this.stop);
-            window.removeEventListener('resize', this.onResize);
+            globalThis.removeEventListener('error', this.stop);
+            globalThis.removeEventListener('resize', this.onResize);
         }
 
         return ended;
@@ -182,6 +182,17 @@ export class Game extends BaseGame {
      * Draw
      */
     draw(step: number = 0) {
+        this.drawAnimations();
+        this.clearAvatars();
+        this.drawAvatars(step);
+
+        this.bonusManager.draw();
+    }
+
+    /**
+     * Draw animations and remove the finished ones
+     */
+    drawAnimations() {
         for (let animation, a = this.animations.length - 1; a >= 0; a--) {
             animation = this.animations[a];
             animation.draw();
@@ -189,7 +200,12 @@ export class Game extends BaseGame {
                 this.animations.splice(a, 1);
             }
         }
+    }
 
+    /**
+     * Clear the zone of the avatars that moved or died
+     */
+    clearAvatars() {
         for (let i = this.avatars.items.length - 1; i >= 0; i--) {
             const avatar = this.avatars.items[i];
             if (avatar.present && (avatar.alive || avatar.changed)) {
@@ -197,7 +213,12 @@ export class Game extends BaseGame {
                 this.clearBonusStack(avatar);
             }
         }
+    }
 
+    /**
+     * Update and draw the avatars
+     */
+    drawAvatars(step: number) {
         for (let i = this.avatars.items.length - 1; i >= 0; i--) {
             const avatar = this.avatars.items[i];
             if (avatar.present && (avatar.alive || avatar.changed)) {
@@ -214,8 +235,6 @@ export class Game extends BaseGame {
                 }
             }
         }
-
-        this.bonusManager.draw();
     }
 
     /**
@@ -301,7 +320,7 @@ export class Game extends BaseGame {
      * On resize
      */
     onResize() {
-        const w = window,
+        const w = globalThis,
             d = document,
             e = d.documentElement,
             g = document.body,
@@ -324,7 +343,7 @@ export class Game extends BaseGame {
 
             avatar.setScale(scale);
 
-            if (typeof avatar.input !== 'undefined') {
+            if (avatar.input !== undefined) {
                 avatar.input.setWidth(x);
             }
         }

@@ -121,7 +121,7 @@ export abstract class BaseAvatar extends EventEmitter {
      * Update angular velocity
      */
     updateAngularVelocity(factor?: number) {
-        if (typeof factor === 'undefined') {
+        if (factor === undefined) {
             if (this.angularVelocity === 0) {
                 return;
             }
@@ -151,7 +151,9 @@ export abstract class BaseAvatar extends EventEmitter {
     /**
      * Update
      */
-    update(step: number) {}
+    update(step: number) {
+        // Overridden by subclasses that move the avatar
+    }
 
     /**
      * Add angle
@@ -221,7 +223,7 @@ export abstract class BaseAvatar extends EventEmitter {
      */
     setInverse(inverse: boolean) {
         if (this.inverse !== inverse) {
-            this.inverse = inverse ? true : false;
+            this.inverse = inverse;
             this.updateAngularVelocity();
         }
     }
@@ -230,14 +232,14 @@ export abstract class BaseAvatar extends EventEmitter {
      * Set invincible
      */
     setInvincible(invincible: boolean) {
-        this.invincible = invincible ? true : false;
+        this.invincible = invincible;
     }
 
     /**
      * Set ghost
      */
     setGhost(ghost: boolean) {
-        this.ghost = ghost ? true : false;
+        this.ghost = ghost;
     }
 
     /**
@@ -260,7 +262,7 @@ export abstract class BaseAvatar extends EventEmitter {
      * Set printing
      */
     setPrinting(printing: boolean) {
-        printing = printing ? true : false;
+        printing = !!printing;
 
         if (this.printing !== printing) {
             this.printing = printing;

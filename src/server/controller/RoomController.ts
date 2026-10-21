@@ -37,8 +37,6 @@ export class RoomController extends EventEmitter {
     constructor(room: Room) {
         super();
 
-        const controller = this;
-
         this.room = room;
         this.clients = new Collection<SocketClient>();
         this.socketGroup = new SocketGroup(this.clients);
@@ -60,7 +58,17 @@ export class RoomController extends EventEmitter {
         this.onPlayersClear = this.onPlayersClear.bind(this);
         this.launch = this.launch.bind(this);
 
-        this.callbacks = {
+        this.callbacks = this.createCallbacks(this);
+
+        this.loadRoom();
+        this.promptCheckForClose();
+    }
+
+    /**
+     * Socket event handlers: the emitter calls them with the client as this, the controller comes in as a parameter
+     */
+    createCallbacks(controller: RoomController): RoomController['callbacks'] {
+        return {
             onTalk: function (this: SocketClient, data: any) {
                 controller.onTalk(this, data[0], data[1]);
             },
@@ -105,9 +113,6 @@ export class RoomController extends EventEmitter {
                 controller.onLaunch(this);
             }
         };
-
-        this.loadRoom();
-        this.promptCheckForClose();
     }
 
     /**
@@ -406,7 +411,7 @@ export class RoomController extends EventEmitter {
             return callback?.(invalidData);
         }
 
-        const name = data.name.substr(0, Player.maxLength).trim(),
+        const name = data.name.substring(0, Player.maxLength).trim(),
             color = data.color ?? undefined;
 
         if (!name.length) {
@@ -464,7 +469,7 @@ export class RoomController extends EventEmitter {
             this.emit('player:remove', { room: this.room, player });
         }
 
-        callback?.({ success: player ? true : false });
+        callback?.({ success: !!player });
     }
 
     /**
@@ -475,7 +480,7 @@ export class RoomController extends EventEmitter {
             return callback?.({ success: false });
         }
 
-        const message = new Message(client, content.substr(0, Message.maxLength)),
+        const message = new Message(client, content.substring(0, Message.maxLength)),
             success = this.chat.addMessage(message);
 
         callback?.({ success });
@@ -517,7 +522,7 @@ export class RoomController extends EventEmitter {
         }
 
         const player = client.players.getById(data.player),
-            name = data.name.substr(0, Player.maxLength).trim();
+            name = data.name.substring(0, Player.maxLength).trim();
 
         if (!player) {
             return callback?.({ success: false, error: `Unknown player: "${name}"` });

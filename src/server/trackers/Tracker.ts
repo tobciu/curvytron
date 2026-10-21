@@ -15,7 +15,7 @@ export class Tracker extends EventEmitter {
 
         this.inspector = inspector;
         this.id = id;
-        this.creation = new Date().getTime();
+        this.creation = Date.now();
         this.uniqId = md5(`${this.creation}-${this.id}`);
     }
 
@@ -30,7 +30,7 @@ export class Tracker extends EventEmitter {
      * Get duration
      */
     getDuration(): number {
-        return new Date().getTime() - this.creation;
+        return Date.now() - this.creation;
     }
 
     /**

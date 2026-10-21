@@ -11,7 +11,7 @@ export const bonusTypes: Record<string, new (x: number, y: number) => Bonus> = O
             const module = await import(`./${name}.ts`);
 
             if (typeof module[name] !== 'function') {
-                throw new Error(`src/server/model/Bonus/${name}.ts has to export the class ${name}`);
+                throw new TypeError(`src/server/model/Bonus/${name}.ts has to export the class ${name}`);
             }
 
             return [name, module[name]];

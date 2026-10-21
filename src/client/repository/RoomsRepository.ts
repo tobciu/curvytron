@@ -67,7 +67,7 @@ export class RoomsRepository extends EventEmitter {
      */
     create(name?: string, callback?: (...args: any[]) => any) {
         // Without a name the server picks one
-        this.client.addEvent('room:create', { name: (name ?? '').substr(0, Room.maxLength).trim() }, callback);
+        this.client.addEvent('room:create', { name: (name ?? '').substring(0, Room.maxLength).trim() }, callback);
     }
 
     /**

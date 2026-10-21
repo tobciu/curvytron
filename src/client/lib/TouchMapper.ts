@@ -15,10 +15,10 @@ export class TouchMapper extends Mapper {
      */
     override start(): boolean {
         if (super.start()) {
-            window.addEventListener('touchstart', this.onTouch);
-            window.addEventListener('touchend', this.kill);
-            window.addEventListener('touchcancel', this.kill);
-            window.addEventListener('touchleave', this.kill);
+            globalThis.addEventListener('touchstart', this.onTouch);
+            globalThis.addEventListener('touchend', this.kill);
+            globalThis.addEventListener('touchcancel', this.kill);
+            globalThis.addEventListener('touchleave', this.kill);
 
             return true;
         }
@@ -31,10 +31,10 @@ export class TouchMapper extends Mapper {
      */
     override stop(): boolean {
         if (super.stop()) {
-            window.removeEventListener('touchstart', this.onTouch);
-            window.removeEventListener('touchend', this.kill);
-            window.removeEventListener('touchcancel', this.kill);
-            window.removeEventListener('touchleave', this.kill);
+            globalThis.removeEventListener('touchstart', this.onTouch);
+            globalThis.removeEventListener('touchend', this.kill);
+            globalThis.removeEventListener('touchcancel', this.kill);
+            globalThis.removeEventListener('touchleave', this.kill);
 
             return true;
         }

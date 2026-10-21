@@ -155,6 +155,7 @@ export class BonusManager extends BaseBonusManager {
         const bonuses = [];
         let probability;
         let bonusType;
+        let potTotal = 0;
 
         for (let i = 0; i < total; i++) {
             bonusType = this.bonusTypes[i];
@@ -162,11 +163,12 @@ export class BonusManager extends BaseBonusManager {
 
             if (probability > 0) {
                 bonuses.push(bonusType);
-                pot.push(probability + (i > 0 ? pot[pot.length - 1] : 0));
+                potTotal += probability;
+                pot.push(potTotal);
             }
         }
 
-        const value = Math.random() * pot[pot.length - 1];
+        const value = Math.random() * potTotal;
 
         for (let i = 0; i < total; i++) {
             if (value < pot[i]) {

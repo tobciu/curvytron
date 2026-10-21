@@ -12,7 +12,7 @@ export class Asset {
         this.element.asset = this;
         this.element.addEventListener('load', callback);
 
-        if (typeof load !== 'undefined' && load) {
+        if (load !== undefined && load) {
             this.load();
         }
     }

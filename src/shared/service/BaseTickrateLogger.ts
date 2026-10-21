@@ -2,13 +2,11 @@
  * Tickrate Logger
  */
 export class BaseTickrateLogger {
-    interval: ReturnType<typeof setInterval> | null;
-    frequency: number;
+    interval: ReturnType<typeof setInterval> | null = null;
+    frequency: number = 0;
     ticks: any[];
 
     constructor() {
-        this.interval = null;
-        this.frequency = 0;
         this.ticks = [];
 
         this.log = this.log.bind(this);
@@ -36,9 +34,7 @@ export class BaseTickrateLogger {
      * Start
      */
     start() {
-        if (!this.interval) {
-            this.interval = setInterval(this.log, 1000);
-        }
+        this.interval ??= setInterval(this.log, 1000);
     }
 
     /**

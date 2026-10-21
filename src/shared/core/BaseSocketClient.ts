@@ -111,7 +111,7 @@ export class BaseSocketClient<Sends extends object = Record<string, any>> extend
     ) {
         const event: any[] = [name];
 
-        if (typeof data !== 'undefined') {
+        if (data !== undefined) {
             event[1] = data;
         }
 
@@ -119,7 +119,7 @@ export class BaseSocketClient<Sends extends object = Record<string, any>> extend
             event[2] = this.indexCallback(callback);
         }
 
-        if (!this.interval || (typeof force !== 'undefined' && force)) {
+        if (!this.interval || (force !== undefined && force)) {
             this.sendEvents([event]);
         } else {
             this.events.push(event);
@@ -163,7 +163,7 @@ export class BaseSocketClient<Sends extends object = Record<string, any>> extend
     addCallback(id: number, data?: any) {
         const event: any[] = [id];
 
-        if (typeof data !== 'undefined') {
+        if (data !== undefined) {
             event[1] = data;
         }
 
@@ -207,18 +207,12 @@ export class BaseSocketClient<Sends extends object = Record<string, any>> extend
             return;
         }
 
-        const length = data.length;
-        let name;
-        let source;
-
-        for (let i = 0; i < length; i++) {
-            source = data[i];
-
+        for (const source of data) {
             if (!Array.isArray(source)) {
                 continue;
             }
 
-            name = source[0];
+            const name = source[0];
 
             if (!this.acceptsEvent(name)) {
                 continue;
@@ -226,18 +220,25 @@ export class BaseSocketClient<Sends extends object = Record<string, any>> extend
 
             // A bad event must not stop the others, nor the process
             try {
-                if (typeof name === 'string') {
-                    if (source.length === 3) {
-                        this.emit(name, [source[1], this.createCallback(source[2])]);
-                    } else {
-                        this.emit(name, source[1]);
-                    }
-                } else if (typeof name === 'number') {
-                    this.playCallback(name, typeof source[1] !== 'undefined' ? source[1] : null);
-                }
+                this.handleEventSource(name, source);
             } catch (error) {
                 this.onEventError(name, error);
             }
+        }
+    }
+
+    /**
+     * Emit one event source, either a named event or an indexed callback answer
+     */
+    handleEventSource(name: string | number, source: unknown[]): void {
+        if (typeof name === 'string') {
+            if (source.length === 3) {
+                this.emit(name, [source[1], this.createCallback(source[2] as number)]);
+            } else {
+                this.emit(name, source[1]);
+            }
+        } else if (typeof name === 'number') {
+            this.playCallback(name, source[1] ?? null);
         }
     }
 
@@ -263,8 +264,8 @@ export class BaseSocketClient<Sends extends object = Record<string, any>> extend
     /**
      * Play an indexed callback
      */
-    playCallback(id: number, data: any | null) {
-        if (typeof this.callbacks[id] !== 'undefined') {
+    playCallback(id: number, data: any) {
+        if (this.callbacks[id] !== undefined) {
             this.callbacks[id](data);
             delete this.callbacks[id];
         }
@@ -274,10 +275,8 @@ export class BaseSocketClient<Sends extends object = Record<string, any>> extend
      * Create callback
      */
     createCallback(id: number) {
-        const client = this;
-
-        return function (data?: any) {
-            client.addCallback(id, data);
+        return (data?: any) => {
+            this.addCallback(id, data);
         };
     }
 

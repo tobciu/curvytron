@@ -27,13 +27,10 @@ export class GameBonusStack extends BaseBonusStack {
      * Apply the value to target's property
      */
     override apply(property: string, value: number) {
-        switch (property) {
-            case 'borderless':
-                this.target.setBorderless(value ? true : false);
-                break;
-            default:
-                super.apply(property, value);
-                break;
+        if (property === 'borderless') {
+            this.target.setBorderless(!!value);
+        } else {
+            super.apply(property, value);
         }
     }
 }

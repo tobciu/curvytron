@@ -56,19 +56,19 @@ export class Profile extends EventEmitter {
      * Unserialize
      */
     unserialize(data?: any) {
-        if (typeof data.name !== 'undefined') {
+        if (data.name !== undefined) {
             this.setName(data.name);
         }
 
-        if (typeof data.color !== 'undefined') {
+        if (data.color !== undefined) {
             this.setColor(data.color);
         }
 
-        if (typeof data.sound !== 'undefined') {
+        if (data.sound !== undefined) {
             this.setSound(data.sound);
         }
 
-        if (typeof data.controls !== 'undefined') {
+        if (data.controls !== undefined) {
             this.setControls(data.controls);
         }
     }
@@ -82,7 +82,7 @@ export class Profile extends EventEmitter {
         }
 
         if (this.isValid()) {
-            window.localStorage.setItem(this.localKey, JSON.stringify(this.serialize()));
+            globalThis.localStorage.setItem(this.localKey, JSON.stringify(this.serialize()));
             this.emit('change');
         } else {
             this.load();
@@ -95,7 +95,7 @@ export class Profile extends EventEmitter {
     load() {
         this.loading = true;
 
-        const data = window.localStorage.getItem(this.localKey);
+        const data = globalThis.localStorage.getItem(this.localKey);
 
         if (data) {
             this.unserialize(JSON.parse(data));
@@ -183,7 +183,7 @@ export class Profile extends EventEmitter {
      * Is profile valid?
      */
     isValid(): boolean {
-        if (!this.name || !this.name.trim().length) {
+        if (!this.name?.trim().length) {
             return false;
         }
         if (!this.color || !BasePlayer.prototype.validateColor(this.color)) {

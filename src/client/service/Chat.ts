@@ -140,14 +140,12 @@ export class Chat extends BaseChat {
      * Talk
      */
     talk() {
-        const chat = this;
-
-        if (this.message.content && this.message.content.length) {
-            this.client.addEvent('room:talk', this.message.content.substr(0, Message.maxLength), function (result) {
+        if (this.message.content?.length) {
+            this.client.addEvent('room:talk', this.message.content.substring(0, Message.maxLength), (result) => {
                 if (result.success) {
-                    chat.message.clear();
+                    this.message.clear();
                 } else {
-                    console.error('Could not send %s', chat.message);
+                    console.error('Could not send %s', this.message);
                 }
             });
         }
@@ -157,7 +155,7 @@ export class Chat extends BaseChat {
      * On talk
      */
     onTalk(e?: any) {
-        if (typeof e.detail !== 'undefined' && e.detail) {
+        if (e.detail !== undefined && e.detail) {
             this.addMessage(
                 new MessagePlayer(e.detail.client, e.detail.content, this.getPlayer(e.detail), e.detail.creation)
             );
@@ -261,7 +259,7 @@ export class Chat extends BaseChat {
      * Is this client allowed to talk?
      */
     isAllowed(clientId: number): boolean {
-        return this.muted.indexOf(clientId) < 0;
+        return !this.muted.includes(clientId);
     }
 
     /**

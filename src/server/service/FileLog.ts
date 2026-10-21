@@ -1,5 +1,4 @@
-import { createWriteStream } from 'node:fs';
-import { mkdirSync } from 'node:fs';
+import { createWriteStream, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { format } from 'node:util';
 

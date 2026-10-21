@@ -19,7 +19,7 @@ export class GamepadMapper extends Mapper {
         super();
 
         this.gamepadListener = listener;
-        this.indexGamepad = typeof indexGamepad !== 'undefined' && indexGamepad;
+        this.indexGamepad = indexGamepad !== undefined && indexGamepad;
 
         this.onAxis = this.onAxis.bind(this);
         this.onButton = this.onButton.bind(this);
@@ -57,7 +57,7 @@ export class GamepadMapper extends Mapper {
      * On axis
      */
     onAxis(e: any) {
-        const value = e.detail.value > 0 ? 1 : e.detail.value < 0 ? -1 : 0,
+        const value = Math.sign(e.detail.value),
             prefix = this.indexGamepad ? `gamepad:${e.detail.gamepad.index}:` : '';
 
         this.setValue(`${prefix}axis:${e.detail.axis}:${value}`);
@@ -80,8 +80,8 @@ export class GamepadMapper extends Mapper {
      * Gues character from Key
      */
     override guessChar(key: any): string {
-        const axis = new RegExp('^(gamepad:\\d+:)?axis:(\\d+):(-?\\d+)$', 'gi').exec(key),
-            button = new RegExp('^(gamepad:\\d+:)?button:(\\d+)$', 'gi').exec(key);
+        const axis = /^(gamepad:\d+:)?axis:(\d+):(-?\d+)$/i.exec(key),
+            button = /^(gamepad:\d+:)?button:(\d+)$/i.exec(key);
 
         if (axis) {
             return `Stick ${this.sticks[axis[2]][axis[3]]}`;

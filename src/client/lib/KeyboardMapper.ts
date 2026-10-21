@@ -15,8 +15,8 @@ export class KeyboardMapper extends Mapper {
      */
     override start(): boolean {
         if (super.start()) {
-            window.addEventListener('keydown', this.onKey);
-            window.addEventListener('keypress', this.kill);
+            globalThis.addEventListener('keydown', this.onKey);
+            globalThis.addEventListener('keypress', this.kill);
 
             return true;
         }
@@ -29,8 +29,8 @@ export class KeyboardMapper extends Mapper {
      */
     override stop(): boolean {
         if (super.stop()) {
-            window.removeEventListener('keydown', this.onKey);
-            window.removeEventListener('keypress', this.kill);
+            globalThis.removeEventListener('keydown', this.onKey);
+            globalThis.removeEventListener('keypress', this.kill);
 
             return true;
         }
@@ -76,7 +76,7 @@ export class KeyboardMapper extends Mapper {
             case '37':
                 return '←';
             default:
-                return String.fromCharCode(key);
+                return String.fromCodePoint(key);
         }
     }
 }

@@ -129,7 +129,7 @@ export abstract class BaseRoom extends EventEmitter {
      * Serialize
      */
     serialize(full?: boolean): RoomData {
-        full = typeof full === 'undefined' || full;
+        full = full === undefined || full;
 
         const data: RoomData = {
             name: this.name,
@@ -138,7 +138,7 @@ export abstract class BaseRoom extends EventEmitter {
                       return this.serialize();
                   }).items
                 : this.players.count(),
-            game: this.game ? true : false,
+            game: !!this.game,
             open: this.config.open
         };
 

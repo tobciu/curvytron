@@ -52,7 +52,7 @@ export class BaseBonusStack<B = BaseBonus> extends EventEmitter {
         let i: number;
         let j: number;
 
-        if (typeof bonus !== 'undefined') {
+        if (bonus !== undefined) {
             effects = (bonus as BaseBonus).getEffects(this.target);
             for (i = effects.length - 1; i >= 0; i--) {
                 property = effects[i][0];
@@ -65,7 +65,7 @@ export class BaseBonusStack<B = BaseBonus> extends EventEmitter {
             for (j = effects.length - 1; j >= 0; j--) {
                 property = effects[j][0];
 
-                if (typeof properties[property] === 'undefined') {
+                if (properties[property] === undefined) {
                     properties[property] = this.getDefaultProperty(property);
                 }
 

@@ -225,7 +225,7 @@ export class Inspector {
      *
      * @param values A single value or a map of fields
      */
-    writePoint(measurement: string, values?: number | any, tags: any = {}) {
+    writePoint(measurement: string, values?: any, tags: any = {}) {
         const fields = typeof values === 'object' ? values : { value: values };
 
         this.client

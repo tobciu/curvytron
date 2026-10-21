@@ -79,7 +79,7 @@ export class Player extends BasePlayer {
      * Set touch
      */
     setTouch() {
-        const touch = (document as any).createTouch(window, window, new Date().getTime(), 0, 0, 0, 0);
+        const touch = (document as any).createTouch(globalThis, globalThis, Date.now(), 0, 0, 0, 0);
 
         for (let i = this.controls.length - 1; i >= 0; i--) {
             this.controls[i].mappers.getById('touch').setValue(touch);

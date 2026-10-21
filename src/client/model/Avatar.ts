@@ -233,11 +233,11 @@ export class Avatar extends BaseAvatar {
 
         const self = this as unknown as Record<string, any>;
 
-        if (typeof self[method] !== 'undefined') {
-            self[method](value);
-        } else {
-            throw `Unknown setter ${method}`;
+        if (self[method] === undefined) {
+            throw new Error(`Unknown setter ${method}`);
         }
+
+        self[method](value);
     }
 
     /**

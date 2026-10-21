@@ -13,7 +13,7 @@ export class Client {
     constructor(id: any, active?: any) {
         this.id = id;
         this.players = new Collection<Player>();
-        this.active = typeof active === 'undefined' || active;
+        this.active = active === undefined || active;
         this.master = false;
     }
 

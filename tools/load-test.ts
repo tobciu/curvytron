@@ -33,8 +33,8 @@ async function startServer(): Promise<{ url: string; child: ChildProcess }> {
 
     return new Promise((resolve, reject) => {
         child.once('exit', (code) => reject(new Error(`The server exited with ${code}`)));
-        child.stdout!.on('data', (chunk: Buffer) => {
-            const match = chunk.toString().match(/Listening on port (\d+)/);
+        child.stdout.on('data', (chunk: Buffer) => {
+            const match = /Listening on port (\d+)/.exec(chunk.toString());
 
             if (match) {
                 resolve({ url: `http://localhost:${match[1]}`, child });
@@ -48,7 +48,7 @@ function parseMetrics(text: string): Map<string, number> {
     const samples = new Map<string, number>();
 
     for (const line of text.split('\n')) {
-        const match = line.match(/^([a-z_]+(?:\{[^}]*\})?) (\S+)$/);
+        const match = /^([a-z_]+(?:\{[^}]*\})?) (\S+)$/.exec(line);
 
         if (match) {
             samples.set(match[1], Number(match[2]));
@@ -63,11 +63,11 @@ function percentile(samples: Map<string, number>, name: string, quantile: number
     const total = samples.get(`${name}_count`) ?? 0;
     const buckets = [...samples.entries()]
         .filter(([key]) => key.startsWith(`${name}_bucket{le="`) && !key.includes('+Inf'))
-        .map(([key, count]) => [Number(key.match(/le="([^"]+)"/)![1]), count] as const)
+        .map(([key, count]) => [Number(/le="([^"]+)"/.exec(key)![1]), count] as const)
         .sort((a, b) => a[0] - b[0]);
 
     if (!total) {
-        return NaN;
+        return Number.NaN;
     }
 
     return buckets.find(([, count]) => count / total >= quantile)?.[0] ?? Infinity;

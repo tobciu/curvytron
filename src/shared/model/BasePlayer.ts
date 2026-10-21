@@ -31,8 +31,8 @@ export abstract class BasePlayer extends EventEmitter {
 
         this.client = client;
         this.name = name;
-        this.color = typeof color !== 'undefined' && this.validateColor(color) ? color : this.getRandomColor();
-        this.ready = typeof ready !== 'undefined' && ready;
+        this.color = color !== undefined && this.validateColor(color) ? color : this.getRandomColor();
+        this.ready = ready !== undefined && ready;
         this.id = null;
         this.avatar = null;
     }
@@ -68,16 +68,18 @@ export abstract class BasePlayer extends EventEmitter {
      * Toggle Ready
      */
     toggleReady(toggle?: boolean) {
-        this.ready = typeof toggle !== 'undefined' ? (toggle ? true : false) : !this.ready;
+        if (toggle === undefined) {
+            this.ready = !this.ready;
+        } else {
+            this.ready = toggle;
+        }
     }
 
     /**
      * Get avatar
      */
     getAvatar() {
-        if (!this.avatar) {
-            this.avatar = this.createAvatar();
-        }
+        this.avatar ??= this.createAvatar();
 
         return this.avatar;
     }
@@ -109,9 +111,6 @@ export abstract class BasePlayer extends EventEmitter {
      */
     getRandomColor(): string {
         let color = '';
-        const randomNum = function () {
-            return Math.ceil(Math.random() * 255).toString(16);
-        };
 
         while (!this.validateColor(color, true)) {
             color = `#${randomNum()}${randomNum()}${randomNum()}`;
@@ -128,16 +127,22 @@ export abstract class BasePlayer extends EventEmitter {
             return false;
         }
 
-        const matches = color.match(new RegExp('^#([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})$'));
+        const matches = /^#([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})$/.exec(color);
 
         if (matches && yiq) {
             const ratio =
-                (parseInt(matches[1], 16) * 0.4 + parseInt(matches[2], 16) * 0.5 + parseInt(matches[3], 16) * 0.3) /
+                (Number.parseInt(matches[1], 16) * 0.4 +
+                    Number.parseInt(matches[2], 16) * 0.5 +
+                    Number.parseInt(matches[3], 16) * 0.3) /
                 255;
 
             return ratio > 0.3;
         }
 
-        return matches ? true : false;
+        return matches !== null;
     }
+}
+
+function randomNum(): string {
+    return Math.ceil(Math.random() * 255).toString(16);
 }

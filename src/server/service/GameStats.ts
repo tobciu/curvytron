@@ -166,10 +166,20 @@ export class GameStats {
 
         const near = this.isForeign(hit, avatar);
 
-        this.count(this.near, stats, 'nearMisses', near);
+        if (near) {
+            this.startCount(this.near, stats, 'nearMisses');
+        } else {
+            this.stopCount(this.near, stats);
+        }
 
         // Trails on both sides: only worth a look when something is close
-        this.count(this.squeezing, stats, 'squeezes', near && this.isBetweenTrails(avatar));
+        const squeezed = near && this.isBetweenTrails(avatar);
+
+        if (squeezed) {
+            this.startCount(this.squeezing, stats, 'squeezes');
+        } else {
+            this.stopCount(this.squeezing, stats);
+        }
     }
 
     /**
@@ -199,14 +209,17 @@ export class GameStats {
         return hit !== null && hit.data !== avatar;
     }
 
-    /** Count a field when the condition starts to be true: the set remembers who is in that situation */
-    count(set: Set<number>, stats: PlayerStats, field: 'nearMisses' | 'squeezes', now: boolean) {
-        if (!now) {
-            set.delete(stats.id);
-        } else if (!set.has(stats.id)) {
+    /** The condition became true: count the field once and remember it */
+    startCount(set: Set<number>, stats: PlayerStats, field: 'nearMisses' | 'squeezes') {
+        if (!set.has(stats.id)) {
             set.add(stats.id);
             stats[field]++;
         }
+    }
+
+    /** The condition is over: forget it so the next one counts again */
+    stopCount(set: Set<number>, stats: PlayerStats) {
+        set.delete(stats.id);
     }
 
     onDie(data: { avatar: Avatar; killer: Avatar | null }) {

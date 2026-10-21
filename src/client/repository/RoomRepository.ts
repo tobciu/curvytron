@@ -99,34 +99,32 @@ export class RoomRepository extends EventEmitter {
      * Join room
      */
     join(name: string, password: string | null, callback: (...args: any[]) => any) {
-        const repository = this;
-
-        if (this.room && this.room.name === name) {
-            return callback({ success: true, room: repository.room });
+        if (this.room?.name === name) {
+            return callback({ success: true, room: this.room });
         }
 
-        this.client.addEvent('room:join', { name, password }, function (result) {
+        this.client.addEvent('room:join', { name, password }, (result) => {
             if (result.success) {
-                const clients = repository.createClients(result.clients),
+                const clients = this.createClients(result.clients),
                     master = clients.getById(result.master),
-                    room = repository.createRoom(result.room, clients),
+                    room = this.createRoom(result.room, clients),
                     messages = result.messages.length;
 
-                repository.setRoom(room, clients, master);
+                this.setRoom(room, clients, master);
                 callback({ success: true, room });
 
                 for (let m = 0; m < messages; m++) {
-                    repository.client.emit('room:talk', result.messages[m]);
+                    this.client.emit('room:talk', result.messages[m]);
                 }
 
                 for (let v = result.votes.length - 1; v >= 0; v--) {
-                    repository.client.emit('vote:new', result.votes[v]);
+                    this.client.emit('vote:new', result.votes[v]);
                 }
             } else {
                 callback({
                     success: false,
                     name,
-                    error: typeof result.error !== 'undefined' ? result.error : 'Unknown error'
+                    error: result.error ?? 'Unknown error'
                 });
             }
         });
@@ -193,7 +191,7 @@ export class RoomRepository extends EventEmitter {
      * Set current room
      */
     setRoom(room: Room | null, clients: Collection<Client>, master: Client | null) {
-        if (!this.room || !this.room.equal(room)) {
+        if (!this.room?.equal(room)) {
             this.room = room;
             this.clients = clients;
             this.emit(this.room ? 'room:join' : 'room:leave');
@@ -224,7 +222,7 @@ export class RoomRepository extends EventEmitter {
     amIMaster(): boolean {
         const client = this.clients.getById(this.client.id);
 
-        return client && client.master;
+        return !!client?.master;
     }
 
     /**
@@ -234,8 +232,8 @@ export class RoomRepository extends EventEmitter {
         this.client.addEvent(
             'player:add',
             {
-                name: name.substr(0, Player.maxLength),
-                color: color ? color.substr(0, Player.colorMaxLength) : null
+                name: name.substring(0, Player.maxLength),
+                color: color ? color.substring(0, Player.colorMaxLength) : null
             },
             callback
         );
@@ -275,7 +273,7 @@ export class RoomRepository extends EventEmitter {
             'room:color',
             {
                 player: player.id,
-                color: color.substr(0, Player.colorMaxLength)
+                color: color.substring(0, Player.colorMaxLength)
             },
             function (result) {
                 if (!result.success) {
@@ -291,7 +289,7 @@ export class RoomRepository extends EventEmitter {
      * Set name
      */
     setName(player: number, name: string, callback: (...args: any[]) => any) {
-        name = name.substr(0, Player.maxLength).trim();
+        name = name.substring(0, Player.maxLength).trim();
 
         this.client.addEvent('room:name', { player, name }, callback);
     }
@@ -307,21 +305,21 @@ export class RoomRepository extends EventEmitter {
      * Set config open
      */
     setConfigOpen(open: boolean, callback: (...args: any[]) => any) {
-        this.client.addEvent('room:config:open', { open: open ? true : false }, callback);
+        this.client.addEvent('room:config:open', { open: !!open }, callback);
     }
 
     /**
      * Set config max score
      */
     setConfigMaxScore(maxScore: number, callback: (...args: any[]) => any) {
-        this.client.addEvent('room:config:max-score', { maxScore: parseInt(String(maxScore), 10) }, callback);
+        this.client.addEvent('room:config:max-score', { maxScore: Number.parseInt(String(maxScore), 10) }, callback);
     }
 
     /**
      * Set config speed
      */
     setConfigVariable(variable: any, value: any, callback: (...args: any[]) => any) {
-        this.client.addEvent('room:config:variable', { variable, value: parseFloat(value) }, callback);
+        this.client.addEvent('room:config:variable', { variable, value: Number.parseFloat(value) }, callback);
     }
 
     /**

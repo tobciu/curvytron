@@ -25,7 +25,7 @@ export class PlayerInput extends EventEmitter {
         this.active = [false, false];
         this.move = 0;
         this.width = 0;
-        this.binding = typeof binding !== 'undefined' ? binding : this.defaultBinding;
+        this.binding = binding ?? this.defaultBinding;
 
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onKeyUp = this.onKeyUp.bind(this);
@@ -40,7 +40,7 @@ export class PlayerInput extends EventEmitter {
      * Attach events
      */
     attachEvents() {
-        const listening = [];
+        const listening: string[] = [];
         let binding;
         let type;
 
@@ -48,18 +48,18 @@ export class PlayerInput extends EventEmitter {
             binding = this.binding[i];
             type = this.getBindingType(binding);
 
-            if (listening.indexOf(type) < 0) {
+            if (!listening.includes(type)) {
                 listening.push(type);
 
                 if (type === 'keyboard') {
-                    window.addEventListener('keydown', this.onKeyDown);
-                    window.addEventListener('keyup', this.onKeyUp);
+                    globalThis.addEventListener('keydown', this.onKeyDown);
+                    globalThis.addEventListener('keyup', this.onKeyUp);
                 } else if (type === 'touch') {
-                    window.addEventListener('touchstart', this.onTouch);
-                    window.addEventListener('touchend', this.onTouch);
-                    window.addEventListener('touchleave', this.onTouch);
-                    window.addEventListener('touchcancel', this.onTouch);
-                } else if (new RegExp('^gamepad:\\d+:button').test(type)) {
+                    globalThis.addEventListener('touchstart', this.onTouch);
+                    globalThis.addEventListener('touchend', this.onTouch);
+                    globalThis.addEventListener('touchleave', this.onTouch);
+                    globalThis.addEventListener('touchcancel', this.onTouch);
+                } else if (/^gamepad:\d+:button/.test(type)) {
                     gamepadListener.on(type, this.onButton);
                 } else {
                     gamepadListener.on(type, this.onAxis);
@@ -72,7 +72,7 @@ export class PlayerInput extends EventEmitter {
      * Detach events
      */
     detachEvents() {
-        const listening = [];
+        const listening: string[] = [];
         let binding;
         let type;
 
@@ -80,18 +80,18 @@ export class PlayerInput extends EventEmitter {
             binding = this.binding[i];
             type = this.getBindingType(binding);
 
-            if (listening.indexOf(type) < 0) {
+            if (!listening.includes(type)) {
                 listening.push(type);
 
                 if (type === 'keyboard') {
-                    window.removeEventListener('keydown', this.onKeyDown);
-                    window.removeEventListener('keyup', this.onKeyUp);
+                    globalThis.removeEventListener('keydown', this.onKeyDown);
+                    globalThis.removeEventListener('keyup', this.onKeyUp);
                 } else if (type === 'touch') {
-                    window.removeEventListener('touchstart', this.onTouch);
-                    window.removeEventListener('touchend', this.onTouch);
-                    window.removeEventListener('touchleave', this.onTouch);
-                    window.removeEventListener('touchcancel', this.onTouch);
-                } else if (new RegExp('^gamepad:\\d+:button').test(type)) {
+                    globalThis.removeEventListener('touchstart', this.onTouch);
+                    globalThis.removeEventListener('touchend', this.onTouch);
+                    globalThis.removeEventListener('touchleave', this.onTouch);
+                    globalThis.removeEventListener('touchcancel', this.onTouch);
+                } else if (/^gamepad:\d+:button/.test(type)) {
                     gamepadListener.off(type, this.onButton);
                 } else {
                     gamepadListener.off(type, this.onAxis);
@@ -104,11 +104,11 @@ export class PlayerInput extends EventEmitter {
      * Get binding type
      */
     getBindingType(binding: string): string {
-        if (typeof Touch !== 'undefined' && (binding as unknown) instanceof Touch) {
+        if (Touch !== undefined && (binding as unknown) instanceof Touch) {
             return 'touch';
         }
 
-        const matches = new RegExp('^(gamepad:(\\d+):(button|axis):(\\d+))').exec(binding);
+        const matches = /^(gamepad:(\d+):(button|axis):(\d+))/.exec(binding);
 
         return matches ? matches[1] : 'keyboard';
     }
@@ -209,7 +209,11 @@ export class PlayerInput extends EventEmitter {
      * Resolve
      */
     resolve() {
-        const move = this.active[0] !== this.active[1] ? (this.active[0] ? -1 : 1) : false;
+        let move: number | boolean = false;
+
+        if (this.active[0] !== this.active[1]) {
+            move = this.active[0] ? -1 : 1;
+        }
 
         if (this.move !== move) {
             this.setMove(move);
@@ -221,7 +225,7 @@ export class PlayerInput extends EventEmitter {
      */
     useGamepad(): boolean {
         for (let i = this.binding.length - 1; i >= 0; i--) {
-            if (new RegExp('^gamepad:').test(this.getBindingType(this.binding[i]))) {
+            if (this.getBindingType(this.binding[i]).startsWith('gamepad:')) {
                 return true;
             }
         }

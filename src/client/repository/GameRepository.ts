@@ -255,7 +255,7 @@ export class GameRepository extends EventEmitter {
     onBonusStack(e: ServerEvent<'bonus:stack'>) {
         const avatar = this.game.avatars.getById(e.detail[0]);
 
-        if (avatar && avatar.local) {
+        if (avatar?.local) {
             avatar.bonusStack[e.detail[1]](new StackedBonus(e.detail[2], e.detail[3], e.detail[4]));
         }
     }

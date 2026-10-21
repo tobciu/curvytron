@@ -17,7 +17,7 @@ export class AvatarBody extends Body {
         super(x, y, avatar.radius, avatar);
 
         this.num = avatar.bodyCount++;
-        this.birth = new Date().getTime();
+        this.birth = Date.now();
     }
 
     /**
@@ -35,6 +35,6 @@ export class AvatarBody extends Body {
      * Is old?
      */
     isOld(): boolean {
-        return new Date().getTime() - this.birth >= this.oldAge;
+        return Date.now() - this.birth >= this.oldAge;
     }
 }

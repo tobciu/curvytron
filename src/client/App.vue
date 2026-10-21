@@ -27,7 +27,7 @@ const showProfile = computed(() => connected.value && !inGame.value);
 watchEffect(() => document.body.classList.toggle('game-mode', inGame.value && status.value !== 'disconnected'));
 
 function reload(): void {
-    window.location.href = '/';
+    globalThis.location.href = '/';
 }
 </script>
 

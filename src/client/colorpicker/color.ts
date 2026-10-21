@@ -16,17 +16,20 @@ type Parser = [RegExp, (match: RegExpExecArray) => [number, number, number]];
 
 const parsers: Parser[] = [
     [
-        /rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*(\d+(?:\.\d+)?)\s*)?\)/,
+        /rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,[^)]*)?\)/,
         (m) => [Number(m[1]), Number(m[2]), Number(m[3])]
     ],
     [
-        /rgba?\(\s*(\d+(?:\.\d+)?)%\s*,\s*(\d+(?:\.\d+)?)%\s*,\s*(\d+(?:\.\d+)?)%\s*(?:,\s*(\d+(?:\.\d+)?)\s*)?\)/,
+        /rgba?\(\s*([\d.]+)%\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%\s*(?:,[^)]*)?\)/,
         (m) => [2.55 * Number(m[1]), 2.55 * Number(m[2]), 2.55 * Number(m[3])]
     ],
-    [/#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})/i, (m) => [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)]],
+    [
+        /#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})/i,
+        (m) => [Number.parseInt(m[1], 16), Number.parseInt(m[2], 16), Number.parseInt(m[3], 16)]
+    ],
     [
         /#([a-f0-9])([a-f0-9])([a-f0-9])/i,
-        (m) => [parseInt(m[1] + m[1], 16), parseInt(m[2] + m[2], 16), parseInt(m[3] + m[3], 16)]
+        (m) => [Number.parseInt(m[1] + m[1], 16), Number.parseInt(m[2] + m[2], 16), Number.parseInt(m[3] + m[3], 16)]
     ]
 ];
 
@@ -83,6 +86,10 @@ export function parseColor(value: string | null | undefined): HSB | null {
 
         if (match) {
             const [r, g, b] = parse(match);
+
+            if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) {
+                continue;
+            }
 
             return rgbToHsb({ r, g, b });
         }

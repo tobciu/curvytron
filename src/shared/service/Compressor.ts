@@ -11,7 +11,7 @@ export class Compressor {
      * Compress a float into an integer
      */
     compress(value: number): number {
-        return (0.5 + value * this.precision) | 0;
+        return Math.trunc(0.5 + value * this.precision);
     }
 
     /**

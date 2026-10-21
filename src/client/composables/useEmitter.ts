@@ -11,7 +11,12 @@ import type { Emitter } from '../types';
 export function useVersion(): { version: Ref<number>; bump: () => void } {
     const version = ref(0);
 
-    return { version, bump: () => void version.value++ };
+    return {
+        version,
+        bump: () => {
+            version.value++;
+        }
+    };
 }
 
 /** Run `handler` every time one of the `events` is emitted, until the current scope is disposed. */

@@ -2,7 +2,7 @@
  * Message
  */
 export class Message {
-    id: any;
+    id: any = null;
     creation: any;
     date: any;
 
@@ -38,7 +38,6 @@ export class Message {
     maxLength: any = Message.maxLength;
 
     constructor(creation?: any) {
-        this.id = null;
         this.creation = typeof creation === 'number' ? new Date(creation) : new Date();
         this.date = this.getDate();
     }

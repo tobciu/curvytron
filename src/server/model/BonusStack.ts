@@ -41,10 +41,10 @@ export class BonusStack extends BaseBonusStack {
                 this.target.setInverse(value % 2 !== 0);
                 break;
             case 'invincible':
-                this.target.setInvincible(value ? true : false);
+                this.target.setInvincible(!!value);
                 break;
             case 'ghost':
-                this.target.setGhost(value ? true : false);
+                this.target.setGhost(!!value);
                 break;
             case 'printing':
                 this.target.printManager[value > 0 ? 'start' : 'stop']();

@@ -72,7 +72,7 @@ export class RoomConfig extends BaseRoomConfig {
             }
         }
 
-        return bonuses.sort();
+        return bonuses.toSorted((a, b) => a.localeCompare(b));
     }
 
     /**
@@ -110,7 +110,11 @@ export class RoomConfig extends BaseRoomConfig {
             return false;
         }
 
-        return listA.length === listB.length && listA.sort().toString() === listB.sort().toString();
+        return (
+            listA.length === listB.length &&
+            listA.toSorted((a, b) => a.localeCompare(b)).toString() ===
+                listB.toSorted((a, b) => a.localeCompare(b)).toString()
+        );
     }
 
     /**

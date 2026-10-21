@@ -20,7 +20,7 @@ export class GamepadListener extends EventEmitter {
         this.stop = this.stop.bind(this);
         this.handlers = new Array(4);
 
-        window.addEventListener('error', this.stop);
+        globalThis.addEventListener('error', this.stop);
     }
 
     /**
@@ -37,7 +37,7 @@ export class GamepadListener extends EventEmitter {
      */
     stop() {
         if (this.frame) {
-            window.cancelAnimationFrame(this.frame);
+            globalThis.cancelAnimationFrame(this.frame);
             this.frame = null;
         }
     }
@@ -46,13 +46,13 @@ export class GamepadListener extends EventEmitter {
      * Update
      */
     update() {
-        this.frame = window.requestAnimationFrame(this.update);
+        this.frame = globalThis.requestAnimationFrame(this.update);
 
         const gamepads = this.getGamepads();
 
         for (let i = gamepads.length - 1; i >= 0; i--) {
             if (gamepads[i]) {
-                if (typeof (gamepads[i] as any).handler === 'undefined') {
+                if ((gamepads[i] as any).handler === undefined) {
                     this.addGamepad(gamepads[i]);
                 }
 
@@ -115,7 +115,7 @@ export class GamepadListener extends EventEmitter {
      * Get gampads
      */
     getGamepads() {
-        const gamepads = typeof navigator.getGamepads !== 'undefined' ? navigator.getGamepads() : null;
+        const gamepads = navigator.getGamepads === undefined ? null : navigator.getGamepads();
 
         return gamepads && typeof gamepads === 'object' ? gamepads : [];
     }

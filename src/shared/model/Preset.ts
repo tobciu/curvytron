@@ -16,6 +16,6 @@ export class Preset {
      * Has onus
      */
     hasBonus(bonus: string): boolean {
-        return this.bonuses.indexOf(bonus) > -1;
+        return this.bonuses.includes(bonus);
     }
 }

@@ -17,8 +17,6 @@ export class RoomsController extends EventEmitter {
     constructor(repository: RoomRepository) {
         super();
 
-        const controller = this;
-
         this.socketGroup = new SocketGroup();
         this.repository = repository;
 
@@ -29,7 +27,17 @@ export class RoomsController extends EventEmitter {
         this.onRoomConfigOpen = this.onRoomConfigOpen.bind(this);
         this.detach = this.detach.bind(this);
 
-        this.callbacks = {
+        this.callbacks = this.createCallbacks(this);
+
+        this.repository.on('room:open', this.onRoomOpen);
+        this.repository.on('room:close', this.onRoomClose);
+    }
+
+    /**
+     * Socket event handlers: the emitter calls them with the client as this, the controller comes in as a parameter
+     */
+    createCallbacks(controller: RoomsController): RoomsController['callbacks'] {
+        return {
             emitAllRooms: function () {
                 controller.emitAllRooms(this);
             },
@@ -40,9 +48,6 @@ export class RoomsController extends EventEmitter {
                 controller.onJoinRoom(this, data[0], data[1]);
             }
         };
-
-        this.repository.on('room:open', this.onRoomOpen);
-        this.repository.on('room:close', this.onRoomClose);
     }
 
     /**
@@ -106,7 +111,7 @@ export class RoomsController extends EventEmitter {
             return callback?.(invalidData);
         }
 
-        const name = data.name.substr(0, Room.maxLength).trim(),
+        const name = data.name.substring(0, Room.maxLength).trim(),
             room = this.repository.create(name);
 
         callback?.(room ? { success: true, room: room.serialize(false) } : { success: false });
@@ -130,7 +135,7 @@ export class RoomsController extends EventEmitter {
             return callback?.({ success: false, error: `Unknown room "${data.name}".` });
         }
 
-        const password = typeof data.password !== 'undefined' ? data.password : null;
+        const password = data.password ?? null;
 
         if (!room.config.allow(password)) {
             return callback?.({ success: false, error: 'Wrong password.' });

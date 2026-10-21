@@ -24,7 +24,7 @@ export class FloodFilter {
      * Is message valid?
      */
     isValid(message: Message): boolean {
-        const history = this.getClientHistory(message.client.id, new Date().getTime() - this.toleranceRange);
+        const history = this.getClientHistory(message.client.id, Date.now() - this.toleranceRange);
 
         return history < this.toleranceTotal;
     }

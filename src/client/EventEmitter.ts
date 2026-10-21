@@ -22,7 +22,10 @@ export class EventEmitter {
 
         const event = { type: name, detail: data };
 
-        for (const callback of [...callbacks]) {
+        // Copy: listeners may unsubscribe while the event is emitted
+        const current = callbacks.slice();
+
+        for (const callback of current) {
             callback(event);
         }
     }

@@ -91,7 +91,9 @@ export abstract class BaseGame extends EventEmitter {
     /**
      * Update
      */
-    update(step: number) {}
+    update(step: number) {
+        // Overridden by client and server game implementations
+    }
 
     /**
      * Remove a avatar from the game
@@ -130,7 +132,7 @@ export abstract class BaseGame extends EventEmitter {
     loop() {
         this.newFrame();
 
-        const now = new Date().getTime(),
+        const now = Date.now(),
             step = now - (this.rendered ?? now);
 
         this.rendered = now;
@@ -143,7 +145,7 @@ export abstract class BaseGame extends EventEmitter {
      * On start
      */
     onStart() {
-        this.rendered = new Date().getTime();
+        this.rendered = Date.now();
         this.bonusManager.start();
         this.fps.start();
     }
@@ -264,7 +266,7 @@ export abstract class BaseGame extends EventEmitter {
      */
     sortAvatars(avatars: Collection<BaseAvatar> = this.avatars): Collection<BaseAvatar> {
         avatars.sort(function (a, b) {
-            return a.score > b.score ? -1 : a.score < b.score ? 1 : 0;
+            return b.score - a.score;
         });
 
         return avatars;
@@ -274,7 +276,7 @@ export abstract class BaseGame extends EventEmitter {
      * Set borderless
      */
     setBorderless(borderless: boolean) {
-        this.borderless = borderless ? true : false;
+        this.borderless = borderless;
     }
 
     /**
@@ -299,7 +301,7 @@ export abstract class BaseGame extends EventEmitter {
         if (!this.inRound) {
             this.inRound = true;
             this.onRoundNew();
-            setTimeout(this.start, typeof time !== 'undefined' ? time : this.warmupTime);
+            setTimeout(this.start, time ?? this.warmupTime);
         }
     }
 

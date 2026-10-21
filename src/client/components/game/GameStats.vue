@@ -135,14 +135,16 @@ function bonusDetails(player: PlayerStats): string[] {
 <template>
     <div class="game-stats">
         <ul v-if="awards.length" class="awards">
-            <li v-for="award in awards" :key="award.id" :class="award.id" class="has-tip" tabindex="0">
-                <span class="label">{{ award.label }}</span>
-                <span class="strong" :style="{ color: award.player?.color }">{{ award.player?.name }}</span>
-                <span class="value">{{ award.text }}</span>
-                <span class="tip" role="tooltip">
-                    <strong>{{ award.label }}</strong>
-                    {{ award.description }}
-                </span>
+            <li v-for="award in awards" :key="award.id" :class="award.id">
+                <button type="button" class="has-tip">
+                    <span class="label">{{ award.label }}</span>
+                    <span class="strong" :style="{ color: award.player?.color }">{{ award.player?.name }}</span>
+                    <span class="value">{{ award.text }}</span>
+                    <span class="tip" role="tooltip">
+                        <strong>{{ award.label }}</strong>
+                        {{ award.description }}
+                    </span>
+                </button>
             </li>
         </ul>
         <table class="table table-hover stats">

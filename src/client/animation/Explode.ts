@@ -37,7 +37,7 @@ export class Explode {
         this.effect = effect;
         this.particles = new Array(this.particleTotal);
         this.canvas = new Canvas(this.width, this.width);
-        this.created = new Date().getTime();
+        this.created = Date.now();
         this.done = false;
         this.cleared = false;
 
@@ -73,7 +73,7 @@ export class Explode {
 
         this.clear();
 
-        this.lastRender = new Date().getTime();
+        this.lastRender = Date.now();
         this.cleared = false;
 
         const age = this.lastRender - this.created;

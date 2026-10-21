@@ -8,7 +8,7 @@ export class SocketGroup {
     clients: any;
 
     constructor(clients?: any) {
-        this.clients = typeof clients !== 'undefined' ? clients : new Collection();
+        this.clients = clients ?? new Collection();
     }
 
     /**

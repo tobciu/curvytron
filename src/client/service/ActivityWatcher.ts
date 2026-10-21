@@ -26,20 +26,20 @@ export class ActivityWatcher {
         this.client = client;
         this.focused = true;
         this.active = true;
-        this.lastActivity = new Date().getTime();
+        this.lastActivity = Date.now();
         this.interval = null;
 
         this.onFocus = this.onFocus.bind(this);
         this.onBlur = this.onBlur.bind(this);
         this.checkInactivity = this.checkInactivity.bind(this);
 
-        window.addEventListener('focus', this.onFocus);
-        window.addEventListener('mousemove', this.onFocus);
-        window.addEventListener('click', this.onFocus);
-        window.addEventListener('keypress', this.onFocus);
+        globalThis.addEventListener('focus', this.onFocus);
+        globalThis.addEventListener('mousemove', this.onFocus);
+        globalThis.addEventListener('click', this.onFocus);
+        globalThis.addEventListener('keypress', this.onFocus);
         gamepadListener.addEventListener('gamepad:axis', this.onFocus);
         gamepadListener.addEventListener('gamepad:button', this.onFocus);
-        window.addEventListener('blur', this.onBlur);
+        globalThis.addEventListener('blur', this.onBlur);
 
         this.interval = setInterval(this.checkInactivity, this.checkInterval);
     }
@@ -48,10 +48,10 @@ export class ActivityWatcher {
      * Set active
      */
     setActive(active: boolean) {
-        active = active ? true : false;
+        active = !!active;
 
         if (active) {
-            this.lastActivity = new Date().getTime();
+            this.lastActivity = Date.now();
         }
 
         if (this.active !== active) {
@@ -108,7 +108,7 @@ export class ActivityWatcher {
      * Check inactivity
      */
     checkInactivity() {
-        const inactivity = new Date().getTime() - this.lastActivity;
+        const inactivity = Date.now() - this.lastActivity;
 
         if (inactivity > this.tolerance) {
             this.setActive(false);
