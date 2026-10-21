@@ -91,6 +91,7 @@ narrows the type of an inherited field uses `declare` (a plain redeclaration wou
 | `npm test`                   | Run the unit and integration tests (Vitest)                                  |
 | `npm run sprite`             | Build the sprite of the bonuses from `assets/bonuses/` (see `bonuses.md`)    |
 | `npm run load-test`          | Play games with simulated clients and print what the metrics say (see below) |
+| `npm run test:coverage`      | Run the tests and write the lcov coverage report for SonarQube (see below)   |
 | `npm run test:e2e`           | Build, then run the browser tests (Playwright)                               |
 | `npm run test:visual`        | Build, then compare screenshots of the main screens                          |
 | `npm run test:visual:update` | Update the reference screenshots (after an intended design change)           |
@@ -108,6 +109,39 @@ narrows the type of an inherited field uses `declare` (a plain redeclaration wou
 
 The first time, install the browser used by the end-to-end tests with `npx playwright install chromium`
 (or set `CHROMIUM_PATH` to an existing Chromium / Chrome executable).
+
+## Before a pull request
+
+`tools/pre-pr-check.sh` runs everything the CI would check, plus security scans and a SonarQube analysis,
+so red CI rounds do not happen in the first place: main integrated and pull request mergeable, conflict
+markers, gitleaks, actionlint, compose, hadolint/shellcheck/Trivy/Semgrep (Docker images, no CI minutes),
+Prettier, ESLint, typecheck, Vitest with coverage, build, functional Playwright tests and the Docker build.
+
+The SonarQube scan (project `curvytron` on the self-hosted server) needs `SONAR_TOKEN` (browse and
+"Execute Analysis") in the environment or in `~/.config/sonar-token`. It always runs as the branch
+analysis `local/<branch>` and waits for the quality gate; on red the new findings are listed. The gate
+counts what changed against `main` as new code (coverage ≥ 80 %, no new findings), `main` itself is
+analyzed by the CI on push. Useful options: `--skip-e2e`, `--skip-sonar`, `--skip-security`,
+`--sonar-only`, `--fail-fast`; `--help` lists everything.
+
+## Releases
+
+Releases are made locally with `tools/local-release.sh` (no CI minutes): it determines the next version
+from the newest `vX.Y.Z` tag, commits `Bump version to X.Y.Z` when needed (the version in package.json
+is what `/health` reports), builds the image, pushes it to GHCR as `ghcr.io/tobciu/curvytron:<version>`
+and `:latest`, tags the commit and creates the GitHub release.
+
+    tools/local-release.sh [major|minor|patch] [commit-ish] [--dry-run]
+
+One-time prerequisite: `gh auth refresh -h github.com -s write:packages` (docker is logged in at ghcr.io
+through the gh token by the script itself). `--dry-run` builds the image but commits, pushes and
+releases nothing.
+
+`tools/check-pending-releases.sh [ref]` answers the question before deploying: does the newest tag
+already contain all app-source commits of the ref (src, public, assets, Dockerfile, package files)? If
+it lists pending commits, run `tools/local-release.sh` with a suitable bump. On the VPS the compose
+service can then use `image: ghcr.io/tobciu/curvytron:latest` with `docker compose pull`, or keep
+`build: .` and check out the tagged commit.
 
 ## Stress test
 

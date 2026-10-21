@@ -16,6 +16,12 @@ RUN npm run build
 
 FROM node:22-alpine
 
+ARG APP_VERSION=dev
+ARG APP_COMMIT=unknown
+LABEL org.opencontainers.image.title="curvytron" \
+      org.opencontainers.image.version="${APP_VERSION}" \
+      org.opencontainers.image.revision="${APP_COMMIT}"
+
 ENV NODE_ENV=production \
     PORT=8080
 WORKDIR /curvytron
