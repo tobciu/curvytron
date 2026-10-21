@@ -121,7 +121,7 @@ export class Game extends BaseGame {
                 if (avatar.alive) {
                     avatar.printManager.test();
                     this.bonusManager.testCatch(avatar);
-                    this.stats.testNearMiss(avatar);
+                    this.stats.testSurroundings(avatar);
                 }
             }
         }

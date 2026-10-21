@@ -48,7 +48,7 @@ ping, memory and CPU. `--url http://host:8080` (and `--token`) tests a server th
 ### Game statistics
 
 `src/server/service/GameStats.ts` listens to the events of a game (deaths, bonus catches, positions, end of round) and
-counts what each player did (including the near misses: passing a foreign trail closer than half an avatar radius, checked once per frame with a slightly larger body). The server sends the result with the `game:stats` event at the end of every round (so the last one is the final result); the type
+counts what each player did (including what is around the avatar, looked at once per frame: near misses = a foreign trail closer than half an avatar radius, squeezes = foreign trails on both sides, saves = going through a foreign trail while invincible). The server sends the result with the `game:stats` event at the end of every round (so the last one is the final result); the type
 of the data is in `src/shared/model/GameStats.ts`. The client keeps the last one in `game.stats` and shows it with the
 final ranking, after the last round only (`components/game/GameStats.vue`). The data is plain JSON, so it can be stored later.
 

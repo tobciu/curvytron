@@ -83,24 +83,32 @@ describe('game statistics', () => {
         place(alice, 20, 20, 0);
         game.emit('game:start', { game });
 
+        // The avatar may have been placed less than 5 units from where it was: that is already counted
+        const raw = game.stats.players.get(alice.id);
+        const start = { distance: raw.distance, trailLength: raw.trailLength };
+
         alice.setPrinting(false);
         alice.setPosition(21, 20);
         alice.setPrinting(true);
         alice.setPosition(22, 20);
         alice.setPosition(22, 23);
 
-        expect(stats(alice).distance).toBe(5);
-        expect(stats(alice).trailLength).toBe(4);
+        expect(raw.distance - start.distance).toBeCloseTo(5);
+        expect(raw.trailLength - start.trailLength).toBeCloseTo(4);
     });
 
     it('ignores a teleport, as the borderless mode does', () => {
         startRound();
         place(alice, 99, 50, 0);
         game.emit('game:start', { game });
+
+        const raw = game.stats.players.get(alice.id);
+        const start = raw.distance;
+
         alice.setPosition(0, 50);
         alice.setPosition(1, 50);
 
-        expect(stats(alice).distance).toBe(1);
+        expect(raw.distance - start).toBeCloseTo(1);
     });
 
     it('measures how long an avatar stayed alive in the round', () => {
@@ -225,5 +233,89 @@ describe('near misses', () => {
         pass(1.15);
 
         expect(game.stats.getAwards()).toContainEqual({ id: 'closeCall', player: alice.id, value: 1 });
+    });
+});
+
+describe('squeezes, saves and rounds', () => {
+    beforeEach(() => {
+        startRound();
+        place(bob, 10, 10, 1);
+        place(carl, 90, 90, 1);
+    });
+
+    /** Trails of Bob on both sides of the way of Alice (she goes along x, the sides are on y) */
+    function corridor(width) {
+        game.world.addBody(new AvatarBody(60.2, 50 - width, bob));
+        game.world.addBody(new AvatarBody(60.2, 50 + width, bob));
+    }
+
+    it('counts the pass between two trails that are close to each other', () => {
+        corridor(1.4);
+        place(alice, 60, 50, 0);
+        game.update(16);
+
+        expect(alice.alive).toBe(true);
+        expect(stats(alice).squeezes).toBe(1);
+        expect(stats(alice).nearMisses).toBe(1);
+
+        // Still in the gap: the same pass
+        place(alice, 60.1, 50, 0);
+        game.update(16);
+        expect(stats(alice).squeezes).toBe(1);
+    });
+
+    it('does not count a trail on one side only, nor a wide gap', () => {
+        game.world.addBody(new AvatarBody(60.2, 51.4, bob));
+        place(alice, 60, 50, 0);
+        game.update(16);
+
+        expect(stats(alice).squeezes).toBe(0);
+        expect(stats(alice).nearMisses).toBe(1);
+
+        place(alice, 80, 50, 0);
+        game.world.addBody(new AvatarBody(80.2, 45, bob));
+        game.world.addBody(new AvatarBody(80.2, 55, bob));
+        game.update(16);
+
+        expect(stats(alice).squeezes).toBe(0);
+    });
+
+    it('counts the trails an invincible avatar goes through, once per trail it crosses', () => {
+        game.world.addBody(new AvatarBody(50, 50, bob));
+        alice.setInvincible(true);
+        place(alice, 50, 50, 0);
+        game.update(16);
+        game.update(16);
+
+        expect(alice.alive).toBe(true);
+        expect(stats(alice).invincibleSaves).toBe(1);
+
+        place(alice, 70, 50, 0);
+        game.update(16);
+        place(alice, 50, 50, 0);
+        game.update(16);
+
+        expect(stats(alice).invincibleSaves).toBe(2);
+    });
+
+    it('keeps the result of every round', () => {
+        vi.setSystemTime(Date.now() + 2500);
+        place(alice, 99.5, 50, 0);
+        place(bob, 99.5, 20, 0);
+        place(carl, 50, 50, 1);
+        game.update(16);
+
+        const { rounds } = game.stats.serialize();
+
+        expect(rounds).toEqual([{ round: 1, winner: carl.id, duration: expect.any(Number) }]);
+        expect(rounds[0].duration).toBeGreaterThanOrEqual(2500);
+    });
+
+    it('gives awards for them', () => {
+        corridor(1.4);
+        place(alice, 60, 50, 0);
+        game.update(16);
+
+        expect(game.stats.getAwards()).toContainEqual({ id: 'needle', player: alice.id, value: 1 });
     });
 });

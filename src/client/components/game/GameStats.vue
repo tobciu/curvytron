@@ -15,6 +15,14 @@ const awardInfo: Record<string, { label: string; description: string }> = {
         label: 'Close call',
         description: 'Passed the most often very close to the trail of another player, without touching it.'
     },
+    needle: {
+        label: "Needle's eye",
+        description: 'Squeezed the most often between trails of other players that are close to each other.'
+    },
+    untouchable: {
+        label: 'Untouchable',
+        description: 'Went the most often through the trail of another player while invincible.'
+    },
     hunter: { label: 'Hunter', description: 'Killed the most players on their trail.' },
     marathon: { label: 'Marathon driver', description: 'Drove the longest distance.' },
     survivor: { label: 'Survivor', description: 'Stayed alive the longest in a round.' }
@@ -22,18 +30,60 @@ const awardInfo: Record<string, { label: string; description: string }> = {
 
 /** The columns of the table: what they count */
 const columns = [
-    { label: 'Rounds', description: 'Rounds won.' },
-    { label: 'Bonuses', description: 'Bonuses caught. Hover a number to see which ones.' },
-    { label: 'Walls', description: 'Times the player crashed on a border.' },
-    { label: 'Trails', description: 'Times the player crashed on a trail, their own or the one of somebody else.' },
-    { label: 'Kills', description: 'Players that crashed on the trail of this player.' },
+    { label: 'Rounds', description: 'Rounds won.', value: (player: PlayerStats) => player.roundsWon },
+    {
+        label: 'Bonuses',
+        description: 'Bonuses caught. Hover a number to see which ones.',
+        value: (player: PlayerStats) => player.bonuses
+    },
+    {
+        label: 'Deaths',
+        description: 'Times the player died. Hover a number to see what killed them.',
+        value: (player: PlayerStats) => deaths(player)
+    },
+    {
+        label: 'Kills',
+        description: 'Players that crashed on the trail of this player.',
+        value: (player: PlayerStats) => player.kills
+    },
     {
         label: 'Close calls',
-        description: 'Times the player passed very close to the trail of another player, without touching it.'
+        description: 'Times the player passed very close to the trail of another player, without touching it.',
+        value: (player: PlayerStats) => player.nearMisses
     },
-    { label: 'Distance', description: 'Distance driven, in the units of the map.' },
-    { label: 'Longest life', description: 'Longest time the player stayed alive in a round.' }
+    {
+        label: 'Squeezes',
+        description:
+            'Times the player passed between trails of other players that are close to each other, like a gap.',
+        value: (player: PlayerStats) => player.squeezes
+    },
+    {
+        label: 'Saved',
+        description: 'Times the player went through the trail of another player while invincible.',
+        value: (player: PlayerStats) => player.invincibleSaves
+    },
+    {
+        label: 'Distance',
+        description: 'Distance driven, in the units of the map.',
+        value: (player: PlayerStats) => player.distance
+    },
+    {
+        label: 'Longest life',
+        description: 'Longest time the player stayed alive in a round.',
+        value: (player: PlayerStats) => player.longestLife,
+        format: (value: number) => `${seconds(value)} s`
+    }
 ];
+
+/** The highest value of every column: the bars of the cells are relative to it */
+const maxima = computed(() => columns.map((column) => Math.max(0, ...props.stats.players.map(column.value))));
+
+/** Width of the bar of a cell, in percent of the best of its column */
+function bar(index: number, player: PlayerStats): Record<string, string> {
+    const max = maxima.value[index];
+
+    return { '--bar': `${max > 0 ? Math.round((columns[index].value(player) / max) * 100) : 0}%` };
+}
 
 /** `bonus-self-fast` => "self fast" */
 const bonusLabels = new Map(
@@ -54,6 +104,33 @@ const awards = computed(() =>
 
 function seconds(ms: number): string {
     return (ms / 1000).toFixed(1);
+}
+
+const rounds = computed(() =>
+    props.stats.rounds.map((result) => ({
+        ...result,
+        winner: result.winner === null ? null : (playersById.value.get(result.winner) ?? null)
+    }))
+);
+
+/** Does the cell have an explanation? The bonuses and the deaths are broken down */
+function hasTip(label: string, player: PlayerStats): boolean {
+    return (label === 'Bonuses' && player.bonuses > 0) || (label === 'Deaths' && deaths(player) > 0);
+}
+
+function deaths(player: PlayerStats): number {
+    return player.wallDeaths + player.selfDeaths + player.trailDeaths;
+}
+
+/** What killed a player, for the explanation of the number of deaths */
+function deathDetails(player: PlayerStats): string[] {
+    const causes: Array<[number, string]> = [
+        [player.wallDeaths, 'on a border'],
+        [player.selfDeaths, 'on their own trail'],
+        [player.trailDeaths, 'on the trail of another player']
+    ];
+
+    return causes.filter(([count]) => count > 0).map(([count, what]) => `${count} × ${what}`);
 }
 
 /** The bonuses of a player by type, the most caught first: "fast ×3, small ×1" */
@@ -102,22 +179,44 @@ function bonusDetails(player: PlayerStats): string[] {
                     <td class="name">
                         <span :style="{ color: player.color }">{{ player.name }}</span>
                     </td>
-                    <td>{{ player.roundsWon }}</td>
-                    <td :class="{ 'has-tip': player.bonuses > 0 }" :tabindex="player.bonuses > 0 ? 0 : undefined">
-                        {{ player.bonuses }}
-                        <span v-if="player.bonuses > 0" class="tip" role="tooltip">
+                    <td
+                        v-for="(column, index) in columns"
+                        :key="column.label"
+                        class="bar"
+                        :class="{ 'has-tip': hasTip(column.label, player) }"
+                        :style="bar(index, player)"
+                        :tabindex="hasTip(column.label, player) ? 0 : undefined"
+                    >
+                        {{ column.format ? column.format(column.value(player)) : column.value(player) }}
+                        <span
+                            v-if="column.label === 'Bonuses' && hasTip(column.label, player)"
+                            class="tip"
+                            role="tooltip"
+                        >
                             <strong>Bonuses of {{ player.name }}</strong>
                             <span v-for="detail in bonusDetails(player)" :key="detail" class="line">{{ detail }}</span>
                         </span>
+                        <span
+                            v-if="column.label === 'Deaths' && hasTip(column.label, player)"
+                            class="tip"
+                            role="tooltip"
+                        >
+                            <strong>Deaths of {{ player.name }}</strong>
+                            <span v-for="detail in deathDetails(player)" :key="detail" class="line">{{ detail }}</span>
+                        </span>
                     </td>
-                    <td>{{ player.wallDeaths }}</td>
-                    <td>{{ player.selfDeaths + player.trailDeaths }}</td>
-                    <td>{{ player.kills }}</td>
-                    <td>{{ player.nearMisses }}</td>
-                    <td>{{ player.distance }}</td>
-                    <td>{{ seconds(player.longestLife) }} s</td>
                 </tr>
             </tbody>
         </table>
+        <ol v-if="rounds.length > 1" class="rounds">
+            <li v-for="result in rounds" :key="result.round">
+                <span class="label">Round {{ result.round }}</span>
+                <span v-if="result.winner" class="strong" :style="{ color: result.winner.color }">
+                    {{ result.winner.name }}
+                </span>
+                <span v-else class="nobody">nobody</span>
+                <span class="value">{{ seconds(result.duration) }} s</span>
+            </li>
+        </ol>
     </div>
 </template>

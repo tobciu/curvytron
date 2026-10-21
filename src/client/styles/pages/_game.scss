@@ -561,7 +561,7 @@
                 }
 
                 .game-stats {
-                    max-width: 900px;
+                    max-width: 1000px;
                     margin: 40px auto;
 
                     // Explanations: shown under what is hovered or focused (keyboard, touch)
@@ -673,6 +673,29 @@
                         }
                     }
 
+                    .rounds {
+                        display: flex;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                        gap: 6px 20px;
+                        margin: 20px 0 0 0;
+                        padding: 0;
+                        list-style: none;
+                        font-size: 14px;
+                        font-weight: 300;
+
+                        .label,
+                        .value,
+                        .nobody {
+                            opacity: 0.6;
+                        }
+
+                        .strong,
+                        .nobody {
+                            margin: 0 6px;
+                        }
+                    }
+
                     table.stats {
                         width: 100%;
                         text-align: center;
@@ -684,6 +707,7 @@
                             text-transform: uppercase;
                             // Not `opacity`: it would dim the explanations too
                             color: transparentize(#fff, 0.3);
+                            white-space: nowrap;
                         }
 
                         td {
@@ -694,13 +718,21 @@
                             font-weight: 300;
                         }
 
+                        // The length of the bar is relative to the best of the column (--bar, set by the component)
+                        td.bar {
+                            background-image: linear-gradient(transparentize(#fff, 0.6), transparentize(#fff, 0.6));
+                            background-repeat: no-repeat;
+                            background-position: left bottom;
+                            background-size: var(--bar, 0%) 4px;
+                        }
+
                         .name {
                             text-align: left;
                             font-weight: bold;
                         }
 
                         tr:hover td {
-                            background: transparentize(#fff, 0.9);
+                            background-color: transparentize(#fff, 0.9);
                         }
                     }
                 }

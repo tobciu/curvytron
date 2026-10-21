@@ -19,6 +19,10 @@ export interface PlayerStats {
     kills: number;
     /** Times the avatar passed very close to the trail of another player without touching it */
     nearMisses: number;
+    /** Times the avatar passed between two trails of other players that are close to each other (a gap) */
+    squeezes: number;
+    /** Times the avatar went through a trail of another player while invincible */
+    invincibleSaves: number;
     distance: number;
     /** Distance driven while leaving a trail */
     trailLength: number;
@@ -33,7 +37,17 @@ export interface Award {
     value: number;
 }
 
+/** How a round ended */
+export interface RoundResult {
+    round: number;
+    /** Id of the winner, null when everybody died together */
+    winner: number | null;
+    /** Time between the start and the end of the round (ms) */
+    duration: number;
+}
+
 export interface GameStatsData {
     players: PlayerStats[];
     awards: Award[];
+    rounds: RoundResult[];
 }
