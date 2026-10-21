@@ -10,12 +10,17 @@ server {
     server_name curvytron.acme.com;
 
     # Path to curvytron repository on file system:
-    root /path/to/curvytron/web;
+    root /path/to/curvytron/dist;
     index index.html;
 
     # Custom logs (Optional):
     access_log  /var/log/nginx/curvytron/access.log combined;
     error_log   /var/log/nginx/curvytron/error.log;
+
+    # The metrics are for Prometheus only, not for the players (it reaches the server directly)
+    location = /metrics {
+        return 404;
+    }
 
     location / {
         # Address and port of your running Curvytron server:

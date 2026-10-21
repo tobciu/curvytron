@@ -1,6 +1,8 @@
 {
     "port": 8080,
-    "googleAnalyticsId": null,
+    "metrics": {
+        "enabled": true
+    },
     "inspector": {
         "enabled": false,
         "host": "localhost",

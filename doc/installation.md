@@ -1,29 +1,36 @@
 ## Prerequisite
 
-Curvytron runs on [node.js >= v0.10](https://nodejs.org/).
-You need to install node on the machine that will run the Curvytron server.
+Curvytron runs on [Node.js >= 22.18](https://nodejs.org/) (the server is TypeScript, run directly by Node).
+You need to install Node.js on the machine that will run the Curvytron server.
 
 ## Installation
 
-__Clone the repository__
+**Clone the repository**
 
     git clone https://github.com/Elao/curvytron.git
     cd curvytron
 
-__Install dependencies__
+**Install dependencies**
 
     npm install
-    bower install
 
-__Build the game__
+**Build the game**
 
-    gulp
+    npm run build
 
 ## Launch server
 
-    node bin/curvytron.js
+    npm start
 
 ## Play
 
 Go to [http://localhost:8080/](http://localhost:8080/)
 Join a room, choose a player name and play!
+
+## With Docker
+
+    docker compose up --build -d
+
+The game is then available on [http://localhost:8080/](http://localhost:8080/).
+Change the published port in `docker-compose.yml` (e.g. `'3000:8080'`), and mount your `config.json` as shown there if needed.
+On a VPS, bind to `127.0.0.1:8080:8080` and put a reverse proxy in front (see [nginx-proxy.md](nginx-proxy.md), websockets must be forwarded).

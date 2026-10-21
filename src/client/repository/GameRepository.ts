@@ -1,0 +1,348 @@
+import { EventEmitter } from '#event-emitter';
+import { MapBonus } from '../model/bonus/MapBonus.ts';
+import { StackedBonus } from '../model/bonus/StackedBonus.ts';
+import { Compressor } from '../../shared/service/Compressor.ts';
+import type { SocketClient } from '../core/SocketClient.ts';
+import type { RoomRepository } from './RoomRepository.ts';
+import type { SoundManager } from '../service/SoundManager.ts';
+import type { ServerEvent } from '../../shared/protocol.ts';
+
+/**
+ * GameRepository
+ */
+export class GameRepository extends EventEmitter {
+    client: SocketClient;
+    parent: RoomRepository;
+    sound: SoundManager;
+    compressor: any;
+    game: any;
+
+    constructor(client: SocketClient, parent: RoomRepository, sound: SoundManager) {
+        super();
+
+        this.client = client;
+        this.parent = parent;
+        this.sound = sound;
+        this.compressor = new Compressor();
+        this.game = null;
+
+        this.start = this.start.bind(this);
+        this.stop = this.stop.bind(this);
+        this.draw = this.draw.bind(this);
+        this.onGameStart = this.onGameStart.bind(this);
+        this.onGameStop = this.onGameStop.bind(this);
+        this.onBonusPop = this.onBonusPop.bind(this);
+        this.onBonusClear = this.onBonusClear.bind(this);
+        this.onBonusStack = this.onBonusStack.bind(this);
+        this.onPosition = this.onPosition.bind(this);
+        this.onAngle = this.onAngle.bind(this);
+        this.onPoint = this.onPoint.bind(this);
+        this.onDie = this.onDie.bind(this);
+        this.onProperty = this.onProperty.bind(this);
+        this.onRoundNew = this.onRoundNew.bind(this);
+        this.onRoundEnd = this.onRoundEnd.bind(this);
+        this.onClear = this.onClear.bind(this);
+        this.onBorderless = this.onBorderless.bind(this);
+        this.onEnd = this.onEnd.bind(this);
+        this.onStats = this.onStats.bind(this);
+        this.onLeave = this.onLeave.bind(this);
+        this.onSpectate = this.onSpectate.bind(this);
+    }
+
+    /**
+     * Start
+     */
+    start() {
+        if (this.parent.room) {
+            this.game = this.parent.room.game;
+            this.attachEvents();
+            this.attachIdleEvents();
+        }
+    }
+
+    /**
+     * Pause
+     */
+    stop() {
+        this.detachEvents();
+        this.detachIdleEvents();
+        this.game = null;
+    }
+
+    /**
+     * Attach events
+     */
+    attachEvents() {
+        this.client.on('game:start', this.onGameStart);
+        this.client.on('game:stop', this.onGameStop);
+        this.client.on('property', this.onProperty);
+        this.client.on('position', this.onPosition);
+        this.client.on('angle', this.onAngle);
+        this.client.on('point', this.onPoint);
+        this.client.on('die', this.onDie);
+        this.client.on('bonus:pop', this.onBonusPop);
+        this.client.on('bonus:clear', this.onBonusClear);
+        this.client.on('bonus:stack', this.onBonusStack);
+        this.client.on('round:new', this.onRoundNew);
+        this.client.on('round:end', this.onRoundEnd);
+        this.client.on('clear', this.onClear);
+        this.client.on('borderless', this.onBorderless);
+        this.client.on('end', this.onEnd);
+        this.client.on('game:stats', this.onStats);
+        this.client.on('game:leave', this.onLeave);
+        this.client.on('spectate', this.onSpectate);
+    }
+
+    /**
+     * Attach events
+     */
+    detachEvents() {
+        this.client.off('game:start', this.onGameStart);
+        this.client.off('game:stop', this.onGameStop);
+        this.client.off('property', this.onProperty);
+        this.client.off('position', this.onPosition);
+        this.client.off('angle', this.onAngle);
+        this.client.off('point', this.onPoint);
+        this.client.off('die', this.onDie);
+        this.client.off('bonus:pop', this.onBonusPop);
+        this.client.off('bonus:clear', this.onBonusClear);
+        this.client.off('bonus:stack', this.onBonusStack);
+        this.client.off('round:new', this.onRoundNew);
+        this.client.off('round:end', this.onRoundEnd);
+        this.client.off('clear', this.onClear);
+        this.client.off('borderless', this.onBorderless);
+        this.client.off('end', this.onEnd);
+        this.client.off('game:stats', this.onStats);
+        this.client.off('game:leave', this.onLeave);
+        this.client.off('spectate', this.onSpectate);
+    }
+
+    /**
+     * Attach idle events
+     */
+    attachIdleEvents() {
+        this.client.on('property', this.draw);
+        this.client.on('position', this.draw);
+        this.client.on('angle', this.draw);
+    }
+
+    /**
+     * Detach idle events
+     */
+    detachIdleEvents() {
+        this.client.off('property', this.draw);
+        this.client.off('position', this.draw);
+        this.client.off('angle', this.draw);
+    }
+
+    /**
+     * Draw
+     */
+    draw() {
+        if (!this.game.frame) {
+            this.game.repaint();
+        }
+    }
+
+    /**
+     * On game start
+     */
+    onGameStart(e: ServerEvent<'game:start'>) {
+        this.game.start();
+        this.detachIdleEvents();
+        this.emit('game:start');
+    }
+
+    /**
+     * On game stop
+     */
+    onGameStop(e: ServerEvent<'game:stop'>) {
+        this.game.stop();
+        this.attachIdleEvents();
+        this.emit('game:stop');
+    }
+
+    /**
+     * On property
+     */
+    onProperty(e: ServerEvent<'property'>) {
+        const data = e.detail,
+            avatar = this.game.avatars.getById(data[0]);
+
+        if (avatar) {
+            avatar.set(data[1], data[2]);
+        }
+    }
+
+    /**
+     * On position
+     */
+    onPosition(e: ServerEvent<'position'>) {
+        const avatar = this.game.avatars.getById(e.detail[0]);
+
+        if (avatar) {
+            avatar.setPositionFromServer(
+                this.compressor.decompress(e.detail[1]),
+                this.compressor.decompress(e.detail[2])
+            );
+        }
+    }
+
+    /**
+     * On point
+     */
+    onPoint(e: ServerEvent<'point'>) {
+        const avatar = this.game.avatars.getById(e.detail);
+
+        if (avatar) {
+            avatar.addPoint(avatar.x, avatar.y);
+        }
+    }
+
+    /**
+     * On angle
+     */
+    onAngle(e: ServerEvent<'angle'>) {
+        const avatar = this.game.avatars.getById(e.detail[0]);
+
+        if (avatar) {
+            avatar.setAngle(this.compressor.decompress(e.detail[1]));
+        }
+    }
+
+    /**
+     * On die
+     */
+    onDie(e: ServerEvent<'die'>) {
+        const avatar = this.game.avatars.getById(e.detail[0]);
+
+        if (avatar) {
+            avatar.die();
+            this.sound.play('death');
+        }
+    }
+
+    /**
+     * On bonus pop
+     */
+    onBonusPop(e: ServerEvent<'bonus:pop'>) {
+        const bonus = new MapBonus(
+            e.detail[0],
+            this.compressor.decompress(e.detail[1]),
+            this.compressor.decompress(e.detail[2]),
+            e.detail[3]
+        );
+
+        this.game.bonusManager.add(bonus);
+        this.sound.play('bonus-pop');
+    }
+
+    /**
+     * On bonus clear
+     */
+    onBonusClear(e: ServerEvent<'bonus:clear'>) {
+        const bonus = this.game.bonusManager.bonuses.getById(e.detail);
+
+        if (bonus) {
+            this.game.bonusManager.remove(bonus);
+            this.sound.play('bonus-clear');
+        }
+    }
+
+    /**
+     * On bonus stack
+     */
+    onBonusStack(e: ServerEvent<'bonus:stack'>) {
+        const avatar = this.game.avatars.getById(e.detail[0]);
+
+        if (avatar?.local) {
+            avatar.bonusStack[e.detail[1]](new StackedBonus(e.detail[2], e.detail[3], e.detail[4]));
+        }
+    }
+
+    /**
+     * On round new
+     */
+    onRoundNew(e: ServerEvent<'round:new'>) {
+        this.game.newRound();
+        this.emit('round:new');
+    }
+
+    /**
+     * On round new
+     */
+    onRoundEnd(e: ServerEvent<'round:end'>) {
+        this.game.endRound();
+        this.game.roundWinner = e.detail ? this.game.avatars.getById(e.detail) : null;
+        this.emit('round:end');
+    }
+
+    /**
+     * On clear
+     */
+    onClear(e: ServerEvent<'clear'>) {
+        this.game.clearTrails();
+    }
+
+    /**
+     * On borderless
+     */
+    onBorderless(e: ServerEvent<'borderless'>) {
+        this.game.setBorderless(e.detail);
+        this.emit('borderless');
+    }
+
+    /**
+     * On statistics
+     */
+    onStats(e: ServerEvent<'game:stats'>) {
+        this.game.stats = e.detail;
+        this.emit('stats');
+    }
+
+    /**
+     * On game end
+     */
+    onEnd(e: ServerEvent<'end'>) {
+        this.game.end();
+        this.sound.play('win');
+        this.emit('end');
+    }
+
+    /**
+     * On leave
+     */
+    onLeave(e: ServerEvent<'game:leave'>) {
+        const avatar = this.game.avatars.getById(e.detail);
+
+        if (avatar) {
+            this.game.removeAvatar(avatar);
+        }
+    }
+
+    /**
+     * On spectate
+     */
+    onSpectate(e: ServerEvent<'spectate'>) {
+        const data = e.detail;
+
+        this.game.maxScore = data.maxScore;
+
+        for (let i = this.game.avatars.items.length - 1; i >= 0; i--) {
+            this.game.avatars.items[i].local = true;
+            this.game.avatars.items[i].ready = true;
+        }
+
+        if (data.inRound) {
+            if (data.rendered) {
+                this.game.newRound(0);
+            } else {
+                this.game.newRound();
+            }
+        } else {
+            this.game.start();
+        }
+
+        this.emit('spectate');
+    }
+}
