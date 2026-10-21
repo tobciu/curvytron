@@ -14,6 +14,13 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [ ] Tick duration (average, p99), players, rooms, games, ping per client
     - [ ] No per-tick console output
     - [ ] Example Grafana dashboard in `doc/`
+- [ ] **Grafana setup on the VPS** (to do by hand, once `/metrics` exists)
+    - [ ] Check that the stack has a Prometheus (otherwise add one, or switch to the InfluxDB inspector)
+    - [ ] Add a scrape job for the Curvytron container (`/metrics`, same Docker network or published port, not reachable from the internet)
+    - [ ] Block `/metrics` in the nginx proxy (see `doc/nginx-proxy.md`)
+    - [ ] Check in Grafana > Explore that the `curvytron_*` metrics arrive
+    - [ ] Create a **Curvytron dashboard**: players, rooms and games now / over time, tick duration (avg, p99), ping per client; export it as JSON into `doc/grafana/`
+    - [ ] Optional: alert when the tick duration is too high
 - [ ] **Load test**: 8-10 simulated clients in one game, read the metrics at the end (tick duration, dropped frames)
 - [ ] Investigate the small stutter seen with 5 players + 1 spectator (check client FPS / ping in the metrics footer when it happens)
 - [ ] Look into the flaky e2e test `presets and individual bonuses` (fails now and then in a full run, passes alone)
