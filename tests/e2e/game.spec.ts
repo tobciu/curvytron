@@ -62,6 +62,14 @@ test('plays a round until the game is over, then goes back to the room', async (
     expect(cells.map((row) => row[0]).toSorted()).toEqual(['Alice', 'Bob']);
     expect(cells.map((row) => row[1])).toEqual(['1', '0']);
 
+    // The titles explain themselves when hovered
+    const closeCalls = page.locator('#end .game-stats th', { hasText: 'Close calls' });
+
+    await expect(closeCalls.locator('.tip')).toBeHidden();
+    await closeCalls.hover();
+    await expect(closeCalls.locator('.tip')).toBeVisible();
+    await expect(closeCalls.locator('.tip')).toContainText('very close to the trail of another player');
+
     await page.locator('#end .btn-back-to-room').first().click();
 
     await expect(page).toHaveURL(new RegExp(`#/room/${name}`));
@@ -80,7 +88,8 @@ test('shows the recap between two rounds, and goes on with the next one', async 
     await readyAll(alice);
 
     await expect(alice.locator('#end .recap-view')).toHaveClass(/round/, { timeout: 45_000 });
-    await expect(alice.locator('#end .victory')).toContainText('won the round');
+    // Nobody steers: sometimes both avatars crash in the same frame
+    await expect(alice.locator('#end .victory')).toContainText(/won the round|everybody died/);
 
     // The next round starts: countdown again, the recap goes away
     await expect(alice.locator('#end')).toBeHidden({ timeout: 15_000 });

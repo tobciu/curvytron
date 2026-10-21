@@ -564,6 +564,86 @@
                     max-width: 900px;
                     margin: 40px auto;
 
+                    // Explanations: shown under what is hovered or focused (keyboard, touch)
+                    .has-tip {
+                        position: relative;
+                        cursor: help;
+                        outline: 0;
+
+                        .tip {
+                            display: none;
+                            position: absolute;
+                            top: 100%;
+                            left: 50%;
+                            z-index: 10;
+                            width: 220px;
+                            margin: 8px 0 0 -110px;
+                            padding: 10px 12px;
+                            background: #fff;
+                            color: #222;
+                            font-size: 14px;
+                            font-weight: 300;
+                            line-height: 1.4;
+                            text-align: left;
+                            text-transform: none;
+                            opacity: 1;
+                            pointer-events: none;
+                            box-shadow: 0 4px 16px transparentize(#000, 0.6);
+
+                            // The arrow
+                            &:before {
+                                content: '';
+                                position: absolute;
+                                bottom: 100%;
+                                left: 50%;
+                                margin-left: -6px;
+                                border: 6px solid transparent;
+                                border-bottom-color: #fff;
+                            }
+
+                            strong,
+                            .line {
+                                display: block;
+                            }
+
+                            strong {
+                                margin-bottom: 2px;
+                                font-weight: bold;
+                            }
+                        }
+
+                        &:hover .tip,
+                        &:focus .tip {
+                            display: block;
+                        }
+
+                        // The last columns: the explanation would leave the page
+                        &.tip-end .tip {
+                            left: auto;
+                            right: 0;
+                            margin-left: 0;
+
+                            &:before {
+                                left: auto;
+                                right: 14px;
+                            }
+                        }
+                    }
+
+                    th .info {
+                        display: inline-block;
+                        width: 14px;
+                        height: 14px;
+                        margin-left: 4px;
+                        border: 1px solid currentColor;
+                        border-radius: 50%;
+                        font-size: 10px;
+                        font-style: normal;
+                        line-height: 12px;
+                        text-align: center;
+                        vertical-align: 1px;
+                    }
+
                     .awards {
                         display: flex;
                         flex-wrap: wrap;
@@ -602,7 +682,8 @@
                             font-size: 13px;
                             font-weight: 300;
                             text-transform: uppercase;
-                            opacity: 0.7;
+                            // Not `opacity`: it would dim the explanations too
+                            color: transparentize(#fff, 0.3);
                         }
 
                         td {

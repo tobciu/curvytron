@@ -10,6 +10,7 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [x] Vue component `GameStats.vue` below the ranking, unit tests and e2e check
     - [x] The awards are shown at the end of every round, the table at the end of the game
     - [ ] Statistics per bonus type in the UI (the data is already sent: `bonusesByType`)
+- [ ] Statistics: more details on hover (the titles and awards have explanations, the bonus count shows the types): per-round values, icons in the titles (the icon font has only a few glyphs, a new set is needed)
 - [ ] Statistics: skill measures (not urgent)
     - [x] Near misses: one more look in the islands of the world per avatar and frame (`GameStats.testNearMiss`), counted once per approach to a foreign trail closer than half an avatar radius; award "close call"
     - [ ] Driving through gaps of a foreign trail (needs gap detection in the trails)
