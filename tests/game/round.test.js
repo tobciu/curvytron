@@ -370,3 +370,26 @@ describe('a player that leaves', () => {
         expect(game.getPresentAvatars().count()).toBe(2);
     });
 });
+
+describe('a bug in a game', () => {
+    it('ends this game only, and the pending timers do not bring the server down', () => {
+        const ended = vi.fn();
+        const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+        game.on('end', ended);
+        game.newRound();
+        game.update = () => {
+            throw new Error('bug');
+        };
+
+        game.onFrame(16);
+
+        expect(ended).toHaveBeenCalledOnce();
+        expect(game.avatars).toBeUndefined();
+        expect(errors).toHaveBeenCalled();
+
+        // The countdown of the round that was starting, and the end of a round: nothing happens
+        expect(() => vi.advanceTimersByTime(10000)).not.toThrow();
+        errors.mockRestore();
+    });
+});

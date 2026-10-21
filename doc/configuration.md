@@ -26,6 +26,20 @@ Details of `config.json`:
 | -------- | ---------------------------------------------------------------------------------------------- | ------------- | ------ | -------- |
 | port     | The port on which Curvytron server will run (the `PORT` environment variable takes precedence) | 8080          | Number | Required |
 
+**Log:**
+
+What the server prints (clients, errors, warnings) can also be written to a file, with the time and the level of every
+line. The console keeps working (Docker collects it). The file is only appended to: let logrotate (`copytruncate`) or the
+host manage its size. In Docker, mount a volume on `/curvytron/logs` to keep it.
+
+| Variable | Description                                       | Default value | Type   | Required |
+| -------- | ------------------------------------------------- | ------------- | ------ | -------- |
+| file     | Path of the log file, relative to the application | none          | String | Optional |
+
+```json
+{ "log": { "file": "logs/curvytron.log" } }
+```
+
 **Metrics:**
 
 The server exposes its metrics in the Prometheus format on `/metrics` (see [monitoring](monitoring.md)).

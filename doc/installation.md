@@ -1,6 +1,6 @@
 ## Prerequisite
 
-Curvytron runs on [Node.js >= 22](https://nodejs.org/).
+Curvytron runs on [Node.js >= 22.18](https://nodejs.org/) (the server is TypeScript, run directly by Node).
 You need to install Node.js on the machine that will run the Curvytron server.
 
 ## Installation

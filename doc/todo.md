@@ -52,7 +52,6 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
 - [x] Presets and the server classes come from the registry (a new bonus: a class, an entry in the list, an image)
 - [x] The network protocol is described as types (`src/shared/protocol.ts`), `noImplicitOverride` is on, `src/client/lib` is TypeScript
 - [ ] Replace the remaining `any` (about 580, `tests/quality.test.js` only lets the number go down): the callbacks of the repositories, the fields of `RoomRepository` (they can be null), the messages of the chat, the canvas
-- [ ] Pin the Node version (>= 22.18) in the Dockerfile and CI
-- [ ] Error logging on the server (unexpected messages, crashes) to a file / the Docker log
-- [ ] Health endpoint with player and room counts
+- [x] Operations: the Dockerfile refuses a Node older than 22.18, `/health` (also the Docker health check), a log file (`log.file`), a bug in a game ends that game only (`curvytron_game_errors_total`)
+- [ ] Pin the exact Node version in the Dockerfile and CI (now: the latest 22.x) once the images are tested in CI
 - [ ] Documentation: network protocol, how to add a bonus

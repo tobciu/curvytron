@@ -119,3 +119,21 @@ describe('socket protocol', () => {
         expect(await positions).toEqual([expect.any(Number), expect.any(Number), expect.any(Number)]);
     }, 15000);
 });
+
+describe('health', () => {
+    it('answers with what is going on', async () => {
+        const response = await fetch(`http://localhost:${port}/health`);
+        const status = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(status).toMatchObject({
+            status: 'ok',
+            uptime: expect.any(Number),
+            clients: expect.any(Number),
+            rooms: expect.any(Number),
+            games: expect.any(Number),
+            players: expect.any(Number),
+            avatars: expect.any(Number)
+        });
+    });
+});

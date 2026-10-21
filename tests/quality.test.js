@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /** The `any` types of the code: there are fewer and fewer, never more. Lower the limit when you remove some. */
-const maxExplicitAny = 580;
+const maxExplicitAny = 577;
 
 function files(directory) {
     return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {

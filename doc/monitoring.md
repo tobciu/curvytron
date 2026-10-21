@@ -17,6 +17,7 @@ Grafana draws them.
 | `curvytron_rounds_total`           | counter   | Rounds started                                                         |
 | `curvytron_bonuses_caught_total`   | counter   | Bonuses caught, label `type`                                           |
 | `curvytron_event_errors_total`     | counter   | Events of the clients whose handler failed (wrong data, or a bug)      |
+| `curvytron_game_errors_total`      | counter   | Games ended because of an error in the game loop (a bug)               |
 | `curvytron_events_dropped_total`   | counter   | Events dropped because a client sent too many                          |
 | `curvytron_deaths_total`           | counter   | Deaths, label `cause` (`wall`, `self`, `trail`)                        |
 | `curvytron_tick_duration_seconds`  | histogram | Time the server needs to compute a frame (should stay far below 16 ms) |
@@ -28,6 +29,12 @@ Grafana draws them.
 
 The tick histograms are the ones to look at when players see stutter: `tick_duration` tells if the server is too slow
 to compute a frame, `tick_interval` tells if the frames come too late (busy machine, garbage collection...).
+
+## Health
+
+`/health` answers `{ "status": "ok", "version": ..., "uptime": ..., "clients": ..., "rooms": ..., "games": ..., "players":
+..., "avatars": ... }`. The Docker health check uses it, and so can an uptime monitor. It has no token: it holds the same
+kind of numbers as the home page shows (rooms and players).
 
 ## Protect the endpoint
 

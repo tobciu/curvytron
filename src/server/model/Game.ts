@@ -74,7 +74,16 @@ export class Game extends BaseGame {
     override onFrame(step: number) {
         const start = performance.now();
 
-        super.onFrame(step);
+        try {
+            super.onFrame(step);
+        } catch (error) {
+            // A bug in one game must not stop the others: end this one
+            metrics.gameErrors.inc();
+            console.error('Error in the game "%s", it is ended:', this.name, error);
+            this.abort();
+
+            return;
+        }
 
         metrics.tickDuration.observe((performance.now() - start) / 1000);
         metrics.tickInterval.observe(step / 1000);
@@ -355,19 +364,42 @@ export class Game extends BaseGame {
      */
     override end(): boolean {
         if (super.end()) {
-            this.stats.destroy();
-            this.avatars.clear();
-            this.world.clear();
-
-            delete (this as Partial<Game>).world;
-            delete (this as Partial<Game>).avatars;
-            delete (this as Partial<Game>).deaths;
-            delete (this as Partial<Game>).bonusManager;
-            delete (this as Partial<Game>).controller;
+            this.release();
 
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Stop the game for good, whatever it is doing: after an error, when its state can not be trusted
+     */
+    abort() {
+        this.clearFrame();
+        this.fps.stop();
+        this.bonusManager.stop();
+
+        if (this.started) {
+            this.started = false;
+            this.inRound = false;
+            this.emit('end', { game: this });
+            this.release();
+        }
+    }
+
+    /**
+     * Let go of everything the game holds
+     */
+    release() {
+        this.stats.destroy();
+        this.avatars.clear();
+        this.world.clear();
+
+        delete (this as Partial<Game>).world;
+        delete (this as Partial<Game>).avatars;
+        delete (this as Partial<Game>).deaths;
+        delete (this as Partial<Game>).bonusManager;
+        delete (this as Partial<Game>).controller;
     }
 }

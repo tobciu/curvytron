@@ -133,6 +133,7 @@ export class Metrics {
     eventErrors = this.add(
         new Counter('curvytron_event_errors_total', 'Events of the clients that made their handler fail')
     );
+    gameErrors = this.add(new Counter('curvytron_game_errors_total', 'Games ended because of an error'));
     eventsDropped = this.add(
         new Counter('curvytron_events_dropped_total', 'Events of the clients dropped because they sent too many')
     );
@@ -175,7 +176,14 @@ export class Metrics {
 
     constructor() {
         // Counters without labels exist from the start, so that Prometheus sees the first increase
-        for (const counter of [this.connections, this.games, this.rounds, this.eventErrors, this.eventsDropped]) {
+        for (const counter of [
+            this.connections,
+            this.games,
+            this.rounds,
+            this.eventErrors,
+            this.eventsDropped,
+            this.gameErrors
+        ]) {
             counter.inc({}, 0);
         }
     }

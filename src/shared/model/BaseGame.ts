@@ -107,7 +107,8 @@ export abstract class BaseGame extends EventEmitter {
      * Start loop
      */
     start() {
-        if (!this.frame) {
+        // `started` is false for a game that ended before its countdown was over
+        if (this.started && !this.frame) {
             this.onStart();
             this.loop();
         }

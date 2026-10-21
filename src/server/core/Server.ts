@@ -1,6 +1,6 @@
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
-import express, { type Express } from 'express';
+import express, { type Express, type Request, type RequestHandler, type Response } from 'express';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { EventEmitter } from '#event-emitter';
 import { RoomsController } from '../controller/RoomsController.ts';
@@ -30,7 +30,9 @@ export interface ServerConfig {
     /** Directory of the built client */
     publicDirectory: string;
     /** Extra express middleware (the Vite dev server in development) */
-    middleware?: any;
+    middleware?: RequestHandler | null;
+    /** Version of the game, shown by `/health` */
+    version?: string;
     /** The `/metrics` endpoint: `enabled` (default true) and an optional `token` */
     metrics?: { enabled?: boolean; token?: string };
 }
@@ -76,6 +78,9 @@ export class Server extends EventEmitter {
 
         this.collectMetrics = this.collectMetrics.bind(this);
         this.onMetricsRequest = this.onMetricsRequest.bind(this);
+        this.onHealthRequest = this.onHealthRequest.bind(this);
+
+        this.app.get('/health', this.onHealthRequest);
 
         if (config.metrics?.enabled !== false) {
             metrics.addCollector(this.collectMetrics);
@@ -169,7 +174,7 @@ export class Server extends EventEmitter {
     /**
      * Serve the metrics, to the clients that know the token when there is one
      */
-    onMetricsRequest(request: any, response: any) {
+    onMetricsRequest(request: Request, response: Response) {
         const token = this.config.metrics?.token;
 
         if (token && request.headers.authorization !== `Bearer ${token}`) {
@@ -185,14 +190,41 @@ export class Server extends EventEmitter {
      * Refresh the gauges that describe what is going on
      */
     collectMetrics() {
+        const { clients, rooms, games, players, avatars } = this.getStatus();
+
+        metrics.clients.set(clients);
+        metrics.rooms.set(rooms);
+        metrics.activeGames.set(games);
+        metrics.players.set(players);
+        metrics.avatars.set(avatars);
+    }
+
+    /**
+     * What is going on: connected clients, open rooms, games being played, players, avatars of the games
+     */
+    getStatus() {
         const rooms = this.roomRepository.rooms.items as Room[];
         const playing = rooms.filter((room) => room.game);
 
-        metrics.clients.set(this.clients.count());
-        metrics.rooms.set(rooms.length);
-        metrics.activeGames.set(playing.length);
-        metrics.players.set(rooms.reduce((total, room) => total + room.players.count(), 0));
-        metrics.avatars.set(playing.reduce((total, room) => total + (room.game?.avatars?.count() ?? 0), 0));
+        return {
+            clients: this.clients.count(),
+            rooms: rooms.length,
+            games: playing.length,
+            players: rooms.reduce((total, room) => total + room.players.count(), 0),
+            avatars: playing.reduce((total, room) => total + (room.game?.avatars?.count() ?? 0), 0)
+        };
+    }
+
+    /**
+     * For the health checks of Docker and the monitoring: the server answers, and tells how busy it is
+     */
+    onHealthRequest(request: Request, response: Response) {
+        response.json({
+            status: 'ok',
+            version: this.config.version,
+            uptime: Math.round(process.uptime()),
+            ...this.getStatus()
+        });
     }
 
     /**
