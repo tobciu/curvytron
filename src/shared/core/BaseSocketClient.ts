@@ -204,18 +204,40 @@ export class BaseSocketClient extends EventEmitter {
 
         for (let i = 0; i < length; i++) {
             source = data[i];
+
+            if (!Array.isArray(source)) {
+                continue;
+            }
+
             name = source[0];
 
-            if (typeof name === 'string') {
-                if (source.length === 3) {
-                    this.emit(name, [source[1], this.createCallback(source[2])]);
-                } else {
-                    this.emit(name, source[1]);
+            // A bad event must not stop the others, nor the process
+            try {
+                if (typeof name === 'string') {
+                    if (source.length === 3) {
+                        this.emit(name, [source[1], this.createCallback(source[2])]);
+                    } else {
+                        this.emit(name, source[1]);
+                    }
+                } else if (typeof name === 'number') {
+                    this.playCallback(name, typeof source[1] !== 'undefined' ? source[1] : null);
                 }
-            } else {
-                this.playCallback(name, typeof source[1] !== 'undefined' ? source[1] : null);
+            } catch (error) {
+                this.onEventError(name, error);
             }
         }
+    }
+
+    /**
+     * An event handler failed, most likely because of unexpected data
+     */
+    onEventError(name: unknown, error: unknown) {
+        console.error(
+            'Error while handling the event "%s" of client %s:',
+            String(name),
+            this.id,
+            error instanceof Error ? error.message : error
+        );
     }
 
     /**

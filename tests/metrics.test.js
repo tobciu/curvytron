@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { Counter, Gauge, Histogram, Metrics } from '../src/server/service/Metrics.ts';
 import { Server } from '../src/server/core/Server.ts';
-import { TestClient } from './helpers/TestClient.js';
+import { TestClient } from './helpers/TestClient.ts';
 import { metrics } from '../src/server/service/Metrics.ts';
 import { createGame } from './helpers/game.js';
 

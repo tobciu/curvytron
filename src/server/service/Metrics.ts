@@ -130,6 +130,9 @@ export class Metrics {
     games = this.add(new Counter('curvytron_games_total', 'Games started'));
     rounds = this.add(new Counter('curvytron_rounds_total', 'Rounds started'));
     bonuses = this.add(new Counter('curvytron_bonuses_caught_total', 'Bonuses caught by the players'));
+    eventErrors = this.add(
+        new Counter('curvytron_event_errors_total', 'Events of the clients that made their handler fail')
+    );
     deaths = this.add(new Counter('curvytron_deaths_total', 'Deaths of the avatars, by cause'));
 
     clients = this.add(new Gauge('curvytron_clients', 'Connected clients'));
@@ -169,7 +172,7 @@ export class Metrics {
 
     constructor() {
         // Counters without labels exist from the start, so that Prometheus sees the first increase
-        for (const counter of [this.connections, this.games, this.rounds]) {
+        for (const counter of [this.connections, this.games, this.rounds, this.eventErrors]) {
             counter.inc({}, 0);
         }
     }

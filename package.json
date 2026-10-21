@@ -46,6 +46,7 @@
         "test": "vitest run",
         "test:e2e": "npm run build && playwright test",
         "typecheck": "vue-tsc --noEmit",
+        "load-test": "node tools/load-test.ts",
         "test:visual": "npm run build && playwright test --project=visual",
         "test:visual:update": "npm run build && playwright test --project=visual --update-snapshots"
     },

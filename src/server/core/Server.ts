@@ -15,6 +15,11 @@ import type { Room } from '../model/Room.ts';
 const KEEP_ALIVE_INTERVAL = 30000;
 
 /**
+ * Largest message accepted from a client, in bytes.
+ */
+const MAX_PAYLOAD = 64 * 1024;
+
+/**
  * Server
  *
  * @param config.publicDirectory Directory of the built client
@@ -38,6 +43,8 @@ export class Server extends EventEmitter {
         this.server = http.createServer(this.app);
         this.sockets = new WebSocketServer({
             noServer: true,
+            // Nothing the game sends is large: do not let a client make the server buffer megabytes
+            maxPayload: MAX_PAYLOAD,
             handleProtocols: (protocols) => (protocols.has('websocket') ? 'websocket' : false)
         });
         this.clients = new Collection([], 'id', true);

@@ -27,6 +27,13 @@ The model is made of mutable objects that emit events. Vue can not see changes i
 each time one of the events is emitted (or `bump()` is called).
 `types.ts` re-exports the model classes as types for the components.
 
+### Load test
+
+`npm run load-test -- --rooms 6 --players 8 --duration 30` starts a server, plays that many games with simulated
+clients that steer at random, then reads `/metrics` and prints the duration of a frame, the time between frames, the
+ping, memory and CPU. `--url http://host:8080` (and `--token`) tests a server that is already running. As a reference,
+6 rooms of 8 players (48 avatars) need about 0.1 ms per frame on a laptop, a frame lasts 16.7 ms.
+
 ### Game statistics
 
 `src/server/service/GameStats.ts` listens to the events of a game (deaths, bonus catches, positions, end of round) and
@@ -58,18 +65,19 @@ narrows the type of an inherited field uses `declare` (a plain redeclaration wou
 
 ## Commands
 
-| Command                      | Description                                                         |
-| ---------------------------- | ------------------------------------------------------------------- |
-| `npm run dev`                | Start the server with the Vite dev server (hot reload) on port 8080 |
-| `npm run build`              | Build the client into `dist/`                                       |
-| `npm start`                  | Start the server and serve the built client                         |
-| `npm test`                   | Run the unit and integration tests (Vitest)                         |
-| `npm run test:e2e`           | Build, then run the browser tests (Playwright)                      |
-| `npm run test:visual`        | Build, then compare screenshots of the main screens                 |
-| `npm run test:visual:update` | Update the reference screenshots (after an intended design change)  |
-| `npm run lint`               | Lint the sources (ESLint)                                           |
-| `npm run typecheck`          | Check the types of the `.ts` and `.vue` files                       |
-| `npm run format`             | Format the sources with Prettier                                    |
+| Command                      | Description                                                                  |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `npm run dev`                | Start the server with the Vite dev server (hot reload) on port 8080          |
+| `npm run build`              | Build the client into `dist/`                                                |
+| `npm start`                  | Start the server and serve the built client                                  |
+| `npm test`                   | Run the unit and integration tests (Vitest)                                  |
+| `npm run load-test`          | Play games with simulated clients and print what the metrics say (see below) |
+| `npm run test:e2e`           | Build, then run the browser tests (Playwright)                               |
+| `npm run test:visual`        | Build, then compare screenshots of the main screens                          |
+| `npm run test:visual:update` | Update the reference screenshots (after an intended design change)           |
+| `npm run lint`               | Lint the sources (ESLint)                                                    |
+| `npm run typecheck`          | Check the types of the `.ts` and `.vue` files                                |
+| `npm run format`             | Format the sources with Prettier                                             |
 
 ### Tests
 

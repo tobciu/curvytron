@@ -1,3 +1,4 @@
+import { metrics } from '../service/Metrics.ts';
 import { PingLogger } from './PingLogger.ts';
 import { Collection } from '../../shared/Collection.ts';
 import { BaseSocketClient } from '../../shared/core/BaseSocketClient.ts';
@@ -36,6 +37,14 @@ export class SocketClient extends BaseSocketClient {
         this.on('whoami', this.identify);
         this.on('activity', this.onActivity);
         this.pingLogger.on('latency', this.onLatency);
+    }
+
+    /**
+     * An event handler failed: count it, the data of the client was most likely wrong
+     */
+    onEventError(name: unknown, error: unknown) {
+        metrics.eventErrors.inc();
+        super.onEventError(name, error);
     }
 
     /**

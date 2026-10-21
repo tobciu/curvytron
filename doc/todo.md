@@ -25,8 +25,9 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [ ] Check in Grafana > Explore that the `curvytron_*` metrics arrive
     - [ ] Create a **Curvytron dashboard**: players, rooms and games now / over time, tick duration (avg, p99), ping per client; export it as JSON into `doc/grafana/`
     - [ ] Optional: alert when the tick duration is too high
-- [ ] **Load test**: 8-10 simulated clients in one game, read the metrics at the end (tick duration, dropped frames)
-- [ ] Investigate the small stutter seen with 5 players + 1 spectator (check client FPS / ping in the metrics footer when it happens)
+- [x] **Load test** (`npm run load-test`): the server is not the limit, 48 players in 6 games need 0.1 ms per frame
+    - [ ] Run it against the VPS (`--url`) to include the network and the proxy
+- [ ] Investigate the small stutter seen with 5 players + 1 spectator: the server is fast enough (see the load test), so look at the client (rendering, garbage collection) and the network: note the fps / ping of the footer when it happens
 - [ ] Look into the flaky e2e test `presets and individual bonuses` (fails now and then in a full run, passes alone)
 
 - [ ] **Quality**
@@ -34,8 +35,9 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [ ] Run the Docker image in CI (build, start, `/metrics` and the home page answer), so that the Dockerfile is tested too
     - [ ] Test the launcher with the Inspector enabled (the path of the dynamic import is only checked by reading the code)
     - [ ] Coverage report in CI (`vitest --coverage`), look at the holes: controllers, kick votes, flood filter, trackers
-    - [ ] Protocol tests with several `TestClient`s: a whole game over the socket, a client that leaves in the middle, garbage messages
-    - [ ] Fuzz the socket input (wrong types, missing fields): the handlers read `data.name` and similar without checks
+    - [x] Protocol tests with several clients (`tests/protocol.test.js`): a whole game, a client that leaves, a spectator, ~50 kinds of wrong data. This found that one `[null]` message crashed the whole server: fixed
+    - [ ] Validate the data of the handlers properly (they fail with a TypeError that is caught and counted in `curvytron_event_errors_total`, the client gets no answer)
+    - [ ] Limit the rate of the events per client
     - [ ] Run the visual tests in CI without `continue-on-error` (needs stable fonts / screenshots in the CI image)
     - [ ] Dependabot or Renovate for the dependencies, `npm audit` in CI
 

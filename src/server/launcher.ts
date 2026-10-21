@@ -43,7 +43,7 @@ async function createDevMiddleware() {
 
 const config = await loadConfig();
 const server = new Server({
-    port: Number(process.env.PORT) || config.port,
+    port: process.env.PORT ? Number(process.env.PORT) : config.port,
     metrics: config.metrics,
     publicDirectory: path.join(rootDirectory, 'dist'),
     middleware: dev ? await createDevMiddleware() : null
