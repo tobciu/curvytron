@@ -17,6 +17,8 @@ export interface PlayerStats {
     trailDeaths: number;
     /** Deaths of others on this player's trail */
     kills: number;
+    /** Times the avatar passed very close to the trail of another player without touching it */
+    nearMisses: number;
     distance: number;
     /** Distance driven while leaving a trail */
     trailLength: number;

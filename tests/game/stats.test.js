@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BonusSelfFast } from '../../src/server/model/Bonus/BonusSelfFast.ts';
+import { AvatarBody } from '../../src/server/core/AvatarBody.ts';
 import { BonusEnemyBig } from '../../src/server/model/Bonus/BonusEnemyBig.ts';
 import { createGame, place } from '../helpers/game.js';
 
@@ -162,5 +163,67 @@ describe('game statistics', () => {
         avatar.emit('die', { avatar, killer: null, old: null });
 
         expect(stats(alice).wallDeaths).toBe(0);
+    });
+});
+
+describe('near misses', () => {
+    /** Alice drives past a body of Bob's trail, at the given distance (she moves 0.26 away in the frame) */
+    function pass(distance) {
+        place(alice, 50 + distance, 50, 0);
+        game.update(16);
+    }
+
+    beforeEach(() => {
+        startRound();
+        // A body of the trail of Bob
+        game.world.addBody(new AvatarBody(50, 50, bob));
+        place(bob, 10, 10, 1);
+        place(carl, 90, 90, 1);
+    });
+
+    it('counts a pass at less than half a radius of a trail, once for the whole approach', () => {
+        pass(1.15);
+        pass(1.1);
+        pass(1.2);
+
+        expect(alice.alive).toBe(true);
+        expect(stats(alice).nearMisses).toBe(1);
+    });
+
+    it('counts again when the avatar went away and came back', () => {
+        pass(1.15);
+        pass(5);
+        pass(1.15);
+
+        expect(stats(alice).nearMisses).toBe(2);
+    });
+
+    it('does not count a pass further away, nor the touch that kills', () => {
+        pass(3);
+        expect(stats(alice).nearMisses).toBe(0);
+
+        pass(0.5);
+        expect(alice.alive).toBe(false);
+        expect(stats(alice).nearMisses).toBe(0);
+    });
+
+    it('does not count the own trail, nor an invincible avatar', () => {
+        game.world.addBody(new AvatarBody(20, 20, alice));
+        alice.bodyCount += 10;
+        place(alice, 21.15, 20, 0);
+        game.update(16);
+
+        expect(stats(alice).nearMisses).toBe(0);
+
+        alice.setInvincible(true);
+        pass(1.15);
+
+        expect(stats(alice).nearMisses).toBe(0);
+    });
+
+    it('gives an award to the closest driver', () => {
+        pass(1.15);
+
+        expect(game.stats.getAwards()).toContainEqual({ id: 'closeCall', player: alice.id, value: 1 });
     });
 });

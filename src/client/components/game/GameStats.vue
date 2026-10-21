@@ -10,6 +10,7 @@ const awardLabels: Record<string, string> = {
     bonusHunter: 'Bonus hunter',
     wallLover: 'Wall lover',
     clumsy: 'Own worst enemy',
+    closeCall: 'Close call',
     hunter: 'Hunter',
     marathon: 'Marathon driver',
     survivor: 'Survivor'
@@ -50,6 +51,7 @@ function seconds(ms: number): string {
                     <th title="Died on a border">Walls</th>
                     <th title="Died on a trail">Trails</th>
                     <th title="Players killed on your trail">Kills</th>
+                    <th title="Passed very close to the trail of another player">Close calls</th>
                     <th title="Distance driven">Distance</th>
                     <th title="Longest time alive in a round">Longest life</th>
                 </tr>
@@ -64,6 +66,7 @@ function seconds(ms: number): string {
                     <td>{{ player.wallDeaths }}</td>
                     <td>{{ player.selfDeaths + player.trailDeaths }}</td>
                     <td>{{ player.kills }}</td>
+                    <td>{{ player.nearMisses }}</td>
                     <td>{{ player.distance }}</td>
                     <td>{{ seconds(player.longestLife) }} s</td>
                 </tr>

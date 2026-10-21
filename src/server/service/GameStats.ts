@@ -16,6 +16,7 @@ const awardFields: Record<string, keyof PlayerStats> = {
     bonusHunter: 'bonuses',
     wallLover: 'wallDeaths',
     clumsy: 'selfDeaths',
+    closeCall: 'nearMisses',
     hunter: 'kills',
     marathon: 'distance',
     survivor: 'longestLife'
@@ -32,6 +33,13 @@ export class GameStats {
     players: Map<number, PlayerStats> = new Map();
     positions: Map<number, [number, number]> = new Map();
     roundStart: number = 0;
+    /** Avatars that are close to a trail of somebody else right now */
+    near: Set<number> = new Set();
+
+    /**
+     * An avatar is close to a trail when it would touch it with a radius this much larger (times the radius)
+     */
+    nearMargin: number = 0.5;
 
     constructor(game: Game) {
         this.game = game;
@@ -55,6 +63,7 @@ export class GameStats {
                 selfDeaths: 0,
                 trailDeaths: 0,
                 kills: 0,
+                nearMisses: 0,
                 distance: 0,
                 trailLength: 0,
                 longestLife: 0
@@ -89,6 +98,7 @@ export class GameStats {
     onRoundStart() {
         this.roundStart = Date.now();
         this.positions.clear();
+        this.near.clear();
 
         for (const avatar of this.game.avatars.items) {
             this.positions.set(avatar.id, [avatar.x, avatar.y]);
@@ -112,6 +122,39 @@ export class GameStats {
 
             last[0] = avatar.x;
             last[1] = avatar.y;
+        }
+    }
+
+    /**
+     * Is the avatar passing very close to the trail of another player? Counts every approach once.
+     * Called every frame for the avatars that are alive: it is one more look in the islands of the world.
+     */
+    testNearMiss(avatar: Avatar) {
+        const stats = this.players.get(avatar.id);
+        const body = avatar.body;
+
+        if (!stats || !body || avatar.invincible) {
+            this.near.delete(avatar.id);
+
+            return;
+        }
+
+        const radius = body.radius;
+
+        // The avatar did not touch anything in this frame: anything it touches with a larger body was a near miss
+        body.radius = radius * (1 + this.nearMargin);
+
+        const hit = this.game.world.getBody(body);
+
+        body.radius = radius;
+
+        if (hit && hit.data !== avatar) {
+            if (!this.near.has(avatar.id)) {
+                this.near.add(avatar.id);
+                stats.nearMisses++;
+            }
+        } else {
+            this.near.delete(avatar.id);
         }
     }
 

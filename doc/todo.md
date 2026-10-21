@@ -11,7 +11,7 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [x] The awards are shown at the end of every round, the table at the end of the game
     - [ ] Statistics per bonus type in the UI (the data is already sent: `bonusesByType`)
 - [ ] Statistics: skill measures (not urgent)
-    - [ ] Near misses: smallest distance to a foreign trail per tick, count the passes under a threshold (about half an avatar radius); award "close call"
+    - [x] Near misses: one more look in the islands of the world per avatar and frame (`GameStats.testNearMiss`), counted once per approach to a foreign trail closer than half an avatar radius; award "close call"
     - [ ] Driving through gaps of a foreign trail (needs gap detection in the trails)
     - [ ] Count what an avatar survived thanks to the invincibility (crown bonus)
 - [x] **Operational metrics**: `/metrics` endpoint in the Prometheus format (see `doc/monitoring.md`)
