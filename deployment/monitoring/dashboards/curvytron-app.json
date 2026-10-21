@@ -882,7 +882,7 @@
       "id": 17,
       "type": "timeseries",
       "title": "Tick-Intervall",
-      "description": "Zeit zwischen zwei Frames – über ~17 ms sieht der Runden-Stutter",
+      "description": "Zeit zwischen zwei Frames – Ziel sind 16,7 ms (60 FPS), Node-Timer driften real auf ~19-20 ms; rot erst ab 25 ms, ab da stottert die Runde spürbar",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -948,7 +948,7 @@
                 },
                 {
                   "color": "red",
-                  "value": 0.0167
+                  "value": 0.025
                 }
               ]
             }
