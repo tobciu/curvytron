@@ -5,6 +5,7 @@ import { FPSLogger } from '../service/FPSLogger.ts';
 import { BonusManager } from '../manager/BonusManager.ts';
 import type { Avatar } from './Avatar.ts';
 import type { Room } from './Room.ts';
+import type { GameStatsData } from '../../shared/model/GameStats.ts';
 import type { Collection } from '../../shared/Collection.ts';
 
 /**
@@ -18,6 +19,8 @@ export class Game extends BaseGame {
     declare avatars: Collection<Avatar>;
     declare bonusManager: BonusManager;
     roundWinner: Avatar | null = null;
+    /** Statistics of the game, as of the last round */
+    stats: GameStatsData | null = null;
     // Created by `loadDOM()`
     canvas!: Canvas;
     background!: Canvas;

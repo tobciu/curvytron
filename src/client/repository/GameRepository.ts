@@ -40,6 +40,7 @@ export class GameRepository extends EventEmitter {
         this.onClear = this.onClear.bind(this);
         this.onBorderless = this.onBorderless.bind(this);
         this.onEnd = this.onEnd.bind(this);
+        this.onStats = this.onStats.bind(this);
         this.onLeave = this.onLeave.bind(this);
         this.onSpectate = this.onSpectate.bind(this);
     }
@@ -83,6 +84,7 @@ export class GameRepository extends EventEmitter {
         this.client.on('clear', this.onClear);
         this.client.on('borderless', this.onBorderless);
         this.client.on('end', this.onEnd);
+        this.client.on('game:stats', this.onStats);
         this.client.on('game:leave', this.onLeave);
         this.client.on('spectate', this.onSpectate);
     }
@@ -106,6 +108,7 @@ export class GameRepository extends EventEmitter {
         this.client.off('clear', this.onClear);
         this.client.off('borderless', this.onBorderless);
         this.client.off('end', this.onEnd);
+        this.client.off('game:stats', this.onStats);
         this.client.off('game:leave', this.onLeave);
         this.client.off('spectate', this.onSpectate);
     }
@@ -283,6 +286,14 @@ export class GameRepository extends EventEmitter {
     onBorderless(e: any) {
         this.game.setBorderless(e.detail);
         this.emit('borderless');
+    }
+
+    /**
+     * On statistics
+     */
+    onStats(e: any) {
+        this.game.stats = e.detail;
+        this.emit('stats');
     }
 
     /**

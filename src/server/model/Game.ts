@@ -7,6 +7,7 @@ import { Collection } from '../../shared/Collection.ts';
 import { BaseGame } from '../../shared/model/BaseGame.ts';
 import { FPSLogger } from '../service/FPSLogger.ts';
 import { BonusManager } from '../manager/BonusManager.ts';
+import { GameStats } from '../service/GameStats.ts';
 import type { Body } from '../core/Body.ts';
 import type { Room } from './Room.ts';
 
@@ -22,6 +23,7 @@ export class Game extends BaseGame {
     deaths!: Collection<Avatar>;
     controller!: GameController;
     bonusStack: GameBonusStack;
+    stats: GameStats;
     roundWinner: Avatar | null;
     gameWinner: Avatar | null;
     deathInFrame: boolean;
@@ -31,6 +33,8 @@ export class Game extends BaseGame {
 
         this.world = new World(this.size);
         this.deaths = new Collection<Avatar>([], 'id');
+        // Before the controller: it sends the statistics when the round ends, after they are updated
+        this.stats = new GameStats(this);
         this.controller = new GameController(this);
         this.bonusStack = new GameBonusStack(this);
         this.roundWinner = null;
@@ -328,6 +332,7 @@ export class Game extends BaseGame {
      */
     end(): boolean {
         if (super.end()) {
+            this.stats.destroy();
             this.avatars.clear();
             this.world.clear();
 

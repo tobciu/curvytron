@@ -438,6 +438,7 @@ export class GameController {
      */
     onRoundEnd(data: any) {
         this.socketGroup.addEvent('round:end', data.winner ? data.winner.id : null);
+        this.socketGroup.addEvent('game:stats', this.game.stats.serialize());
     }
 
     /**

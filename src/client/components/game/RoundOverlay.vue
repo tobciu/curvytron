@@ -3,6 +3,7 @@
 import { computed, onBeforeUnmount, ref, shallowRef, triggerRef } from 'vue';
 import { useServices } from '../../services';
 import { useEvents } from '../../composables/useEmitter';
+import GameStats from './GameStats.vue';
 import type { Avatar, Game } from '../../types';
 
 const props = defineProps<{ game: Game }>();
@@ -72,6 +73,10 @@ useEvents(client, ['round:end'], () => {
     triggerRef(game);
 });
 
+useEvents(client, ['game:stats'], () => {
+    triggerRef(game);
+});
+
 useEvents(client, ['end'], () => {
     notifier.notify('Game over!', null, 'win');
 
@@ -122,6 +127,7 @@ onBeforeUnmount(clearWarmup);
                             </tr>
                         </tbody>
                     </table>
+                    <GameStats v-if="game.stats" :stats="game.stats" />
                     <button type="button" class="btn btn-hero btn-back-to-room" @click="emit('backToRoom')">
                         Back to the room
                     </button>

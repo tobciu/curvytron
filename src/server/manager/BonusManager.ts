@@ -102,6 +102,7 @@ export class BonusManager extends BaseBonusManager {
 
             if (bonus && this.remove(bonus)) {
                 bonus.applyTo(avatar, this.game);
+                this.emit('bonus:catch', { bonus, avatar });
             }
         }
     }

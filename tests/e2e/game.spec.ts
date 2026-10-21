@@ -50,6 +50,11 @@ test('plays a round until the game is over, then goes back to the room', async (
     await expect(page.locator('#end .recap tr')).toHaveCount(2);
     await expect(page.locator('#end .btn-back-to-room').first()).toBeVisible();
 
+    // Statistics: a line per player, the winner first
+    await expect(page.locator('#end .game-stats table.stats tbody tr')).toHaveCount(2);
+    await expect(page.locator('#end .game-stats table.stats tbody td.name')).toHaveText(['Alice', 'Bob']);
+    await expect(page.locator('#end .game-stats table.stats tbody td:nth-child(2)')).toHaveText(['1', '0']);
+
     await page.locator('#end .btn-back-to-room').first().click();
 
     await expect(page).toHaveURL(new RegExp(`#/room/${name}`));

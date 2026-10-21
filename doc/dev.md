@@ -27,6 +27,13 @@ The model is made of mutable objects that emit events. Vue can not see changes i
 each time one of the events is emitted (or `bump()` is called).
 `types.ts` re-exports the model classes as types for the components.
 
+### Game statistics
+
+`src/server/service/GameStats.ts` listens to the events of a game (deaths, bonus catches, positions, end of round) and
+counts what each player did. The server sends the result with the `game:stats` event at the end of every round; the type
+of the data is in `src/shared/model/GameStats.ts`. The client keeps the last one in `game.stats` and shows it with the
+final ranking (`components/game/GameStats.vue`). The data is plain JSON, so it can be stored later.
+
 ### Defaults and constants
 
 Default values are class fields (`duration = 4000;`). Constants that are read from outside of the class are `static`

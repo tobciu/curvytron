@@ -4,11 +4,12 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
 
 ## Next
 
-- [ ] **Game statistics** (`GameStats` service per game, in memory)
-    - [ ] Count per player from the existing game events: bonuses caught (per type), deaths by wall / own trail / other trail, distance driven, longest time alive, trail length
-    - [ ] New event at round end and game end carrying the results
-    - [ ] Vue component showing the results (table, awards such as "bonus hunter", "wall lover")
-    - [ ] Unit tests for the counters
+- [x] **Game statistics** (`GameStats` service per game, in memory, shown with the final ranking)
+    - [x] Counters per player from the game events: bonuses caught (per type), deaths by wall / own trail / other trail, kills, distance driven, trail length, longest time alive, rounds won
+    - [x] `game:stats` event at the end of every round, with awards (bonus hunter, wall lover, own worst enemy, hunter, marathon driver, survivor)
+    - [x] Vue component `GameStats.vue` below the ranking, unit tests and e2e check
+    - [ ] Show the statistics of a round at the end of the round too (only the game end shows them for now)
+    - [ ] Statistics per bonus type in the UI (the data is already sent: `bonusesByType`)
 - [ ] **Operational metrics** for Grafana
     - [ ] `/metrics` endpoint in the Prometheus format (decided: nothing reads Curvytron data yet, pull is the simplest: no credentials in the game, one scrape job in the Prometheus of the Grafana stack; check that the stack has Prometheus)
     - [ ] Tick duration (average, p99), players, rooms, games, ping per client

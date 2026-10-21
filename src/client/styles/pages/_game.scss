@@ -558,6 +558,70 @@
                             }
                         }
                     }
+
+                    .game-stats {
+                        max-width: 900px;
+                        margin: 40px auto;
+
+                        .awards {
+                            display: flex;
+                            flex-wrap: wrap;
+                            justify-content: center;
+                            gap: 10px;
+                            margin: 0 0 20px 0;
+                            padding: 0;
+                            list-style: none;
+
+                            li {
+                                padding: 10px 20px;
+                                background: transparentize(#fff, 0.95);
+                                font-size: 18px;
+                                font-weight: 300;
+
+                                .label {
+                                    display: block;
+                                    font-size: 13px;
+                                    text-transform: uppercase;
+                                    opacity: 0.7;
+                                }
+
+                                .value {
+                                    margin-left: 6px;
+                                    opacity: 0.7;
+                                }
+                            }
+                        }
+
+                        table.stats {
+                            width: 100%;
+                            text-align: center;
+
+                            th {
+                                padding: 10px;
+                                font-size: 13px;
+                                font-weight: 300;
+                                text-transform: uppercase;
+                                opacity: 0.7;
+                            }
+
+                            td {
+                                padding: 10px;
+                                background: transparentize(#fff, 0.95);
+                                border-top: 2px solid transparentize(#fff, 0.95);
+                                font-size: 20px;
+                                font-weight: 300;
+                            }
+
+                            .name {
+                                text-align: left;
+                                font-weight: bold;
+                            }
+
+                            tr:hover td {
+                                background: transparentize(#fff, 0.9);
+                            }
+                        }
+                    }
                 }
             }
         }
