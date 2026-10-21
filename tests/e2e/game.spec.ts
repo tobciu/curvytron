@@ -50,10 +50,17 @@ test('plays a round until the game is over, then goes back to the room', async (
     await expect(page.locator('#end .recap tr')).toHaveCount(2);
     await expect(page.locator('#end .btn-back-to-room').first()).toBeVisible();
 
-    // Statistics: a line per player, the winner first
-    await expect(page.locator('#end .game-stats table.stats tbody tr')).toHaveCount(2);
-    await expect(page.locator('#end .game-stats table.stats tbody td.name')).toHaveText(['Alice', 'Bob']);
-    await expect(page.locator('#end .game-stats table.stats tbody td:nth-child(2)')).toHaveText(['1', '0']);
+    // Statistics: a line per player; one of them won the only round (who depends on the crash order)
+    const rows = page.locator('#end .game-stats table.stats tbody tr');
+
+    await expect(rows).toHaveCount(2);
+
+    const cells = await rows.evaluateAll((trs) =>
+        trs.map((tr) => [...tr.querySelectorAll('td')].map((td) => td.textContent?.trim()))
+    );
+
+    expect(cells.map((row) => row[0]).toSorted()).toEqual(['Alice', 'Bob']);
+    expect(cells.map((row) => row[1])).toEqual(['1', '0']);
 
     await page.locator('#end .btn-back-to-room').first().click();
 

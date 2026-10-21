@@ -1,6 +1,7 @@
 import type { Avatar } from '../model/Avatar.ts';
 import type { Game } from '../model/Game.ts';
 import type { Bonus } from '../model/Bonus/Bonus.ts';
+import { metrics } from './Metrics.ts';
 import type { Award, GameStatsData, PlayerStats } from '../../shared/model/GameStats.ts';
 
 /**
@@ -124,10 +125,13 @@ export class GameStats {
         stats.longestLife = Math.max(stats.longestLife, Date.now() - this.roundStart);
 
         if (!data.killer) {
+            metrics.deaths.inc({ cause: 'wall' });
             stats.wallDeaths++;
         } else if (data.killer.id === data.avatar.id) {
+            metrics.deaths.inc({ cause: 'self' });
             stats.selfDeaths++;
         } else {
+            metrics.deaths.inc({ cause: 'trail' });
             stats.trailDeaths++;
 
             const killer = this.players.get(data.killer.id);
@@ -144,6 +148,7 @@ export class GameStats {
         if (stats) {
             const type = data.bonus.constructor.name;
 
+            metrics.bonuses.inc({ type });
             stats.bonuses++;
             stats.bonusesByType[type] = (stats.bonusesByType[type] ?? 0) + 1;
         }

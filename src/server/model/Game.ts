@@ -8,6 +8,7 @@ import { BaseGame } from '../../shared/model/BaseGame.ts';
 import { FPSLogger } from '../service/FPSLogger.ts';
 import { BonusManager } from '../manager/BonusManager.ts';
 import { GameStats } from '../service/GameStats.ts';
+import { metrics } from '../service/Metrics.ts';
 import type { Body } from '../core/Body.ts';
 import type { Room } from './Room.ts';
 
@@ -34,6 +35,7 @@ export class Game extends BaseGame {
         this.world = new World(this.size);
         this.deaths = new Collection<Avatar>([], 'id');
         // Before the controller: it sends the statistics when the round ends, after they are updated
+        metrics.games.inc();
         this.stats = new GameStats(this);
         this.controller = new GameController(this);
         this.bonusStack = new GameBonusStack(this);
@@ -64,6 +66,18 @@ export class Game extends BaseGame {
      */
     createBonusManager() {
         return new BonusManager(this, this.room.config.getBonuses(), this.room.config.getVariable('bonusRate') ?? 0);
+    }
+
+    /**
+     * On frame: measure it for the metrics
+     */
+    onFrame(step: number) {
+        const start = performance.now();
+
+        super.onFrame(step);
+
+        metrics.tickDuration.observe((performance.now() - start) / 1000);
+        metrics.tickInterval.observe(step / 1000);
     }
 
     /**
@@ -255,6 +269,7 @@ export class Game extends BaseGame {
      * New round
      */
     onRoundNew() {
+        metrics.rounds.inc();
         this.emit('round:new', { game: this });
         super.onRoundNew();
 

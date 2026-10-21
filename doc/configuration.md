@@ -26,6 +26,19 @@ Details of `config.json`:
 | -------- | ---------------------------------------------------------------------------------------------- | ------------- | ------ | -------- |
 | port     | The port on which Curvytron server will run (the `PORT` environment variable takes precedence) | 8080          | Number | Required |
 
+**Metrics:**
+
+The server exposes its metrics in the Prometheus format on `/metrics` (see [monitoring](monitoring.md)).
+
+| Variable | Description                                                        | Default value | Type    | Required |
+| -------- | ------------------------------------------------------------------ | ------------- | ------- | -------- |
+| enabled  | Enable/Disable the `/metrics` endpoint                             | true          | Boolean | Optional |
+| token    | When set, the requests need the header `Authorization: Bearer ...` | none          | String  | Optional |
+
+```json
+{ "metrics": { "token": "a-long-random-string" } }
+```
+
 **Inspector:**
 
 The inspector watch the server to provides statistics like:

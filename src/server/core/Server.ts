@@ -6,6 +6,8 @@ import { RoomsController } from '../controller/RoomsController.ts';
 import { SocketClient } from './SocketClient.ts';
 import { RoomRepository } from '../repository/RoomRepository.ts';
 import { Collection } from '../../shared/Collection.ts';
+import { metrics } from '../service/Metrics.ts';
+import type { Room } from '../model/Room.ts';
 
 /**
  * Seconds between two keep-alive pings sent to every connected socket.
@@ -49,6 +51,14 @@ export class Server extends EventEmitter {
         this.onError = this.onError.bind(this);
         this.keepAlive = this.keepAlive.bind(this);
 
+        this.collectMetrics = this.collectMetrics.bind(this);
+        this.onMetricsRequest = this.onMetricsRequest.bind(this);
+
+        if (config.metrics?.enabled !== false) {
+            metrics.addCollector(this.collectMetrics);
+            this.app.get('/metrics', this.onMetricsRequest);
+        }
+
         if (config.middleware) {
             this.app.use(config.middleware);
         } else {
@@ -78,6 +88,7 @@ export class Server extends EventEmitter {
      */
     close() {
         clearInterval(this.keepAliveLoop);
+        metrics.removeCollector(this.collectMetrics);
 
         for (const socket of this.sockets.clients) {
             socket.terminate();
@@ -117,10 +128,41 @@ export class Server extends EventEmitter {
         this.clients.add(client);
 
         client.on('close', this.onSocketDisconnection);
+        client.pingLogger.on('latency', (latency: number) => metrics.latency.observe(latency / 1000));
+        metrics.connections.inc();
         this.roomsController.attach(client);
         this.emit('client', client);
 
         console.info('Client %s connected.', client.id);
+    }
+
+    /**
+     * Serve the metrics, to the clients that know the token when there is one
+     */
+    onMetricsRequest(request: any, response: any) {
+        const token = this.config.metrics?.token;
+
+        if (token && request.headers.authorization !== `Bearer ${token}`) {
+            response.status(401).end();
+
+            return;
+        }
+
+        response.type('text/plain; version=0.0.4').send(metrics.render());
+    }
+
+    /**
+     * Refresh the gauges that describe what is going on
+     */
+    collectMetrics() {
+        const rooms = this.roomRepository.rooms.items as Room[];
+        const playing = rooms.filter((room) => room.game);
+
+        metrics.clients.set(this.clients.count());
+        metrics.rooms.set(rooms.length);
+        metrics.activeGames.set(playing.length);
+        metrics.players.set(rooms.reduce((total, room) => total + room.players.count(), 0));
+        metrics.avatars.set(playing.reduce((total, room) => total + (room.game?.avatars?.count() ?? 0), 0));
     }
 
     /**

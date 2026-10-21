@@ -19,4 +19,5 @@ A web multiplayer Tron game like with curves
 ## We need to go deeper
 
 - [Configuration reference](doc/configuration.md)
+- [Monitoring (Prometheus / Grafana)](doc/monitoring.md)
 - [Setup Nginx proxy](doc/nginx-proxy.md)

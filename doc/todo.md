@@ -14,15 +14,14 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [ ] Near misses: smallest distance to a foreign trail per tick, count the passes under a threshold (about half an avatar radius); award "close call"
     - [ ] Driving through gaps of a foreign trail (needs gap detection in the trails)
     - [ ] Count what an avatar survived thanks to the invincibility (crown bonus)
-- [ ] **Operational metrics** for Grafana
-    - [ ] `/metrics` endpoint in the Prometheus format (decided: nothing reads Curvytron data yet, pull is the simplest: no credentials in the game, one scrape job in the Prometheus of the Grafana stack; check that the stack has Prometheus)
-    - [ ] Tick duration (average, p99), players, rooms, games, ping per client
-    - [ ] No per-tick console output
-    - [ ] Example Grafana dashboard in `doc/`
-- [ ] **Grafana setup on the VPS** (to do by hand, once `/metrics` exists)
+- [x] **Operational metrics**: `/metrics` endpoint in the Prometheus format (see `doc/monitoring.md`)
+    - [x] Tick duration and interval (histograms), players, rooms, games, ping, bonuses, deaths, memory, CPU
+    - [x] No per-tick console output; optional token, blocked in the reverse proxy
+    - [ ] Check the numbers under load (next item) and adjust the buckets if needed
+- [ ] **Grafana setup on the VPS** (to do by hand)
     - [ ] Check that the stack has a Prometheus (otherwise add one, or switch to the InfluxDB inspector)
-    - [ ] Add a scrape job for the Curvytron container (`/metrics`, same Docker network or published port, not reachable from the internet)
-    - [ ] Block `/metrics` in the nginx proxy (see `doc/nginx-proxy.md`)
+    - [ ] Add the scrape job of `doc/monitoring.md` for the Curvytron container (same Docker network or a port that is not published)
+    - [ ] Block `/metrics` in the nginx proxy (see `doc/nginx-proxy.md`), set a token if the port is reachable
     - [ ] Check in Grafana > Explore that the `curvytron_*` metrics arrive
     - [ ] Create a **Curvytron dashboard**: players, rooms and games now / over time, tick duration (avg, p99), ping per client; export it as JSON into `doc/grafana/`
     - [ ] Optional: alert when the tick duration is too high

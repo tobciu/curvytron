@@ -44,13 +44,14 @@ async function createDevMiddleware() {
 const config = await loadConfig();
 const server = new Server({
     port: Number(process.env.PORT) || config.port,
+    metrics: config.metrics,
     publicDirectory: path.join(rootDirectory, 'dist'),
     middleware: dev ? await createDevMiddleware() : null
 });
 
 if (config.inspector?.enabled) {
     try {
-        const { Inspector } = await import('./core/Inspector.js');
+        const { Inspector } = await import('./core/Inspector.ts');
         const packageInfo = JSON.parse(await readFile(path.join(rootDirectory, 'package.json'), 'utf8'));
 
         new Inspector(server, config.inspector, packageInfo);
