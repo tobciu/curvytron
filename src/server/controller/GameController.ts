@@ -6,24 +6,27 @@ import type { ServerMessage } from '../../shared/protocol.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
 import type { Avatar } from '../model/Avatar.ts';
 import type { Bonus } from '../model/Bonus/Bonus.ts';
+import type { Game } from '../model/Game.ts';
+import type { Player } from '../model/Player.ts';
+import type { ClientEvents } from '../../shared/protocol.ts';
 
 /**
  * Game Controller
  */
 export class GameController {
-    game: any;
+    game: Game;
     clients: Collection;
     socketGroup: SocketGroup;
-    compressor: any;
-    waiting: any;
-    callbacks: any;
+    compressor: Compressor;
+    waiting: ReturnType<typeof setTimeout> | null;
+    callbacks: Record<string, (this: SocketClient, data?: any) => void>;
 
     /**
      * Waiting time
      */
     waitingTime: number = 30000;
 
-    constructor(game: any) {
+    constructor(game: Game) {
         const controller = this;
 
         this.game = game;
@@ -137,8 +140,8 @@ export class GameController {
     /**
      * On player leave
      */
-    onPlayerLeave(data: any) {
-        this.socketGroup.addEvent('game:leave', data.player.id);
+    onPlayerLeave(data: { player: Player }) {
+        this.socketGroup.addEvent('game:leave', data.player.id as number);
     }
 
     /**
@@ -292,7 +295,8 @@ export class GameController {
      */
     checkReady() {
         if (this.game.isReady()) {
-            this.waiting = clearTimeout(this.waiting);
+            clearTimeout(this.waiting ?? undefined);
+            this.waiting = null;
             this.game.newRound();
         }
     }
@@ -302,7 +306,8 @@ export class GameController {
      */
     stopWaiting() {
         if (this.waiting && !this.game.isReady()) {
-            this.waiting = clearTimeout(this.waiting);
+            clearTimeout(this.waiting ?? undefined);
+            this.waiting = null;
 
             const avatars = this.game.getLoadingAvatars();
 
@@ -317,7 +322,7 @@ export class GameController {
     /**
      * On move
      */
-    onMove(client: SocketClient, data: any) {
+    onMove(client: SocketClient, data: ClientEvents['player:move']['data']) {
         if (!isShape(data, { avatar: rules.id, move: rules.integer(-1, 1) })) {
             return;
         }
@@ -332,7 +337,7 @@ export class GameController {
     /**
      * On point
      */
-    onPoint(data: any) {
+    onPoint(data: { avatar: Avatar; important?: boolean }) {
         if (data.important) {
             this.socketGroup.addEvent('point', data.avatar.id);
         }
@@ -359,7 +364,7 @@ export class GameController {
     /**
      * On die
      */
-    onDie(data: any) {
+    onDie(data: { avatar: Avatar; killer: Avatar | null; old: boolean | null }) {
         this.socketGroup.addEvent('die', [data.avatar.id, data.killer ? data.killer.id : null, data.old]);
     }
 
@@ -399,18 +404,18 @@ export class GameController {
     /**
      * On property
      */
-    onProperty(data: any) {
+    onProperty(data: { avatar: Avatar; property: string; value: unknown }) {
         this.socketGroup.addEvent('property', [data.avatar.id, data.property, data.value]);
     }
 
     /**
      * On bonus stack add
      */
-    onBonusStack(data: any) {
+    onBonusStack(data: { avatar: Avatar; method: string; bonus: Bonus }) {
         this.socketGroup.addEvent('bonus:stack', [
             data.avatar.id,
             data.method,
-            data.bonus.id,
+            data.bonus.id as number,
             data.bonus.constructor.name,
             data.bonus.duration
         ]);
@@ -421,28 +426,28 @@ export class GameController {
     /**
      * On game start
      */
-    onGameStart(data: any) {
+    onGameStart(data?: unknown) {
         this.socketGroup.addEvent('game:start');
     }
 
     /**
      * On game stop
      */
-    onGameStop(data: any) {
+    onGameStop(data?: unknown) {
         this.socketGroup.addEvent('game:stop');
     }
 
     /**
      * On round new
      */
-    onRoundNew(data: any) {
+    onRoundNew(data?: unknown) {
         this.socketGroup.addEvent('round:new');
     }
 
     /**
      * On round end
      */
-    onRoundEnd(data: any) {
+    onRoundEnd(data: { winner: Avatar | null }) {
         this.socketGroup.addEvent('round:end', data.winner ? data.winner.id : null);
         this.socketGroup.addEvent('game:stats', this.game.stats.serialize());
     }
@@ -450,21 +455,21 @@ export class GameController {
     /**
      * On clear
      */
-    onClear(data: any) {
+    onClear(data?: unknown) {
         this.socketGroup.addEvent('clear');
     }
 
     /**
      * On borderless
      */
-    onBorderless(data: any) {
+    onBorderless(data: boolean) {
         this.socketGroup.addEvent('borderless', data);
     }
 
     /**
      * On end
      */
-    onEnd(data: any) {
+    onEnd(data?: unknown) {
         this.socketGroup.addEvent('end');
         this.unloadGame();
     }

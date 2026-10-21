@@ -61,13 +61,19 @@ export interface Result {
     error?: string;
 }
 
+/** The answer when the event could not be handled (wrong data, not allowed...) */
+export interface Failure {
+    success: false;
+    error?: string;
+}
+
 // Client => server
 
 export interface ClientEvents {
     whoami: { data: void; reply: number };
     activity: { data: boolean; reply: void };
     'room:fetch': { data: void; reply: void };
-    'room:create': { data: { name: string }; reply: Result & { room?: RoomData } };
+    'room:create': { data: { name: string }; reply: Failure | (Result & { room?: RoomData }) };
     'room:join': {
         data: { name: string; password: string | null };
         reply:
@@ -84,21 +90,24 @@ export interface ClientEvents {
     'room:leave': { data: void; reply: void };
     'player:add': { data: { name: string; color?: string | null }; reply: Result };
     'player:remove': { data: { player: number }; reply: Result };
-    'player:kick': { data: { player: number }; reply: Result & { kicked: boolean } };
-    'room:ready': { data: { player: number }; reply: Result & { ready?: boolean } };
-    'room:name': { data: { player: number; name: string }; reply: Result & { name?: string } };
-    'room:color': { data: { player: number; color: string }; reply: Result & { color?: string } };
+    'player:kick': { data: { player: number }; reply: Failure | (Result & { kicked: boolean }) };
+    'room:ready': { data: { player: number }; reply: Failure | (Result & { ready?: boolean }) };
+    'room:name': { data: { player: number; name: string }; reply: Failure | (Result & { name?: string }) };
+    'room:color': { data: { player: number; color: string }; reply: Failure | (Result & { color?: string }) };
     'room:talk': { data: string; reply: Result };
     'room:config:open': {
         data: { open: boolean };
-        reply: Result & { open: boolean; password: string | null };
+        reply: Failure | (Result & { open: boolean; password: string | null });
     };
-    'room:config:max-score': { data: { maxScore: number | string }; reply: Result & { maxScore: number | null } };
+    'room:config:max-score': {
+        data: { maxScore: number | string };
+        reply: Failure | (Result & { maxScore: number | null });
+    };
     'room:config:variable': {
         data: { variable: string; value: number | string };
-        reply: Result & { value?: number };
+        reply: Failure | (Result & { value?: number });
     };
-    'room:config:bonus': { data: { bonus: string }; reply: Result & { enabled?: boolean } };
+    'room:config:bonus': { data: { bonus: string }; reply: Failure | (Result & { enabled?: boolean }) };
     'room:launch': { data: void; reply: void };
     /** The client has loaded the game and is ready to play, or to watch */
     ready: { data: void; reply: void };
@@ -169,6 +178,9 @@ export interface ServerEvents {
     /** What a client that comes in the middle of a game needs to know */
     spectate: { inRound: boolean; rendered: boolean; maxScore: number };
 }
+
+/** The callback of a handler: answers an event of the client */
+export type Reply<K extends ClientEventName> = (reply: ClientEvents[K]['reply']) => void;
 
 /** An event as it is in a message: `[name, data]` */
 export type ServerMessage = { [K in ServerEventName]: [K, ServerEvents[K]] }[ServerEventName];

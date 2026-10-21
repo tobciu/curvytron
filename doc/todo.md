@@ -50,9 +50,8 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
     - [ ] Database file in a Docker volume
 - [x] Bonus registry (`src/shared/bonuses.ts`) and sprite built from one image per bonus (`npm run sprite`), see `doc/bonuses.md`
 - [x] Presets and the server classes come from the registry (a new bonus: a class, an entry in the list, an image)
-- [ ] Share the network protocol types (event names and payloads) between client and server
-- [ ] Replace the remaining `any` in the client model; enable `noImplicitOverride`
-- [ ] Convert `src/client/lib` to TypeScript
+- [x] The network protocol is described as types (`src/shared/protocol.ts`), `noImplicitOverride` is on, `src/client/lib` is TypeScript
+- [ ] Replace the remaining `any` (about 580, `tests/quality.test.js` only lets the number go down): the callbacks of the repositories, the fields of `RoomRepository` (they can be null), the messages of the chat, the canvas
 - [ ] Pin the Node version (>= 22.18) in the Dockerfile and CI
 - [ ] Error logging on the server (unexpected messages, crashes) to a file / the Docker log
 - [ ] Health endpoint with player and room counts

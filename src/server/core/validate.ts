@@ -44,4 +44,4 @@ export function isShape(data: unknown, shape: Record<string, Rule>): boolean {
 }
 
 /** What the handlers answer when the data is wrong */
-export const invalidData = { success: false, error: 'Invalid data.' };
+export const invalidData = { success: false, error: 'Invalid data.' } as const;

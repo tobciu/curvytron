@@ -1,4 +1,4 @@
-import { GamepadListener } from './lib/GamepadListener.js';
+import { GamepadListener } from './lib/GamepadListener.ts';
 
 /**
  * Shared gamepad listener

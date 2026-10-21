@@ -1,10 +1,14 @@
 /**
  * Option Resolver
- *
- * @param {Boolean} allowExtra
  */
 export class OptionResolver {
-    constructor(allowExtra) {
+    allowExtra: boolean;
+    defaults: Record<string, any>;
+    types: Record<string, string>;
+    optional: string[];
+    required: string[];
+
+    constructor(allowExtra?: boolean) {
         this.allowExtra = typeof allowExtra !== 'undefined' && allowExtra;
         this.defaults = {};
         this.types = {};
@@ -14,10 +18,8 @@ export class OptionResolver {
 
     /**
      * Set defaults
-     *
-     * @param {Object} defaults
      */
-    setDefaults(defaults) {
+    setDefaults(defaults: any) {
         for (const name in defaults) {
             if (Object.hasOwn(defaults, name)) {
                 this.defaults[name] = defaults[name];
@@ -29,10 +31,8 @@ export class OptionResolver {
 
     /**
      * Set types
-     *
-     * @param {Object} types
      */
-    setTypes(types) {
+    setTypes(types: any) {
         for (const name in types) {
             if (Object.hasOwn(types, name)) {
                 this.types[name] = types[name];
@@ -44,25 +44,21 @@ export class OptionResolver {
 
     /**
      * Set optional
-     *
-     * @param {Array} values
      */
-    setOptional(values) {
+    setOptional(values: any[]) {
         if (this.allowExtra) {
             return;
         }
 
-        this.addToArray(this.optionals, values);
+        this.addToArray(this.optional, values);
 
         return this;
     }
 
     /**
      * Set required
-     *
-     * @param {Array} values
      */
-    setRequired(values) {
+    setRequired(values: any[]) {
         this.addToArray(this.required, values);
 
         return this;
@@ -70,13 +66,9 @@ export class OptionResolver {
 
     /**
      * Resolve
-     *
-     * @param {Object} options
-     *
-     * @return {Object}
      */
-    resolve(source) {
-        const options = {};
+    resolve(source: any): Record<string, any> {
+        const options: Record<string, any> = {};
 
         let name;
 
@@ -98,13 +90,8 @@ export class OptionResolver {
 
     /**
      * Get value
-     *
-     * @param {Object} options
-     * @param {String} name
-     *
-     * @return {mixed}
      */
-    getValue(options, name) {
+    getValue(options: any, name: string) {
         let value = null;
 
         if (!this.optionExists(name)) {
@@ -117,24 +104,18 @@ export class OptionResolver {
             value = this.defaults[name];
         }
 
-        this.checkType(name, value);
-
-        return value;
+        return this.checkType(name, value);
     }
 
     /**
      * Is type valid
-     *
-     * @param {String} name
-     * @param {mixed} value
-     *
-     * @return {Boolean}
      */
-    checkType(name, value) {
+    checkType(name: string, value?: any): any {
         const expectedType = typeof this.types[name] !== 'undefined' ? this.types[name] : false;
         let givenType = typeof value;
 
-        if (expectedType && givenType !== expectedType) {
+        // An option without value (and without default) stays empty
+        if (value !== null && expectedType && givenType !== expectedType) {
             if (expectedType === 'string') {
                 value = String(value);
             }
@@ -153,16 +134,14 @@ export class OptionResolver {
                 throw `Wrong type for option "${name}". Expected ${this.types[name]} but got ${typeof value}`;
             }
         }
+
+        return value;
     }
 
     /**
      * Does this option exists?
-     *
-     * @param {String} name
-     *
-     * @return {Boolean}
      */
-    optionExists(name) {
+    optionExists(name: string): boolean {
         if (this.allowExtra) {
             return true;
         }
@@ -176,16 +155,14 @@ export class OptionResolver {
 
     /**
      * Set defaults
-     *
-     * @param {Object} defaults
      */
-    addToArray(array, values) {
+    addToArray(array: string[], values: string[]) {
         let value;
 
         for (let i = values.length - 1; i >= 0; i--) {
             value = values[i];
 
-            if (array.indexOf(value) >= 0) {
+            if (array.indexOf(value) < 0) {
                 array.push(value);
             }
         }

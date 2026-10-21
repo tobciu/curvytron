@@ -1,13 +1,21 @@
-import { Mapper } from './Mapper.js';
+import { Mapper } from './Mapper.ts';
 
 /**
  * Bind Input
- *
- * @param {GamepadListener} listener
- * @param {boolean} indexGamepad
  */
 export class GamepadMapper extends Mapper {
-    constructor(listener, indexGamepad) {
+    /**
+     * Names of the positions of the sticks: by axis, then by direction
+     */
+    sticks: Record<string, Record<string, string>> = {
+        0: { '-1': '←', 1: '→', 0: 'idle' },
+        1: { '-1': '↑', 1: '↓', 0: 'idle' }
+    };
+
+    gamepadListener: any;
+    indexGamepad: any;
+
+    constructor(listener: any, indexGamepad?: any) {
         super();
 
         this.gamepadListener = listener;
@@ -20,29 +28,35 @@ export class GamepadMapper extends Mapper {
     /**
      * Start listening
      */
-    start() {
+    override start(): boolean {
         if (super.start()) {
             this.gamepadListener.on('gamepad:axis', this.onAxis);
             this.gamepadListener.on('gamepad:button', this.onButton);
+
+            return true;
         }
+
+        return false;
     }
 
     /**
      * Stop listening
      */
-    stop() {
+    override stop(): boolean {
         if (super.stop()) {
             this.gamepadListener.off('gamepad:axis', this.onAxis);
             this.gamepadListener.off('gamepad:button', this.onButton);
+
+            return true;
         }
+
+        return false;
     }
 
     /**
      * On axis
-     *
-     * @param {Event} e
      */
-    onAxis(e) {
+    onAxis(e: any) {
         const value = e.detail.value > 0 ? 1 : e.detail.value < 0 ? -1 : 0,
             prefix = this.indexGamepad ? `gamepad:${e.detail.gamepad.index}:` : '';
 
@@ -52,10 +66,8 @@ export class GamepadMapper extends Mapper {
 
     /**
      * On button
-     *
-     * @param {Event} e
      */
-    onButton(e) {
+    onButton(e: any) {
         this.stop();
 
         const value = e.detail.index,
@@ -66,12 +78,8 @@ export class GamepadMapper extends Mapper {
 
     /**
      * Gues character from Key
-     *
-     * @param {Number} key
-     *
-     * @return {String}
      */
-    guessChar(key) {
+    override guessChar(key: any): string {
         const axis = new RegExp('^(gamepad:\\d+:)?axis:(\\d+):(-?\\d+)$', 'gi').exec(key),
             button = new RegExp('^(gamepad:\\d+:)?button:(\\d+)$', 'gi').exec(key);
 
@@ -87,10 +95,4 @@ export class GamepadMapper extends Mapper {
 
 /**
  * Sticks
- *
- * @type {Object}
  */
-GamepadMapper.prototype.sticks = {
-    0: { '-1': '←', 1: '→', 0: 'idle' },
-    1: { '-1': '↑', 1: '↓', 0: 'idle' }
-};

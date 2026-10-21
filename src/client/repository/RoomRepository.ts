@@ -253,7 +253,7 @@ export class RoomRepository extends EventEmitter {
      */
     kickPlayer(player: Player, callback: (...args: any[]) => any) {
         this.client.addEvent('player:kick', { player: player.id }, function (result) {
-            player.kicked = result.kicked;
+            player.kicked = 'kicked' in result && result.kicked;
             callback(result);
         });
     }
@@ -281,7 +281,7 @@ export class RoomRepository extends EventEmitter {
                 if (!result.success) {
                     console.error('Could not set color %s for player %s', player.color, player.name);
                 }
-                player.color = result.color ?? player.color;
+                player.color = ('color' in result ? result.color : undefined) ?? player.color;
                 callback(result);
             }
         );

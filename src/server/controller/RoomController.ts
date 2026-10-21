@@ -7,19 +7,22 @@ import { Chat } from '../service/Chat.ts';
 import { Collection } from '../../shared/Collection.ts';
 import { invalidData, isShape, rules } from '../core/validate.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
+import type { Room } from '../model/Room.ts';
+import type { KickVote } from '../model/KickVote.ts';
+import type { ClientEvents, Reply } from '../../shared/protocol.ts';
 
 /**
  * Room Controller
  */
 export class RoomController extends EventEmitter {
-    room: any;
+    room: Room;
     clients: Collection<SocketClient>;
     socketGroup: SocketGroup;
     kickManager: KickManager;
     chat: Chat;
-    roomMaster: any;
-    launching: any;
-    callbacks: any;
+    roomMaster: SocketClient | null;
+    launching: ReturnType<typeof setTimeout> | null;
+    callbacks: Record<string, (this: SocketClient, data?: any) => void>;
 
     /** Players a client can have in a room, and players in a room */
     static maxPlayersPerClient: number = 16;
@@ -31,7 +34,7 @@ export class RoomController extends EventEmitter {
      */
     timeToClose: number = 10000;
 
-    constructor(room: any) {
+    constructor(room: Room) {
         super();
 
         const controller = this;
@@ -137,7 +140,7 @@ export class RoomController extends EventEmitter {
     /**
      * Attach events
      */
-    attach(client: SocketClient, callback: (...args: any[]) => any) {
+    attach(client: SocketClient, callback?: Reply<'room:join'>) {
         if (this.clients.add(client)) {
             this.attachEvents(client);
             this.onClientAdd(client);
@@ -285,7 +288,7 @@ export class RoomController extends EventEmitter {
      * Is the given client the game master?
      */
     isRoomMaster(client: SocketClient): boolean {
-        return this.roomMaster.id === client.id;
+        return this.roomMaster !== null && this.roomMaster.id === client.id;
     }
 
     /**
@@ -349,7 +352,8 @@ export class RoomController extends EventEmitter {
      */
     cancelLaunch() {
         if (this.launching) {
-            this.launching = clearTimeout(this.launching);
+            clearTimeout(this.launching ?? undefined);
+            this.launching = null;
             this.socketGroup.addEvent('room:launch:cancel');
         }
     }
@@ -359,7 +363,8 @@ export class RoomController extends EventEmitter {
      */
     launch() {
         if (this.launching) {
-            this.launching = clearTimeout(this.launching);
+            clearTimeout(this.launching ?? undefined);
+            this.launching = null;
         }
 
         this.room.newGame();
@@ -396,13 +401,13 @@ export class RoomController extends EventEmitter {
     /**
      * On add player to room
      */
-    onPlayerAdd(client: SocketClient, data?: any, callback?: (...args: any[]) => any) {
+    onPlayerAdd(client: SocketClient, data: ClientEvents['player:add']['data'], callback?: Reply<'player:add'>) {
         if (!isShape(data, { name: rules.string(), color: rules.optional(rules.string(40)) })) {
             return callback?.(invalidData);
         }
 
         const name = data.name.substr(0, Player.maxLength).trim(),
-            color = typeof data.color !== 'undefined' ? data.color : null;
+            color = data.color ?? undefined;
 
         if (!name.length) {
             return callback?.({ success: false, error: 'Invalid name.' });
@@ -443,7 +448,11 @@ export class RoomController extends EventEmitter {
     /**
      * On remove player from room
      */
-    onPlayerRemove(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+    onPlayerRemove(
+        client: SocketClient,
+        data: ClientEvents['player:remove']['data'],
+        callback?: Reply<'player:remove'>
+    ) {
         if (!isShape(data, { player: rules.id })) {
             return callback?.(invalidData);
         }
@@ -461,7 +470,7 @@ export class RoomController extends EventEmitter {
     /**
      * On talk
      */
-    onTalk(client: SocketClient, content: string, callback?: (...args: any[]) => any) {
+    onTalk(client: SocketClient, content: string, callback?: Reply<'room:talk'>) {
         if (typeof content !== 'string') {
             return callback?.({ success: false });
         }
@@ -479,7 +488,7 @@ export class RoomController extends EventEmitter {
     /**
      * On player change color
      */
-    onColor(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+    onColor(client: SocketClient, data: ClientEvents['room:color']['data'], callback?: Reply<'room:color'>) {
         if (!isShape(data, { player: rules.id, color: rules.string(40) })) {
             return callback?.(invalidData);
         }
@@ -502,7 +511,7 @@ export class RoomController extends EventEmitter {
     /**
      * On player change name
      */
-    onName(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+    onName(client: SocketClient, data: ClientEvents['room:name']['data'], callback?: Reply<'room:name'>) {
         if (!isShape(data, { player: rules.id, name: rules.string() })) {
             return callback?.(invalidData);
         }
@@ -530,7 +539,7 @@ export class RoomController extends EventEmitter {
     /**
      * On player ready
      */
-    onReady(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+    onReady(client: SocketClient, data: ClientEvents['room:ready']['data'], callback?: Reply<'room:ready'>) {
         if (!isShape(data, { player: rules.id })) {
             return callback?.(invalidData);
         }
@@ -554,7 +563,7 @@ export class RoomController extends EventEmitter {
     /**
      * On kick vote
      */
-    onKickVote(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+    onKickVote(client: SocketClient, data: ClientEvents['player:kick']['data'], callback?: Reply<'player:kick'>) {
         if (!isShape(data, { player: rules.id })) {
             return callback?.(invalidData);
         }
@@ -581,7 +590,11 @@ export class RoomController extends EventEmitter {
     /**
      * On config open
      */
-    onConfigOpen(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+    onConfigOpen(
+        client: SocketClient,
+        data: ClientEvents['room:config:open']['data'],
+        callback?: Reply<'room:config:open'>
+    ) {
         if (!isShape(data, { open: rules.boolean })) {
             return callback?.(invalidData);
         }
@@ -605,7 +618,11 @@ export class RoomController extends EventEmitter {
     /**
      * On config max score
      */
-    onConfigMaxScore(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+    onConfigMaxScore(
+        client: SocketClient,
+        data: ClientEvents['room:config:max-score']['data'],
+        callback?: Reply<'room:config:max-score'>
+    ) {
         if (!isShape(data, { maxScore: rules.either(rules.number, rules.string(10)) })) {
             return callback?.(invalidData);
         }
@@ -622,7 +639,11 @@ export class RoomController extends EventEmitter {
     /**
      * On config speed
      */
-    onConfigVariable(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+    onConfigVariable(
+        client: SocketClient,
+        data: ClientEvents['room:config:variable']['data'],
+        callback?: Reply<'room:config:variable'>
+    ) {
         if (!isShape(data, { variable: rules.string(40), value: rules.either(rules.number, rules.string(20)) })) {
             return callback?.(invalidData);
         }
@@ -642,7 +663,11 @@ export class RoomController extends EventEmitter {
     /**
      * On config bonus
      */
-    onConfigBonus(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+    onConfigBonus(
+        client: SocketClient,
+        data: ClientEvents['room:config:bonus']['data'],
+        callback?: Reply<'room:config:bonus'>
+    ) {
         if (!isShape(data, { bonus: rules.string(60) })) {
             return callback?.(invalidData);
         }
@@ -675,15 +700,15 @@ export class RoomController extends EventEmitter {
     /**
      * On player join
      */
-    onPlayerJoin(data: any) {
+    onPlayerJoin(data: { room: Room; player: Player }) {
         this.socketGroup.addEvent('room:join', { player: data.player.serialize() });
     }
 
     /**
      * On player leave
      */
-    onPlayerLeave(data: any) {
-        this.socketGroup.addEvent('room:leave', { player: data.player.id });
+    onPlayerLeave(data: { room: Room; player: Player }) {
+        this.socketGroup.addEvent('room:leave', { player: data.player.id as number });
 
         if (this.room.isReady()) {
             this.room.newGame();
@@ -708,14 +733,14 @@ export class RoomController extends EventEmitter {
     /**
      * On new vote
      */
-    onVoteNew(kickVote: any) {
+    onVoteNew(kickVote: KickVote) {
         this.socketGroup.addEvent('vote:new', kickVote.serialize());
     }
 
     /**
      * On vote close
      */
-    onVoteClose(kickVote: any) {
+    onVoteClose(kickVote: KickVote) {
         this.socketGroup.addEvent('vote:close', kickVote.serialize());
     }
 }

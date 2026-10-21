@@ -2,10 +2,12 @@ import { EventEmitter } from '#event-emitter';
 
 /**
  * Mapper
- *
- * @param {String} id
  */
 export class Mapper extends EventEmitter {
+    value: any;
+    view: any;
+    listening: boolean;
+
     constructor() {
         super();
 
@@ -19,10 +21,8 @@ export class Mapper extends EventEmitter {
 
     /**
      * Mapper
-     *
-     * @param {String} value
      */
-    setValue(value) {
+    setValue(value: any) {
         if (this.value !== value) {
             this.value = value;
             this.view = this.guessChar(this.value);
@@ -59,12 +59,8 @@ export class Mapper extends EventEmitter {
 
     /**
      * Kill an event
-     *
-     * @param {Event} e
-     *
-     * @return {Boolean}
      */
-    kill(e) {
+    kill(e: any): boolean {
         e.preventDefault();
 
         return false;
@@ -72,12 +68,8 @@ export class Mapper extends EventEmitter {
 
     /**
      * Gues character from Key
-     *
-     * @param {Number} key
-     *
-     * @return {String}
      */
-    guessChar(key) {
+    guessChar(key: any): string {
         return key.toString();
     }
 }

@@ -1,4 +1,4 @@
-import { Mapper } from './Mapper.js';
+import { Mapper } from './Mapper.ts';
 
 /**
  * Keyboard Mapper
@@ -13,29 +13,35 @@ export class KeyboardMapper extends Mapper {
     /**
      * Start listening
      */
-    start() {
+    override start(): boolean {
         if (super.start()) {
             window.addEventListener('keydown', this.onKey);
             window.addEventListener('keypress', this.kill);
+
+            return true;
         }
+
+        return false;
     }
 
     /**
      * Stop listening
      */
-    stop() {
+    override stop(): boolean {
         if (super.stop()) {
             window.removeEventListener('keydown', this.onKey);
             window.removeEventListener('keypress', this.kill);
+
+            return true;
         }
+
+        return false;
     }
 
     /**
      * On key pressed
-     *
-     * @param {Event} e
      */
-    onKey(e) {
+    onKey(e: any) {
         e.preventDefault();
 
         this.stop();
@@ -46,15 +52,9 @@ export class KeyboardMapper extends Mapper {
 
     /**
      * Gues character from Key
-     *
-     * @param {Number} key
-     *
-     * @return {String}
      */
-    guessChar(key) {
-        key = key.toString();
-
-        switch (key) {
+    override guessChar(key: any): string {
+        switch (key.toString()) {
             case '8':
                 return 'Backspace';
             case '13':

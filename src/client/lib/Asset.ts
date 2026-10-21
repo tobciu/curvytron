@@ -1,12 +1,11 @@
 /**
  * Asset
- *
- * @param {string} source
- * @param {Function} callback
- * @param {Boolean} load
  */
 export class Asset {
-    constructor(source, callback, load) {
+    element: any;
+    source: any;
+
+    constructor(source: any, callback: any, load?: any) {
         this.element = new Image();
         this.source = source;
 
@@ -20,10 +19,8 @@ export class Asset {
 
     /**
      * Set source
-     *
-     * @param {String} source
      */
-    setSource(source) {
+    setSource(source: string) {
         this.source = source;
     }
 
@@ -36,8 +33,6 @@ export class Asset {
 
     /**
      * Get image
-     *
-     * @return {Image}
      */
     getImage() {
         return this.element;
@@ -45,19 +40,15 @@ export class Asset {
 
     /**
      * Get image width
-     *
-     * @return {Number}
      */
-    getWidth() {
+    getWidth(): number {
         return this.element.width;
     }
 
     /**
      * Get image height
-     *
-     * @return {Number}
      */
-    getHeight() {
+    getHeight(): number {
         return this.element.height;
     }
 }

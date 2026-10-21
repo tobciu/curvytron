@@ -3,7 +3,7 @@ import type { MapBonus } from '../model/bonus/MapBonus.ts';
 import { bonusDefinitions, spriteColumns, spriteLines } from '../../shared/bonuses.ts';
 import { Canvas } from '../core/Canvas.ts';
 import { BaseBonusManager } from '../../shared/manager/BaseBonusManager.ts';
-import { SpriteAsset } from '../lib/SpriteAsset.js';
+import { SpriteAsset } from '../lib/SpriteAsset.ts';
 
 /**
  * Bonus Manager

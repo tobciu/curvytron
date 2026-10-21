@@ -1,11 +1,15 @@
 import { EventEmitter } from '#event-emitter';
-import { GamepadHandler } from './GamepadHandler.js';
+import { GamepadHandler } from './GamepadHandler.ts';
 
 /**
  * Gamepad Listener
  */
 export class GamepadListener extends EventEmitter {
-    constructor(options) {
+    options: any;
+    frame: any;
+    handlers: any;
+
+    constructor(options?: any) {
         super();
 
         this.options = typeof options === 'object' ? options : {};
@@ -48,11 +52,11 @@ export class GamepadListener extends EventEmitter {
 
         for (let i = gamepads.length - 1; i >= 0; i--) {
             if (gamepads[i]) {
-                if (typeof gamepads[i].handler === 'undefined') {
+                if (typeof (gamepads[i] as any).handler === 'undefined') {
                     this.addGamepad(gamepads[i]);
                 }
 
-                gamepads[i].handler.update();
+                (gamepads[i] as any).handler.update();
             } else if (this.handlers[i]) {
                 this.removeGamepad(i);
             }
@@ -61,10 +65,8 @@ export class GamepadListener extends EventEmitter {
 
     /**
      * Add gamepad
-     *
-     * @param {Gamepad} gamepad
      */
-    addGamepad(gamepad) {
+    addGamepad(gamepad: any) {
         const handler = new GamepadHandler(gamepad, this.options);
 
         handler.on('axis', this.onAxis);
@@ -78,10 +80,8 @@ export class GamepadListener extends EventEmitter {
 
     /**
      * Add gamepad
-     *
-     * @param {Gamepad} gamepad
      */
-    removeGamepad(index) {
+    removeGamepad(index: any) {
         const handler = this.handlers[index];
 
         handler.off('axis', this.onAxis);
@@ -95,10 +95,8 @@ export class GamepadListener extends EventEmitter {
 
     /**
      * On axe
-     *
-     * @param {Event} event
      */
-    onAxis(event) {
+    onAxis(event: any) {
         this.emit('gamepad:axis', event.detail);
         this.emit(`gamepad:${event.detail.gamepad.index}:axis`, event.detail);
         this.emit(`gamepad:${event.detail.gamepad.index}:axis:${event.detail.axis}`, event.detail);
@@ -106,10 +104,8 @@ export class GamepadListener extends EventEmitter {
 
     /**
      * On button
-     *
-     * @param {Event} event
      */
-    onButton(event) {
+    onButton(event: any) {
         this.emit('gamepad:button', event.detail);
         this.emit(`gamepad:${event.detail.gamepad.index}:button`, event.detail);
         this.emit(`gamepad:${event.detail.gamepad.index}:button:${event.detail.index}`, event.detail);
@@ -117,8 +113,6 @@ export class GamepadListener extends EventEmitter {
 
     /**
      * Get gampads
-     *
-     * @return {GamepadList}
      */
     getGamepads() {
         const gamepads = typeof navigator.getGamepads !== 'undefined' ? navigator.getGamepads() : null;

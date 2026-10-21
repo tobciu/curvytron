@@ -1,5 +1,6 @@
 import http from 'node:http';
-import express from 'express';
+import type { AddressInfo } from 'node:net';
+import express, { type Express } from 'express';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { EventEmitter } from '#event-emitter';
 import { RoomsController } from '../controller/RoomsController.ts';
@@ -19,6 +20,21 @@ const KEEP_ALIVE_INTERVAL = 30000;
  */
 const MAX_PAYLOAD = 64 * 1024;
 
+/** A socket that answers the pings (see `keepAlive`) */
+type LiveSocket = WebSocket & { isAlive?: boolean };
+
+/** What the server needs to know to start */
+export interface ServerConfig {
+    /** Port to listen on, 0 for any free port */
+    port: number;
+    /** Directory of the built client */
+    publicDirectory: string;
+    /** Extra express middleware (the Vite dev server in development) */
+    middleware?: any;
+    /** The `/metrics` endpoint: `enabled` (default true) and an optional `token` */
+    metrics?: { enabled?: boolean; token?: string };
+}
+
 /**
  * Server
  *
@@ -26,16 +42,16 @@ const MAX_PAYLOAD = 64 * 1024;
  * @param [config.middleware] Extra express middleware (the Vite dev server in development)
  */
 export class Server extends EventEmitter {
-    config: any;
-    app: any;
-    server: any;
-    sockets: any;
-    clients: Collection;
+    config: ServerConfig;
+    app: Express;
+    server: http.Server;
+    sockets: WebSocketServer;
+    clients: Collection<SocketClient>;
     roomRepository: RoomRepository;
     roomsController: RoomsController;
-    keepAliveLoop: any;
+    keepAliveLoop: ReturnType<typeof setInterval>;
 
-    constructor(config: any) {
+    constructor(config: ServerConfig) {
         super();
 
         this.config = config;
@@ -79,12 +95,19 @@ export class Server extends EventEmitter {
     }
 
     /**
+     * The port the server listens on (useful when it was started on any free port)
+     */
+    get port(): number {
+        return (this.server.address() as AddressInfo).port;
+    }
+
+    /**
      * Start listening
      */
     listen() {
-        return new Promise((resolve) => {
+        return new Promise<this>((resolve) => {
             this.server.listen(this.config.port, () => {
-                console.info('Listening on port %s', this.server.address().port);
+                console.info('Listening on port %s', this.port);
                 resolve(this);
             });
         });
@@ -124,7 +147,7 @@ export class Server extends EventEmitter {
     /**
      * On socket connection
      */
-    onSocketConnection(socket: any, ip: string) {
+    onSocketConnection(socket: LiveSocket, ip: string) {
         socket.isAlive = true;
         socket.on('pong', () => {
             socket.isAlive = true;
@@ -185,7 +208,7 @@ export class Server extends EventEmitter {
      * Drop sockets that did not answer the last ping, ping the others.
      */
     keepAlive() {
-        for (const socket of this.sockets.clients) {
+        for (const socket of this.sockets.clients as Set<LiveSocket>) {
             if (!socket.isAlive) {
                 socket.terminate();
                 continue;

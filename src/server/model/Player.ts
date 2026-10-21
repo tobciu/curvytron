@@ -1,5 +1,6 @@
 import { BasePlayer } from '../../shared/model/BasePlayer.ts';
 import { Avatar } from './Avatar.ts';
+import type { PlayerData } from '../../shared/protocol.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
 
 /**
@@ -22,11 +23,7 @@ export class Player extends BasePlayer {
     /**
      * Serialize
      */
-    override serialize() {
-        const data: Record<string, any> = super.serialize();
-
-        data.active = this.client.active;
-
-        return data;
+    override serialize(): PlayerData {
+        return { ...super.serialize(), active: this.client.active };
     }
 }

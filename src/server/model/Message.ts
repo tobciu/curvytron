@@ -1,3 +1,5 @@
+import type { MessageData } from '../../shared/protocol.ts';
+
 /**
  * Message
  */
@@ -38,7 +40,7 @@ export class Message {
     /**
      * Serialize
      */
-    serialize() {
+    serialize(): MessageData {
         if (this.name === null) {
             this.buildPlayer();
         }

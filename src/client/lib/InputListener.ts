@@ -1,14 +1,14 @@
 import { EventEmitter } from '#event-emitter';
-import { KeyboardMapper } from './KeyboardMapper.js';
+import { KeyboardMapper } from './KeyboardMapper.ts';
 
 /**
  * Input Listener
- *
- * @param {Mapper} mapper
- * @param {Element} input
  */
 export class InputListener extends EventEmitter {
-    constructor(mapper, input) {
+    mapper: any;
+    element: any;
+
+    constructor(mapper: any, input?: any) {
         super();
 
         this.mapper = mapper;
@@ -34,7 +34,7 @@ export class InputListener extends EventEmitter {
     /**
      * On mapper listening
      */
-    onMapperListening(e) {
+    onMapperListening(e: any) {
         this.element.value = '';
         this.element.placeholder = '...';
     }
@@ -42,7 +42,7 @@ export class InputListener extends EventEmitter {
     /**
      * On mapper change value
      */
-    onMapperChange(e) {
+    onMapperChange(e: any) {
         this.element.value = this.mapper.view;
         this.element.placeholder = '';
 

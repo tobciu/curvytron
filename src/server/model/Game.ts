@@ -81,6 +81,13 @@ export class Game extends BaseGame {
     }
 
     /**
+     * Get still loading avatars
+     */
+    override getLoadingAvatars(): Collection<Avatar> {
+        return super.getLoadingAvatars() as Collection<Avatar>;
+    }
+
+    /**
      * Update
      */
     override update(step: number) {

@@ -1,9 +1,9 @@
 import { EventEmitter } from '#event-emitter';
 import { Collection } from '../../shared/Collection.ts';
 import { gamepadListener } from '../gamepadListener.ts';
-import { GamepadMapper } from '../lib/GamepadMapper.js';
-import { KeyboardMapper } from '../lib/KeyboardMapper.js';
-import { TouchMapper } from '../lib/TouchMapper.js';
+import { GamepadMapper } from '../lib/GamepadMapper.ts';
+import { KeyboardMapper } from '../lib/KeyboardMapper.ts';
+import { TouchMapper } from '../lib/TouchMapper.ts';
 
 /**
  * Player control

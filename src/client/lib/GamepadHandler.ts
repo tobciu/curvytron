@@ -1,14 +1,31 @@
 import { EventEmitter } from '#event-emitter';
-import { OptionResolver } from './OptionResolver.js';
+import { OptionResolver } from './OptionResolver.ts';
 
 /**
  * Gamepad Handler
- *
- * @param {Gamepad} gamepad
- * @param {Object} options
  */
 export class GamepadHandler extends EventEmitter {
-    constructor(gamepad, options) {
+    /**
+     * Option resolver
+     */
+    static optionResolver: OptionResolver = new OptionResolver(false)
+        .setDefaults({
+            analog: true,
+            deadZone: 0,
+            precision: 0
+        })
+        .setTypes({
+            analog: 'boolean',
+            deadZone: 'number',
+            precision: 'number'
+        });
+
+    gamepad: any;
+    options: any;
+    sticks: any;
+    buttons: any;
+
+    constructor(gamepad: any, options?: any) {
         super();
 
         this.gamepad = gamepad;
@@ -29,17 +46,13 @@ export class GamepadHandler extends EventEmitter {
 
     /**
      * Resolve options
-     *
-     * @param {Object} options
-     *
-     * @return {Object}
      */
-    resolveOptions(source) {
+    resolveOptions(source?: any) {
         const customStick = typeof source.stick !== 'undefined',
             customButton = typeof source.button !== 'undefined',
             options = {
-                stick: this.optionResolver.resolve(customStick ? source.stick : customButton ? {} : source),
-                button: this.optionResolver.resolve(customButton ? source.button : customStick ? {} : source)
+                stick: GamepadHandler.optionResolver.resolve(customStick ? source.stick : customButton ? {} : source),
+                button: GamepadHandler.optionResolver.resolve(customButton ? source.button : customStick ? {} : source)
             };
 
         options.stick.deadZone = Math.max(Math.min(options.stick.deadZone, 1), 0);
@@ -72,12 +85,8 @@ export class GamepadHandler extends EventEmitter {
 
     /**
      * Set stick
-     *
-     * @param {Number} stick
-     * @param {Number} axis
-     * @param {Number} value
      */
-    setStick(stick, axis, value, options) {
+    setStick(stick: number, axis: number, value: number, options: any) {
         if (options.deadZone && value < options.deadZone && value > -options.deadZone) {
             value = 0;
         }
@@ -100,11 +109,8 @@ export class GamepadHandler extends EventEmitter {
 
     /**
      * Set button
-     *
-     * @param {Number} index
-     * @param {GamepadButton} button
      */
-    setButton(index, button, options) {
+    setButton(index: number, button: any, options: any) {
         let value = button.value;
 
         if (options.deadZone && button.value < options.deadZone && button.value > -options.deadZone) {
@@ -129,22 +135,3 @@ export class GamepadHandler extends EventEmitter {
         }
     }
 }
-
-/**
- * Option resolver
- *
- * @type {OptionResolver}
- */
-GamepadHandler.prototype.optionResolver = new OptionResolver(false);
-
-GamepadHandler.prototype.optionResolver.setDefaults({
-    analog: true,
-    deadZone: 0,
-    precision: 0
-});
-
-GamepadHandler.prototype.optionResolver.setTypes({
-    analog: 'boolean',
-    deadZone: 'number',
-    precision: 'number'
-});

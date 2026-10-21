@@ -4,14 +4,14 @@ import { Collection } from '../../shared/Collection.ts';
  * Body
  */
 export class Body {
-    x: any;
-    y: any;
-    radius: any;
+    x: number;
+    y: number;
+    radius: number;
     data: any;
     islands: Collection;
-    id: any;
+    id: number | null;
 
-    constructor(x: any, y: any, radius: any, data?: any) {
+    constructor(x: number, y: number, radius: number, data?: any) {
         this.x = x;
         this.y = y;
         this.radius = radius;

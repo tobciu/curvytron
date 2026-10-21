@@ -2,6 +2,7 @@ import { AvatarBody } from '../core/AvatarBody.ts';
 import { PrintManager } from '../manager/PrintManager.ts';
 import { BaseAvatar } from '../../shared/model/BaseAvatar.ts';
 import { Trail } from './Trail.ts';
+import type { Player } from './Player.ts';
 import { BonusStack } from './BonusStack.ts';
 
 /**
@@ -10,9 +11,10 @@ import { BonusStack } from './BonusStack.ts';
 export class Avatar extends BaseAvatar {
     bodyCount: number;
     declare body: AvatarBody;
+    declare player: Player;
     printManager: PrintManager;
 
-    constructor(player: any) {
+    constructor(player: Player) {
         super(player);
 
         this.bodyCount = 0;

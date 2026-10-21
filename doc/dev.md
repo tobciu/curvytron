@@ -29,6 +29,13 @@ The model is made of mutable objects that emit events. Vue can not see changes i
 each time one of the events is emitted (or `bump()` is called).
 `types.ts` re-exports the model classes as types for the components.
 
+### The network protocol
+
+`src/shared/protocol.ts` lists every event with its data: `ClientEvents` (what the client sends, with the answer of the
+server) and `ServerEvents` (what the server sends). The socket clients and groups are typed with them, so a wrong event
+name or data is a type error on both sides. Add the event there first. `tests/quality.test.js` makes sure that the
+number of explicit `any` only goes down (lower `maxExplicitAny` when you remove some).
+
 ### Data of the clients
 
 The server does not trust the clients. The handlers check the shape of the data with `src/server/core/validate.ts`
@@ -68,7 +75,7 @@ On the client, listeners receive a DOM-like event (`{ type, detail }`).
 
 ### TypeScript
 
-`src/shared` and `src/server` are written in strict TypeScript. Node (>= 22.18) strips the types at runtime, so there is
+All of `src` is written in strict TypeScript (`noImplicitOverride` too: a method that overrides another needs `override`). Node (>= 22.18) strips the types at runtime, so there is
 no build step for the server (`node src/server/launcher.ts`). This limits the syntax to what can simply be erased:
 relative imports end with `.ts`, no enums / namespaces / constructor parameter properties, and a subclass that only
 narrows the type of an inherited field uses `declare` (a plain redeclaration would reset the value set by the base class).

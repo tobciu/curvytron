@@ -1,3 +1,4 @@
+import type { VoteData } from '../../shared/protocol.ts';
 import { EventEmitter } from '#event-emitter';
 import { Collection } from '../../shared/Collection.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
@@ -117,7 +118,7 @@ export class KickVote extends EventEmitter {
     /**
      * Serialize
      */
-    serialize() {
+    serialize(): VoteData {
         return {
             target: this.target.id,
             result: this.result

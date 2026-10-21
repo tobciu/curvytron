@@ -5,15 +5,15 @@ import type { Body } from './Body.ts';
  * Island
  */
 export class Island {
-    id: any;
-    size: any;
-    fromX: any;
-    fromY: any;
-    toX: any;
-    toY: any;
+    id: string;
+    size: number;
+    fromX: number;
+    fromY: number;
+    toX: number;
+    toY: number;
     bodies: Collection;
 
-    constructor(id: any, size: any, x: any, y: any) {
+    constructor(id: string, size: number, x: number, y: number) {
         this.id = id;
         this.size = size;
         this.fromX = x;

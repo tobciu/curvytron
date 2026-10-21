@@ -3,6 +3,7 @@ import { Collection } from '../Collection.ts';
 import type { BaseGame } from './BaseGame.ts';
 import type { BasePlayer } from './BasePlayer.ts';
 import type { BaseRoomConfig } from './BaseRoomConfig.ts';
+import type { RoomData } from '../protocol.ts';
 
 /**
  * Base Room
@@ -127,10 +128,10 @@ export abstract class BaseRoom extends EventEmitter {
     /**
      * Serialize
      */
-    serialize(full?: boolean): Record<string, any> {
+    serialize(full?: boolean): RoomData {
         full = typeof full === 'undefined' || full;
 
-        const data: Record<string, any> = {
+        const data: RoomData = {
             name: this.name,
             players: full
                 ? this.players.map(function () {

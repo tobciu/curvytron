@@ -17,12 +17,5 @@
         "erasableSyntaxOnly": true,
         "noImplicitOverride": true
     },
-    "include": [
-        "src/**/*.ts",
-        "src/client/**/*.vue",
-        "src/client/**/*.js",
-        "src/shared/**/*.js",
-        "tests/**/*.ts",
-        "tools/**/*.ts"
-    ]
+    "include": ["src/**/*.ts", "src/client/**/*.vue", "tests/**/*.ts", "tools/**/*.ts"]
 }

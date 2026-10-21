@@ -3,16 +3,18 @@ import { SocketGroup } from '../core/SocketGroup.ts';
 import { Room } from '../model/Room.ts';
 import { invalidData, isShape, rules } from '../core/validate.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
+import type { RoomRepository } from '../repository/RoomRepository.ts';
+import type { ClientEvents, Reply } from '../../shared/protocol.ts';
 
 /**
  * Rooms Controller
  */
 export class RoomsController extends EventEmitter {
     socketGroup: SocketGroup;
-    repository: any;
-    callbacks: any;
+    repository: RoomRepository;
+    callbacks: Record<string, (this: SocketClient, data?: any) => void>;
 
-    constructor(repository: any) {
+    constructor(repository: RoomRepository) {
         super();
 
         const controller = this;
@@ -99,7 +101,7 @@ export class RoomsController extends EventEmitter {
     /**
      * On new room
      */
-    onCreateRoom(client: SocketClient, data: any, callback?: (...args: any[]) => any) {
+    onCreateRoom(client: SocketClient, data: ClientEvents['room:create']['data'], callback?: Reply<'room:create'>) {
         if (!isShape(data, { name: rules.string() })) {
             return callback?.(invalidData);
         }
@@ -117,7 +119,7 @@ export class RoomsController extends EventEmitter {
     /**
      * On join room
      */
-    onJoinRoom(client: SocketClient, data?: any, callback?: (...args: any[]) => any) {
+    onJoinRoom(client: SocketClient, data: ClientEvents['room:join']['data'], callback?: Reply<'room:join'>) {
         if (!isShape(data, { name: rules.string(), password: rules.optional(rules.string(40)) })) {
             return callback?.(invalidData);
         }

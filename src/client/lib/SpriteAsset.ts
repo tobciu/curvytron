@@ -1,17 +1,23 @@
-import { Asset } from './Asset.js';
-import { AssetCanvas } from './AssetCanvas.js';
+import { Asset } from './Asset.ts';
+import { AssetCanvas } from './AssetCanvas.ts';
 
 /**
  * Sprite Asset
- *
- * @param {String} source
- * @param {Number} columns
- * @param {Number} rows
- * @param {Function} callback
- * @param {Boolean} load
  */
 export class SpriteAsset {
-    constructor(source, columns, rows, callback, load) {
+    source: any;
+    columns: any;
+    rows: any;
+    callback: any;
+    length: number;
+    width: number;
+    height: number;
+    images: any[];
+    assets: any[];
+    loaded: number;
+    canvas?: AssetCanvas;
+
+    constructor(source: any, columns: any, rows: any, callback: any, load?: any) {
         this.source = source;
         this.columns = columns;
         this.rows = rows;
@@ -60,10 +66,8 @@ export class SpriteAsset {
 
     /**
      * On sprite preloaded
-     *
-     * @param {Event} e
      */
-    preLoaded(e) {
+    preLoaded(e: any) {
         this.width = this.source.width / this.columns;
         this.height = this.source.height / this.rows;
         this.canvas = new AssetCanvas(this.width, this.height);
@@ -88,10 +92,8 @@ export class SpriteAsset {
 
     /**
      * On a sub image is loaded
-     *
-     * @param {Event} e
      */
-    partLoaded(e) {
+    partLoaded(e: any) {
         this.loaded++;
 
         if (this.loaded === this.images.length) {
@@ -101,8 +103,6 @@ export class SpriteAsset {
 
     /**
      * Get images
-     *
-     * @return {Array}
      */
     getImages() {
         return this.images;

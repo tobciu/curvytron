@@ -1,11 +1,11 @@
 /**
  * Canvas for asset treatment
- *
- * @param {Number} width
- * @param {Height} height
  */
 export class AssetCanvas {
-    constructor(width, height) {
+    element: any;
+    context: any;
+
+    constructor(width: any, height: any) {
         this.element = document.createElement('canvas');
         this.context = this.element.getContext('2d');
 
@@ -22,21 +22,15 @@ export class AssetCanvas {
 
     /**
      * To string
-     *
-     * @return {String}
      */
-    toString() {
+    toString(): string {
         return this.element.toDataURL();
     }
 
     /**
      * Draw image from source
-     *
-     * @param {Image} image
-     * @param {Number} x
-     * @param {Number} y
      */
-    drawImageFromSource(image, x, y) {
+    drawImageFromSource(image: HTMLImageElement, x: number, y: number) {
         const width = this.element.width,
             height = this.element.height;
 

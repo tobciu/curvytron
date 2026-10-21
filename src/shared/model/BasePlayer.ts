@@ -1,5 +1,6 @@
 import { EventEmitter } from '#event-emitter';
 import type { BaseAvatar } from './BaseAvatar.ts';
+import type { PlayerData } from '../protocol.ts';
 
 /**
  * BasePlayer
@@ -93,7 +94,7 @@ export abstract class BasePlayer extends EventEmitter {
     /**
      * Serialize
      */
-    serialize(): Record<string, any> {
+    serialize(): PlayerData {
         return {
             client: this.client.id,
             id: this.id,

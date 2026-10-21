@@ -1,4 +1,4 @@
-import { Mapper } from './Mapper.js';
+import { Mapper } from './Mapper.ts';
 
 /**
  * Touch Mapper
@@ -13,33 +13,39 @@ export class TouchMapper extends Mapper {
     /**
      * Start listening
      */
-    start() {
+    override start(): boolean {
         if (super.start()) {
             window.addEventListener('touchstart', this.onTouch);
             window.addEventListener('touchend', this.kill);
             window.addEventListener('touchcancel', this.kill);
             window.addEventListener('touchleave', this.kill);
+
+            return true;
         }
+
+        return false;
     }
 
     /**
      * Stop listening
      */
-    stop() {
+    override stop(): boolean {
         if (super.stop()) {
             window.removeEventListener('touchstart', this.onTouch);
             window.removeEventListener('touchend', this.kill);
             window.removeEventListener('touchcancel', this.kill);
             window.removeEventListener('touchleave', this.kill);
+
+            return true;
         }
+
+        return false;
     }
 
     /**
      * On touch pressed
-     *
-     * @param {Event} e
      */
-    onTouch(e) {
+    onTouch(e: any) {
         e.preventDefault();
 
         this.stop();
@@ -50,12 +56,8 @@ export class TouchMapper extends Mapper {
 
     /**
      * Gues character from Key
-     *
-     * @param {Number} key
-     *
-     * @return {String}
      */
-    guessChar(key) {
+    override guessChar(key: any): string {
         return '✍';
     }
 }

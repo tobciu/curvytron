@@ -1,5 +1,6 @@
 import { EventEmitter } from '#event-emitter';
 import { bonusDefinitions } from '../bonuses.ts';
+import type { RoomConfigData } from '../protocol.ts';
 import type { BaseRoom } from './BaseRoom.ts';
 
 /**
@@ -160,7 +161,7 @@ export class BaseRoomConfig extends EventEmitter {
     /**
      * Serialize
      */
-    serialize() {
+    serialize(): RoomConfigData {
         return {
             maxScore: this.maxScore,
             variables: this.variables,
