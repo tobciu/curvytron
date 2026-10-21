@@ -7,6 +7,8 @@
      |- client  # Front-end (Vue 3 + TypeScript, bundled by Vite)
      |- server  # Back-end (Node.js, WebSocket server), TypeScript run directly by Node >= 22.18
     public      # Static assets (images, fonts, sounds) copied as is to the build
+    assets      # Sources of the bonus images: `npm run sprite` builds public/images/bonus.png from them
+    tools       # Scripts: sprite builder, load test
     tests       # Vitest unit / integration tests and Playwright end-to-end tests
 
 ### Client
@@ -71,6 +73,7 @@ narrows the type of an inherited field uses `declare` (a plain redeclaration wou
 | `npm run build`              | Build the client into `dist/`                                                |
 | `npm start`                  | Start the server and serve the built client                                  |
 | `npm test`                   | Run the unit and integration tests (Vitest)                                  |
+| `npm run sprite`             | Build the sprite of the bonuses from `assets/bonuses/` (see `bonuses.md`)    |
 | `npm run load-test`          | Play games with simulated clients and print what the metrics say (see below) |
 | `npm run test:e2e`           | Build, then run the browser tests (Playwright)                               |
 | `npm run test:visual`        | Build, then compare screenshots of the main screens                          |

@@ -3,6 +3,7 @@
 import { computed } from 'vue';
 import { useServices } from '../services';
 import { useLive } from '../composables/useEmitter';
+import { spritePosition } from '../../shared/bonuses';
 import type { Preset, Room } from '../types';
 
 const props = defineProps<{ room: Room; master: boolean }>();
@@ -15,6 +16,13 @@ const { live: config, bump } = useLive(props.room.config, repository, [
     'config:variable',
     'config:bonus'
 ]);
+
+/** Where the image of the bonus is in the sprite (used by the CSS) */
+function spriteStyle(bonus: string): Record<string, number> {
+    const { column, line } = spritePosition(bonus);
+
+    return { '--sprite-column': column, '--sprite-line': line };
+}
 
 const variables = computed(() => Object.keys(config.value.variables));
 const included = computed(() => bonusNames(true));
@@ -218,6 +226,7 @@ function setVariable(variable: string, event: Event): void {
                     :key="bonus"
                     class="bonus"
                     :class="[config.bonusClasses[bonus], { disabled: !master }]"
+                    :style="spriteStyle(bonus)"
                     @click="toggleBonus(bonus)"
                 ></span>
             </div>
@@ -229,6 +238,7 @@ function setVariable(variable: string, event: Event): void {
                     :key="bonus"
                     class="bonus"
                     :class="[config.bonusClasses[bonus], { disabled: !master }]"
+                    :style="spriteStyle(bonus)"
                     @click="toggleBonus(bonus)"
                 ></span>
             </div>

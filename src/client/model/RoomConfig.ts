@@ -5,6 +5,7 @@ import { RandomPreset } from './preset/RandomPreset.ts';
 import { SizePreset } from './preset/SizePreset.ts';
 import { SoloPreset } from './preset/SoloPreset.ts';
 import { SpeedPreset } from './preset/SpeedPreset.ts';
+import { bonusDefinitions } from '../../shared/bonuses.ts';
 import { BaseRoomConfig } from '../../shared/model/BaseRoomConfig.ts';
 
 /**
@@ -17,27 +18,7 @@ export class RoomConfig extends BaseRoomConfig {
     /**
      * Bonus classes
      */
-    bonusClasses: any = {
-        BonusSelfSmall: 'bonus-self-small',
-        BonusSelfSlow: 'bonus-self-slow',
-        BonusSelfFast: 'bonus-self-fast',
-        BonusSelfMaster: 'bonus-self-master',
-        BonusEnemySlow: 'bonus-enemy-slow',
-        BonusEnemyFast: 'bonus-enemy-fast',
-        BonusEnemyBig: 'bonus-enemy-big',
-        BonusEnemyInverse: 'bonus-enemy-inverse',
-        BonusEnemyStraightAngle: 'bonus-enemy-straight-angle',
-        BonusGameBorderless: 'bonus-game-borderless',
-        BonusAllColor: 'bonus-all-color',
-        BonusGameClear: 'bonus-all-clear',
-        BonusSelfRandom: 'bonus-self-random',
-        BonusLeaderRandom: 'bonus-leader-random',
-        BonusEnemyRandom: 'bonus-enemy-random',
-        BonusLeaderFast: 'bonus-leader-fast',
-        BonusLeaderInverse: 'bonus-leader-inverse',
-        BonusLeaderSlow: 'bonus-leader-slow',
-        BonusSelfBorderless: 'bonus-self-borderless'
-    };
+    bonusClasses: Record<string, string> = Object.fromEntries(bonusDefinitions.map(({ name, css }) => [name, css]));
 
     /**
      * Variables names

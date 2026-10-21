@@ -47,6 +47,7 @@
         "test:e2e": "npm run build && playwright test",
         "typecheck": "vue-tsc --noEmit",
         "load-test": "node tools/load-test.ts",
+        "sprite": "node tools/build-sprite.ts",
         "test:visual": "npm run build && playwright test --project=visual",
         "test:visual:update": "npm run build && playwright test --project=visual --update-snapshots"
     },
@@ -62,6 +63,7 @@
         "@playwright/test": "^1.56.1",
         "@types/express": "^5.0.6",
         "@types/node": "^22.20.5",
+        "@types/pngjs": "^6.0.5",
         "@types/ws": "^8.18.2",
         "@vitejs/plugin-vue": "^6.0.10",
         "@vue/test-utils": "^2.5.1",
@@ -70,6 +72,7 @@
         "globals": "^16.0.0",
         "html-minifier-terser": "^7.2.0",
         "jsdom": "^29.1.1",
+        "pngjs": "^7.0.0",
         "prettier": "^3.3.0",
         "sass": "^1.80.0",
         "typescript": "~5.9",

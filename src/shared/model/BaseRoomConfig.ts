@@ -1,4 +1,5 @@
 import { EventEmitter } from '#event-emitter';
+import { bonusDefinitions } from '../bonuses.ts';
 import type { BaseRoom } from './BaseRoom.ts';
 
 /**
@@ -29,27 +30,7 @@ export class BaseRoomConfig extends EventEmitter {
             bonusRate: 0
         };
 
-        this.bonuses = {
-            BonusSelfSmall: true,
-            BonusSelfSlow: true,
-            BonusSelfFast: true,
-            BonusSelfMaster: true,
-            BonusEnemySlow: true,
-            BonusEnemyFast: true,
-            BonusEnemyBig: true,
-            BonusEnemyInverse: true,
-            BonusEnemyStraightAngle: true,
-            BonusGameBorderless: true,
-            BonusAllColor: true,
-            BonusGameClear: true,
-            BonusSelfRandom: false,
-            BonusLeaderRandom: false,
-            BonusEnemyRandom: false,
-            BonusLeaderFast: true,
-            BonusLeaderInverse: true,
-            BonusLeaderSlow: true,
-            BonusSelfBorderless: true
-        };
+        this.bonuses = Object.fromEntries(bonusDefinitions.map(({ name, enabled }) => [name, enabled]));
     }
 
     /**

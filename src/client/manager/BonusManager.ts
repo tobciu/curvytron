@@ -1,5 +1,6 @@
 import type { Collection } from '../../shared/Collection.ts';
 import type { MapBonus } from '../model/bonus/MapBonus.ts';
+import { bonusDefinitions, spriteColumns, spriteLines } from '../../shared/bonuses.ts';
 import { Canvas } from '../core/Canvas.ts';
 import { BaseBonusManager } from '../../shared/manager/BaseBonusManager.ts';
 import { SpriteAsset } from '../lib/SpriteAsset.js';
@@ -24,27 +25,7 @@ export class BonusManager extends BaseBonusManager {
     /**
      * Bonuses position on the sprite
      */
-    spritePosition: any[] = [
-        'BonusSelfFast',
-        'BonusEnemyFast',
-        'BonusSelfSlow',
-        'BonusEnemySlow',
-        'BonusGameBorderless',
-        'BonusSelfMaster',
-        'BonusEnemyBig',
-        'BonusAllColor',
-        'BonusEnemyInverse',
-        'BonusSelfSmall',
-        'BonusGameClear',
-        'BonusEnemyStraightAngle',
-        'BonusSelfRandom',
-        'BonusLeaderRandom',
-        'BonusEnemyRandom',
-        'BonusLeaderFast',
-        'BonusLeaderInverse',
-        'BonusLeaderSlow',
-        'BonusSelfBorderless'
-    ];
+    spritePosition: string[] = bonusDefinitions.map(({ name }) => name);
 
     constructor(game: any) {
         super(game);
@@ -54,7 +35,7 @@ export class BonusManager extends BaseBonusManager {
         this.onLoad = this.onLoad.bind(this);
 
         this.loaded = false;
-        this.sprite = new SpriteAsset('images/bonus.png', 3, 7, this.onLoad, true);
+        this.sprite = new SpriteAsset('images/bonus.png', spriteColumns, spriteLines(), this.onLoad, true);
     }
 
     /**
