@@ -322,3 +322,86 @@ describe('squeezes and rounds', () => {
         expect(game.stats.getAwards()).toContainEqual({ id: 'needle', player: alice.id, value: 1 });
     });
 });
+
+describe('gap runs', () => {
+    beforeEach(() => {
+        startRound();
+        place(carl, 90, 90, 1);
+        bob.setPrinting(false);
+        // Bob leaves a gap along x, between 40 and 45
+        for (let x = 40; x <= 45; x += 0.3) {
+            place(bob, x, 20, 0);
+        }
+        place(bob, 10, 10, 1);
+    });
+
+    it('counts the pass through the gap of somebody else, once per gap', () => {
+        place(alice, 42, 21, 0);
+        game.update(16);
+
+        expect(stats(alice).gapRuns).toBe(1);
+
+        place(alice, 43, 20, 0);
+        game.update(16);
+
+        expect(stats(alice).gapRuns).toBe(1);
+        expect(game.stats.getAwards()).toContainEqual({ id: 'gapRunner', player: alice.id, value: 1 });
+    });
+
+    it('does not count where there is no gap, nor the gap of the player itself', () => {
+        place(alice, 70, 70, 0);
+        game.update(16);
+
+        expect(stats(alice).gapRuns).toBe(0);
+
+        bob.setPrinting(false);
+        place(bob, 42, 20, 0);
+        game.update(16);
+
+        expect(stats(bob).gapRuns).toBe(0);
+    });
+
+    it('counts the next gap of the same player again', () => {
+        bob.setPrinting(true);
+        place(bob, 60, 20, 0);
+        bob.setPrinting(false);
+        place(bob, 60, 30, 0);
+        place(bob, 60, 31, 0);
+        place(alice, 60, 30.5, 0);
+        game.update(16);
+
+        place(alice, 42, 20, 0);
+        game.update(16);
+
+        expect(stats(alice).gapRuns).toBe(2);
+    });
+
+    it('counts nothing while invincible, and a gap left while invincible does not exist', () => {
+        alice.setInvincible(true);
+        place(alice, 42, 20, 0);
+        game.update(16);
+
+        expect(stats(alice).gapRuns).toBe(0);
+
+        bob.setInvincible(true);
+
+        for (let x = 20; x <= 30; x += 0.3) {
+            place(bob, x, 50, 0);
+        }
+
+        alice.setInvincible(false);
+        place(alice, 25, 50, 0);
+        game.update(16);
+
+        expect(stats(alice).gapRuns).toBe(0);
+    });
+
+    it('forgets the gaps with the trails', () => {
+        game.clearTrails();
+        game.world.activate();
+        place(alice, 42, 20, 0);
+        game.update(16);
+
+        expect(stats(alice).gapRuns).toBe(0);
+    });
+});

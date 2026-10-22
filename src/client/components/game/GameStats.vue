@@ -16,6 +16,7 @@ const columns: Array<StatInfo & { value: (player: PlayerStats) => number; format
     { ...statInfo.kills, value: (player: PlayerStats) => player.kills },
     { ...statInfo.nearMisses, value: (player: PlayerStats) => player.nearMisses },
     { ...statInfo.squeezes, value: (player: PlayerStats) => player.squeezes },
+    { ...statInfo.gapRuns, value: (player: PlayerStats) => player.gapRuns },
     { ...statInfo.distance, value: (player: PlayerStats) => player.distance },
     {
         ...statInfo.longestLife,

@@ -21,6 +21,8 @@ export interface PlayerStats {
     nearMisses: number;
     /** Times the avatar passed between two trails of other players that are close to each other (a gap) */
     squeezes: number;
+    /** Gaps in the trails of other players that the avatar went through (every gap once) */
+    gapRuns: number;
     distance: number;
     /** Distance driven while leaving a trail */
     trailLength: number;

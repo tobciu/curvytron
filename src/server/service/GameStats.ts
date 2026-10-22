@@ -3,6 +3,7 @@ import type { Game } from '../model/Game.ts';
 import type { Bonus } from '../model/Bonus/Bonus.ts';
 import { metrics } from './Metrics.ts';
 import { Body } from '../core/Body.ts';
+import { World } from '../core/World.ts';
 import type { Award, GameStatsData, PlayerStats, RoundResult } from '../../shared/model/GameStats.ts';
 
 /**
@@ -19,6 +20,7 @@ export const awardFields: Record<string, keyof PlayerStats> = {
     clumsy: 'selfDeaths',
     closeCall: 'nearMisses',
     needle: 'squeezes',
+    gapRunner: 'gapRuns',
     hunter: 'kills',
     marathon: 'distance',
     survivor: 'longestLife'
@@ -40,6 +42,19 @@ export class GameStats {
     near: Set<number> = new Set();
     /** Avatars that are between two trails right now, or going through a trail while invincible */
     squeezing: Set<number> = new Set();
+    /**
+     * The gaps in the trails: while an avatar does not print, it leaves invisible bodies behind it, in a world of their own
+     * (they do not kill). Going through the gap of somebody else counts once per gap.
+     */
+    gaps: World | null = null;
+    /** Number of the gap an avatar is leaving right now */
+    openGaps: Map<number, number> = new Map();
+    /** Where the last body of the gap of an avatar is */
+    lastGapPoint: Map<number, [number, number]> = new Map();
+    /** Last number given to a gap */
+    gapCount: number = 0;
+    /** The gaps an avatar went through already */
+    crossedGaps: Map<number, Set<number>> = new Map();
     /** Looks at the left and at the right of an avatar */
     probe: Body = new Body(0, 0, 0);
 
@@ -56,6 +71,7 @@ export class GameStats {
         this.onDie = this.onDie.bind(this);
         this.onPosition = this.onPosition.bind(this);
         this.onBonusCatch = this.onBonusCatch.bind(this);
+        this.onClear = this.onClear.bind(this);
 
         for (const avatar of game.avatars.items) {
             this.addAvatar(avatar);
@@ -63,6 +79,7 @@ export class GameStats {
 
         game.on('game:start', this.onRoundStart);
         game.on('round:end', this.onRoundEnd);
+        game.on('clear', this.onClear);
         game.bonusManager.on('bonus:catch', this.onBonusCatch);
     }
 
@@ -84,6 +101,7 @@ export class GameStats {
             kills: 0,
             nearMisses: 0,
             squeezes: 0,
+            gapRuns: 0,
             distance: 0,
             trailLength: 0,
             longestLife: 0
@@ -104,6 +122,7 @@ export class GameStats {
 
         this.game.removeListener('game:start', this.onRoundStart);
         this.game.removeListener('round:end', this.onRoundEnd);
+        this.game.removeListener('clear', this.onClear);
         this.game.bonusManager?.removeListener('bonus:catch', this.onBonusCatch);
     }
 
@@ -115,9 +134,76 @@ export class GameStats {
         this.positions.clear();
         this.near.clear();
         this.squeezing.clear();
+        this.onClear();
 
         for (const avatar of this.game.avatars.items) {
             this.positions.set(avatar.id, [avatar.x, avatar.y]);
+        }
+    }
+
+    /**
+     * The trails are gone (new round, clear bonus): so are the gaps
+     */
+    onClear() {
+        this.gaps = new World(this.game.size);
+        this.gaps.activate();
+        this.openGaps.clear();
+        this.lastGapPoint.clear();
+        this.crossedGaps.clear();
+    }
+
+    /**
+     * An avatar that is not printing leaves a gap: a line of bodies, one per radius or so. Not while it is invincible:
+     * the bonus makes a long gap that would be a gift to the others.
+     */
+    trackGap(avatar: Avatar) {
+        if (!this.gaps || avatar.printing || avatar.invincible) {
+            this.openGaps.delete(avatar.id);
+            this.lastGapPoint.delete(avatar.id);
+
+            return;
+        }
+
+        let gap = this.openGaps.get(avatar.id);
+
+        if (gap === undefined) {
+            gap = ++this.gapCount;
+            this.openGaps.set(avatar.id, gap);
+        }
+
+        const last = this.lastGapPoint.get(avatar.id);
+
+        if (!last || Math.hypot(avatar.x - last[0], avatar.y - last[1]) >= avatar.radius) {
+            this.gaps.addBody(new Body(avatar.x, avatar.y, avatar.radius, { avatar, gap }));
+            this.lastGapPoint.set(avatar.id, [avatar.x, avatar.y]);
+        }
+    }
+
+    /**
+     * Is the avatar in a gap of somebody else? Counted once per gap. Looks at the bodies of one island only.
+     */
+    testGaps(avatar: Avatar, stats: PlayerStats) {
+        const island = this.gaps?.getIslandByPoint(avatar.x, avatar.y);
+
+        if (!island) {
+            return;
+        }
+
+        let crossed = this.crossedGaps.get(avatar.id);
+
+        for (const body of island.bodies.items as Body[]) {
+            const { avatar: owner, gap } = body.data as { avatar: Avatar; gap: number };
+
+            if (owner.id === avatar.id || crossed?.has(gap)) {
+                continue;
+            }
+
+            if (Math.hypot(body.x - avatar.x, body.y - avatar.y) < body.radius + avatar.radius) {
+                crossed ??= new Set();
+                crossed.add(gap);
+                this.crossedGaps.set(avatar.id, crossed);
+                stats.gapRuns++;
+            }
         }
     }
 
@@ -138,6 +224,7 @@ export class GameStats {
 
             last[0] = avatar.x;
             last[1] = avatar.y;
+            this.trackGap(avatar);
         }
     }
 
@@ -163,6 +250,8 @@ export class GameStats {
 
             return;
         }
+
+        this.testGaps(avatar, stats);
 
         // The avatar did not touch anything in this frame: anything it touches with a larger body was a near miss
         body.radius = radius * (1 + this.nearMargin);

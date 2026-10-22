@@ -45,7 +45,12 @@ export const statInfo = {
         label: 'Squeezes',
         description:
             'Times the player passed between trails of other players that are close to each other, like a gap.',
-        how: 'Drive through a narrow gap with the trail of other players on both sides. Every gap counts once.'
+        how: 'Pass between the trails of other players, for example two lines that run next to each other. Gaps in a single trail do not count, see Gap runs. Every pass counts once.'
+    },
+    gapRuns: {
+        label: 'Gap runs',
+        description: 'Gaps in the trails of other players that the player drove through.',
+        how: 'A trail has a short gap every few seconds. Cross a gap that another player left, wherever and at whatever angle. Every gap counts once for you, gaps in your own trail never count, and the gap you leave while you are invincible does not exist.'
     },
     distance: {
         label: 'Distance',
@@ -91,6 +96,12 @@ export const awardInfo: Record<string, StatInfo & { field: keyof PlayerStats }> 
         description: 'Squeezed the most often between trails of other players that are close to each other.',
         how: 'Look for narrow gaps between the trails of others and go through them.'
     },
+    gapRunner: {
+        label: 'Gap runner',
+        field: 'gapRuns',
+        description: 'Drove through the most gaps in the trails of other players.',
+        how: 'Look for the gaps in the trails of others and go through them.'
+    },
     hunter: {
         label: 'Hunter',
         field: 'kills',
@@ -115,6 +126,6 @@ export const awardInfo: Record<string, StatInfo & { field: keyof PlayerStats }> 
 export const countingRules: readonly string[] = [
     'Statistics are counted for the whole game, over all rounds, and shown with the final ranking.',
     'An award goes to the player with the highest value. Nobody gets it for a value of zero or for a tie.',
-    'Close calls and squeezes are not counted while you are invincible, it would be too easy and takes no courage.',
+    'Close calls, squeezes and gap runs are not counted while you are invincible, it would be too easy and takes no courage.',
     'Players who join a running game start counting when they join.'
 ];
