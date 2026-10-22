@@ -22,9 +22,10 @@ Spiele wie Mario Party, in denen Sterne und Bonuspunkte den Ausgang bis zum Schl
 | Einstellung | Werte | Standard |
 |---|---|---|
 | Modus (Wertung) | Klassisch, Sternenjagd | Klassisch |
-| Siegbedingung | Punktelimit oder feste Rundenzahl | Sternenjagd: 8 Runden; Klassisch: Punktelimit wie bisher |
+| Siegbedingung | Rundenzahl, Zeitlimit oder Punktelimit | Sternenjagd: 8 Runden; Klassisch: Punktelimit wie bisher |
 
-Modus und Siegbedingung sind unabhängig: Beide Siegbedingungen sind in beiden Modi wählbar.
+Modus und Siegbedingung sind unabhängig: Alle Siegbedingungen sind in beiden Modi wählbar. Die Dauer eines Spiels soll
+bei etwa 15 Minuten liegen (siehe Abschnitt 6).
 
 ## 2. Spielablauf einer Runde
 
@@ -42,16 +43,32 @@ Modus und Siegbedingung sind unabhängig: Beide Siegbedingungen sind in beiden M
 | Quelle | Punkte |
 |---|---|
 | Platzierung in der Runde | wie im klassischen Modus (Reihenfolge der Tode, Rundensieger n-1) |
-| Mission gewonnen | 3 pro Mission |
-| Stern aufgesammelt | 2 pro Stern |
+| Mission gewonnen | ⌈u/2⌉, mindestens 1 |
+| Stern aufgesammelt | ⌈u/3⌉, mindestens 1 |
 
-In den letzten 2 Runden einer Partie mit fester Rundenzahl (**Finale**) zählt jede Quelle doppelt.
+Dabei ist n die Zahl der Spieler und u = n-1 der Wert eines Rundensiegs. Die Werte wachsen mit der Spielerzahl, denn
+die Platzierung tut es auch: Bei 20 Spielern ist der Rundensieg 19 Punkte wert und benachbarte Plätze unterscheiden sich
+um 1 Punkt, feste Werte wie 2 oder 3 wären dort kaum spürbar, bei 2 Spielern dagegen dominant.
+
+| Spieler | Rundensieg | Mission | Stern |
+|---|---|---|---|
+| 2 | 1 | 1 | 1 |
+| 4 | 3 | 2 | 1 |
+| 6 | 5 | 3 | 2 |
+| 10 | 9 | 5 | 3 |
+| 20 | 19 | 10 | 6 |
+
+Ein Stern allein entscheidet eine Runde nicht, aber zwei Sterne oder eine Mission plus ein Stern können den Rundensieg
+aufwiegen. Die Faktoren (½ und ⅓) sind Startwerte und werden nach den ersten Testspielen angepasst.
+
+Beim **Finale** (siehe Abschnitt 6) zählt jede Quelle doppelt.
 
 ## 4. Rundenmissionen
 
 ### 4.1 Regeln
 
-- Zu jeder Runde werden 2 verschiedene Missionen aus dem Pool gezogen. Sie sind vor der Runde bekannt und ändern das
+- Zu jeder Runde werden 2 verschiedene Missionen aus dem Pool gezogen, ab 10 Spielern 3, damit mehr Leute etwas zu jagen
+  haben. Sie sind vor der Runde bekannt und ändern das
   Verhalten: Man fährt nah an Trails oder jagt Bonis, obwohl man sonst sicher fahren würde.
 - Es gewinnt der Spieler mit dem besten Wert der Mission. Bei Gleichstand bekommen alle Gleichplatzierten den Stern. Bei
   Wert 0 bekommt niemand einen.
@@ -93,12 +110,12 @@ Spielfeld ab: Nur der Stand ändert sich.
 ## 5. Stern-Item
 
 Der Stern ist ein eigener Bonus-Typ ohne Effekt (er wird über das Bonus-Registry angelegt, siehe `doc/bonuses.md`). Wer
-ihn einsammelt, bekommt sofort 2 Punkte.
+ihn einsammelt, bekommt sofort ⌈u/3⌉ Punkte (siehe Abschnitt 3).
 
 - **Größe**: kleiner als die normalen Bonis, man muss genauer treffen. Die Größe ist daher pro Bonus-Typ einstellbar
   (`BaseBonus.radius` ist heute für alle gleich).
 - **Anzahl**: selten und begrenzt, abhängig von der Spielerzahl: `aufgerundet(Spieler / 2)`, höchstens 3 pro Runde (2
-  Spieler: 1, 3–4 Spieler: 2). Die Sterne erscheinen zeitlich verteilt, nicht alle auf einmal.
+  Spieler: 1, 3–4 Spieler: 2), ab 10 Spielern höchstens 5. Die Sterne erscheinen zeitlich verteilt, nicht alle auf einmal.
 - **Platzierung**: bewusst an riskanten Orten, nah an der Wand oder an Trails, nicht gleichverteilt wie die normalen Bonis
   (eigene Platzierung neben `BonusManager.getRandomPosition`).
 - **Lebensdauer**: Der Stern verschwindet nach einer Zeit wieder. Sie beträgt mindestens 10 s und wächst mit der
@@ -108,10 +125,24 @@ ihn einsammelt, bekommt sofort 2 Punkte.
 
 ## 6. Siegbedingung
 
-- **Feste Rundenzahl** (Standard 8): Die Dauer ist planbar, und die Spannung bleibt bis zum Schluss, weil Sterne alles
-  drehen können. Es gilt das Finale (doppelte Punkte in den letzten 2 Runden). Bei Gleichstand nach der letzten Runde
-  folgt eine Stichrunde unter den Gleichplatzierten.
-- **Punktelimit**: wie heute (`maxScore`). Kein Finale.
+Die Dauer eines Spiels soll bei etwa 15 Minuten liegen. Die Länge einer Runde schwankt stark (manche Runden sind sofort
+vorbei, andere ziehen sich), und sie hängt von der Spielerzahl und der Kartengröße ab. Deshalb gibt es drei
+Siegbedingungen:
+
+- **Feste Rundenzahl** (Standard in der Sternenjagd: 8 Runden, als Startwert): Der Ausgang bleibt bis zum Schluss offen,
+  weil Sterne alles drehen können. Es gilt das Finale. Bei Gleichstand nach der letzten Runde folgt eine Stichrunde
+  unter den Gleichplatzierten.
+- **Zeitlimit** (Standard 15 Minuten): Läuft die Zeit ab, wird die laufende Runde noch zu Ende gespielt, danach endet das
+  Spiel. Die letzte Runde wird vorher angesagt. Die Dauer stimmt unabhängig von Spielerzahl und Rundenlänge, die Zahl der
+  Runden liegt nicht fest. Es gilt das Finale. Gleichstand wie bei der festen Rundenzahl.
+- **Punktelimit**: wie heute (`maxScore`), kein Finale. Der Standardwert `(n-1)·10` ergibt für einen durchschnittlichen
+  Spieler etwa 20 Runden und ist für 15 Minuten zu hoch. In der Sternenjagd, wo die Sonderpunkte den Stand zusätzlich
+  anheben, ist der Standardwert niedriger gewählt. Der klassische Modus bleibt unverändert.
+
+**Finale**: In den letzten 2 Runden zählt jede Punktequelle doppelt. Das gilt bei fester Rundenzahl und beim Zeitlimit.
+
+**Rundenzeiten**: Die Standardwerte (8 Runden, 15 Minuten, Punktelimit) sind Startwerte. Es wird erfasst, wie lange eine
+Runde dauert, in Verbindung mit Spielerzahl und Kartengröße (siehe 8.2), und die Werte werden danach angepasst.
 
 ## 7. Erweiterungen (nicht Teil der ersten Version)
 
@@ -140,6 +171,10 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
 
 ### 8.2 Bausteine
 
+0. **Rundenzeiten erfassen**: Dauer jeder Runde zusammen mit Spielerzahl und Kartengröße. `GameStats` kennt die Dauer
+   schon (`rounds[].duration`); sie kommt zusätzlich mit Spielerzahl und Kartengröße in die Metriken (siehe
+   `doc/monitoring.md`), damit die Standardwerte aus echten Spielen abgeleitet werden. Das ist auch ohne den neuen Modus
+   nützlich.
 1. **Statistiken pro Runde**: `GameStats` bekommt je Spieler ein `round`-Objekt neben den Gesamtzählern, das in
    `onRoundStart` zurückgesetzt wird (der offene Punkt „Werte pro Runde" in `doc/todo.md`). Neue Zähler: Zeit nah an der
    Wand, Platz in der Runde, überlebte Mali, Reihenfolge der Tode.
@@ -148,10 +183,10 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
    Modus bleibt unverändert.
 3. **Missions-Modul**: Pool, Ziehung abhängig von der Spielerzahl, laufender Stand (Werte aller Spieler, Führender und
    Status je Spieler) und Auswertung am Rundenende.
-4. **Raum-Einstellung**: Modus (`classic` / `party`) und Siegbedingung (Punkte oder Runden, mit Wert) in `BaseRoomConfig`
+4. **Raum-Einstellung**: Modus (`classic` / `party`) und Siegbedingung (Runden, Zeit oder Punkte, mit Wert) in `BaseRoomConfig`
    und in den Raumparametern. Die Pause von 8 s wird im Modus gesetzt, nicht global.
-5. **Stern-Bonus**: eigener Radius pro Typ, eigene Platzierung, Begrenzung nach Spielerzahl, Lebensdauer mit
-   Entfernen durch den Server (`bonus:clear` gibt es bereits).
+5. **Stern-Bonus**: eigener Radius pro Typ, eigene Platzierung, Begrenzung nach Spielerzahl, Wert nach Spielerzahl,
+   Lebensdauer mit Entfernen durch den Server (`bonus:clear` gibt es bereits).
 6. **Protokoll** (`src/shared/protocol.ts`):
    - `round:missions` (Rundenstart),
    - `mission:progress` (laufender Stand, nur wenn sich ein Wert ändert; Strecke und Wandzeit höchstens einmal pro
@@ -169,13 +204,15 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
 - Missionen mit Gleichstand und mit Wert 0.
 - Spieler, die gehen oder kommen, und Reconnect mitten in der Runde (Missionsstand und Sterne mit Restzeit).
 - Der laufende Stand wird gegen die Endauswertung geprüft (wer am Ende führt, bekommt den Stern).
-- Finale (doppelte Punkte) und Stichrunde bei fester Rundenzahl.
+- Werte von Mission und Stern für verschiedene Spielerzahlen (2, 4, 6, 10, 20) und Sterndeckel.
+- Finale (doppelte Punkte), Stichrunde und Zeitlimit (die laufende Runde wird zu Ende gespielt, die letzte Runde wird
+  angesagt).
 - Der klassische Modus liefert dieselben Punkte wie vorher.
 - Ein e2e-Lauf der Sternenjagd.
 
 ### 8.4 Reihenfolge
 
-1. Statistiken pro Runde (auch ohne den neuen Modus nützlich).
+1. Rundenzeiten erfassen und Statistiken pro Runde (beides auch ohne den neuen Modus nützlich).
 2. Interface `ScoringMode`, der klassische Modus dahinter, unverändert und getestet.
 3. Missionen mit Protokoll und Raum-Einstellung.
 4. Missionsanzeige und Overlay zwischen den Runden.
@@ -189,4 +226,7 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
 - **Lesbarkeit**: Zu viele Punktequellen verwässern das Gefühl „wer war besser". Darum nur 2 Missionen, klare
   Aufschlüsselung im Overlay und eine ruhige Anzeige am Rand.
 - **Spielerzahl**: Mit 2 Spielern sind Missionen schwach, darum dort nur 1 Mission und ein kleinerer Pool.
-- **Kalibrierung**: Lebensdauer und Anzahl der Sterne werden beim Testen mit echten Runden nachjustiert.
+- **Kalibrierung**: Lebensdauer und Anzahl der Sterne, die Faktoren der Punktwerte (½ und ⅓) sowie die Standardwerte der
+  Siegbedingungen werden mit echten Runden und den erfassten Rundenzeiten nachjustiert.
+- **Große Runden**: Bei 20 Spielern ist die Karte groß, und viele Sterne und Missionen konkurrieren. Darum die höheren
+  Deckel (5 Sterne, 3 Missionen) ab 10 Spielern.
