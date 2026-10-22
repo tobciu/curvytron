@@ -11,7 +11,7 @@ The order of the list is the order of the images in the sprite `public/images/bo
    from the list of step 2, there is nothing to register.
 2. **List**: add the bonus at the end of `bonusDefinitions` in `src/shared/bonuses.ts`: its name, the CSS class
    (`bonus-self-xxx` / `bonus-enemy-xxx` / `bonus-all-xxx` ..., the part after `bonus-` is the name of the image), whether
-   it is enabled in a new room, and the presets of the room parameters that include it (`presets: ['all', 'solo']`).
+   it is enabled in a new room, and the presets of the room parameters that include it (`presets: ['speed', 'solo']`), the preset "All" includes every bonus by itself.
 3. **Image**: draw a 100 x 100 PNG with a transparent background in `assets/bonuses/<css class without bonus->.png`.
    Start from `assets/bonuses/_1-template-self.png` (green frame, for the bonuses of the player) or
    `_2-template-enemy.png` (red frame, for the bonuses of the enemies).

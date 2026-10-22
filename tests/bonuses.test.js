@@ -47,26 +47,11 @@ describe('bonus registry', () => {
         }
     });
 
-    it('gives the presets the bonuses they always had', () => {
+    it('gives the presets their bonuses, and "All" every bonus', () => {
         const client = new ClientRoomConfig({});
         const preset = (name) => client.presets.find((candidate) => candidate.name === name).bonuses.toSorted();
 
-        expect(preset('All')).toEqual(
-            [
-                'BonusSelfSmall',
-                'BonusSelfSlow',
-                'BonusSelfFast',
-                'BonusSelfMaster',
-                'BonusEnemySlow',
-                'BonusEnemyFast',
-                'BonusEnemyBig',
-                'BonusEnemyInverse',
-                'BonusEnemyStraightAngle',
-                'BonusGameBorderless',
-                'BonusAllColor',
-                'BonusGameClear'
-            ].toSorted()
-        );
+        expect(preset('All')).toEqual(bonusDefinitions.map(({ name }) => name).toSorted());
         expect(preset('Speed of light')).toEqual(['BonusEnemyFast', 'BonusSelfFast']);
         expect(preset('Super size me')).toEqual(['BonusEnemyBig']);
         expect(preset('Solo')).toEqual(

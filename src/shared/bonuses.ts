@@ -15,11 +15,11 @@ export interface BonusDefinition {
     css: string;
     /** Is the bonus enabled in a new room? */
     enabled: boolean;
-    /** The presets of the room parameters that include the bonus (the presets "No bonuses" and "Random" need no list) */
+    /** The presets of the room parameters that include the bonus (the presets "All", "No bonuses" and "Random" need no list) */
     presets?: readonly PresetId[];
 }
 
-export type PresetId = 'all' | 'speed' | 'size' | 'solo';
+export type PresetId = 'speed' | 'size' | 'solo';
 
 export const bonusDefinitions: readonly BonusDefinition[] = [
     {
@@ -28,7 +28,7 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
         description: 'You drive faster for a few seconds.',
         css: 'bonus-self-fast',
         enabled: true,
-        presets: ['all', 'speed', 'solo']
+        presets: ['speed', 'solo']
     },
     {
         name: 'BonusEnemyFast',
@@ -36,7 +36,7 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
         description: 'All the other players drive faster for a few seconds.',
         css: 'bonus-enemy-fast',
         enabled: true,
-        presets: ['all', 'speed']
+        presets: ['speed']
     },
     {
         name: 'BonusSelfSlow',
@@ -44,15 +44,14 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
         description: 'You drive slower, which makes tight turns easier.',
         css: 'bonus-self-slow',
         enabled: true,
-        presets: ['all', 'solo']
+        presets: ['solo']
     },
     {
         name: 'BonusEnemySlow',
         label: 'Enemies slower',
         description: 'All the other players drive slower for a few seconds.',
         css: 'bonus-enemy-slow',
-        enabled: true,
-        presets: ['all']
+        enabled: true
     },
     {
         name: 'BonusGameBorderless',
@@ -61,7 +60,7 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
             'The borders disappear for everybody: whoever crosses one comes out on the opposite side instead of dying.',
         css: 'bonus-game-borderless',
         enabled: true,
-        presets: ['all', 'solo']
+        presets: ['solo']
     },
     {
         name: 'BonusSelfMaster',
@@ -69,7 +68,7 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
         description: 'You are invincible and leave no trail for a while.',
         css: 'bonus-self-master',
         enabled: true,
-        presets: ['all', 'solo']
+        presets: ['solo']
     },
     {
         name: 'BonusEnemyBig',
@@ -77,23 +76,21 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
         description: 'The trails of all the other players get thicker.',
         css: 'bonus-enemy-big',
         enabled: true,
-        presets: ['all', 'size']
+        presets: ['size']
     },
     {
         name: 'BonusAllColor',
         label: 'Color swap',
         description: 'Every player gets the color of another player for a while, so it is hard to tell who is who.',
         css: 'bonus-all-color',
-        enabled: true,
-        presets: ['all']
+        enabled: true
     },
     {
         name: 'BonusEnemyInverse',
         label: 'Inverse enemies',
         description: 'The controls of all the other players are reversed: left is right.',
         css: 'bonus-enemy-inverse',
-        enabled: true,
-        presets: ['all']
+        enabled: true
     },
     {
         name: 'BonusSelfSmall',
@@ -101,7 +98,7 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
         description: 'Your trail gets thinner, so it is easier to slip through gaps.',
         css: 'bonus-self-small',
         enabled: true,
-        presets: ['all', 'solo']
+        presets: ['solo']
     },
     {
         name: 'BonusGameClear',
@@ -109,15 +106,14 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
         description: 'Removes every trail from the map. It shows up more often the more players are dead.',
         css: 'bonus-all-clear',
         enabled: true,
-        presets: ['all', 'solo']
+        presets: ['solo']
     },
     {
         name: 'BonusEnemyStraightAngle',
         label: 'Right angles',
         description: 'Every key press turns the other players by exactly 90°, instead of a smooth curve.',
         css: 'bonus-enemy-straight-angle',
-        enabled: true,
-        presets: ['all']
+        enabled: true
     },
     {
         name: 'BonusSelfRandom',
