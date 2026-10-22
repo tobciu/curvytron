@@ -104,7 +104,7 @@ export class PlayerInput extends EventEmitter {
      * Get binding type
      */
     getBindingType(binding: string): string {
-        if (Touch !== undefined && (binding as unknown) instanceof Touch) {
+        if (typeof Touch !== 'undefined' && (binding as unknown) instanceof Touch) {
             return 'touch';
         }
 
@@ -176,7 +176,7 @@ export class PlayerInput extends EventEmitter {
         let x;
 
         for (i = this.binding.length - 1; i >= 0; i--) {
-            if (this.binding[i] instanceof Touch) {
+            if (typeof Touch !== 'undefined' && this.binding[i] instanceof Touch) {
                 tests.push({ index: i, result: false });
             }
         }
