@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /** A running game: players, chat and the canvases the game is drawn on. */
-import { onBeforeUnmount, onMounted, ref, shallowRef, triggerRef } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, triggerRef } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { gamepadListener } from '../gamepadListener.ts';
 import { asset } from '../assets';
@@ -24,7 +24,12 @@ const name = String(route.params.name);
 
 const game = shallowRef<Game | null>(null);
 const bump = () => triggerRef(game);
-const spectating = ref(false);
+/** The server told that the game was already running when this page came in */
+const joinedLate = ref(false);
+/** One of the players of this page takes part in the round */
+const playing = ref(false);
+/** This page has players that wait for their round */
+const hasPlayers = ref(false);
 const borderless = ref(false);
 const soundActive = shallowRef(sound);
 
@@ -40,16 +45,20 @@ if (!repository.game || repository.game.name !== name) {
     game.value = repository.game;
 }
 
-/** Leaving a running game as a player is a big deal. */
+/** Watching until the next round: no player of this page takes part */
+const spectating = computed(() => joinedLate.value && !playing.value);
+
+/** Leaving a running game as a player is a big deal (a reload is not: the game waits for the player). */
 function needConfirmation(): boolean {
     return !spectating.value && Boolean(game.value?.started);
 }
 
-function onBeforeUnload(event: BeforeUnloadEvent): void {
-    if (needConfirmation()) {
-        event.preventDefault();
-        event.returnValue = CONFIRMATION;
-    }
+function refreshPlayers(): void {
+    const avatars = game.value?.avatars.items ?? [];
+
+    playing.value = avatars.some((avatar) => avatar.player.local && avatar.present);
+    hasPlayers.value = avatars.some((avatar) => avatar.player.local);
+    bump();
 }
 
 onBeforeRouteLeave((to) => {
@@ -86,11 +95,15 @@ function onFirstRound(): void {
 }
 
 useEvents(repository, ['spectate'], () => {
-    spectating.value = true;
+    joinedLate.value = true;
+    refreshPlayers();
 });
+// The players that sit out, come back or come in the middle of the game
+useEvents(repository, ['game:join', 'game:leave', 'game:player'], refreshPlayers);
 useEvents(client, ['ready'], bump);
 useEvents(client, ['borderless', 'round:new'], updateBorders);
 useEvents(repository, ['round:new'], onFirstRound);
+useEvents(client, ['round:new'], refreshPlayers);
 
 onMounted(() => {
     const current = game.value;
@@ -98,8 +111,6 @@ onMounted(() => {
     if (!current) {
         return;
     }
-
-    window.addEventListener('beforeunload', onBeforeUnload);
 
     current.loadDOM();
     current.bonusManager.on('load', checkReady);
@@ -129,7 +140,6 @@ onBeforeUnmount(() => {
         chat.clear();
     }
 
-    window.removeEventListener('beforeunload', onBeforeUnload);
     sound.stop('win');
 
     current?.avatars.items.forEach((avatar) => avatar.input?.off('move', onMove));
@@ -193,8 +203,14 @@ function backToRoom(): void {
                     <canvas id="effect" class="game-effect"></canvas>
                 </div>
                 <div v-if="spectating" class="spectating">
-                    <h2><i class="icon-viewer"></i> You are in spectator mode</h2>
-                    <p>You must wait for the game to finish before you can play.</p>
+                    <template v-if="hasPlayers">
+                        <h2><i class="icon-viewer"></i> You are in the game as soon as the round is over</h2>
+                        <p>Your score is kept. Please wait for the next round.</p>
+                    </template>
+                    <template v-else>
+                        <h2><i class="icon-viewer"></i> You are in spectator mode</h2>
+                        <p>You must wait for the game to finish before you can play.</p>
+                    </template>
                 </div>
             </div>
         </section>

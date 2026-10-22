@@ -36,6 +36,10 @@ let useTouch = false;
 let controlSynchro = false;
 let launchInterval: ReturnType<typeof setInterval> | null = null;
 let destination = '';
+/** The player of the profile was asked for and is not in the room yet: a game that runs waits for it */
+let waitingForPlayer = false;
+let waitingTimer: ReturnType<typeof setTimeout> | null = null;
+let startRequested = false;
 
 const localPlayers = computed(() => (room.value?.players.items ?? []).filter((player) => player.local));
 const remotePlayers = computed(() => (room.value?.players.items ?? []).filter((player) => !player.local));
@@ -52,6 +56,7 @@ function onJoined(result: { success: boolean; room?: Room; name?: string; error?
     if (result.success && result.room) {
         room.value = result.room;
 
+        adoptOwnPlayers();
         attachEvents();
         addProfileUser();
         bump();
@@ -77,6 +82,10 @@ function leaveRoom(): void {
     profile.off('close', joinRoom);
     profile.off('change', updateProfile);
     clearLaunchInterval();
+
+    // Leaving: nothing to start any more
+    startRequested = false;
+    stopWaitingForPlayer();
 }
 
 onBeforeRouteLeave((to) => {
@@ -118,6 +127,7 @@ function addPlayer(playerName: string | null = username.value, color: string | n
             username.value = '';
         } else {
             console.error('Could not add player %s: %s', playerName, result.error ?? 'Unknown error');
+            stopWaitingForPlayer();
         }
     });
 }
@@ -195,19 +205,8 @@ function onJoin(event: { detail: { player: Player } }): void {
     const player = event.detail.player;
 
     if (player.client.id === client.id) {
-        player.on('control:change', onControlChange);
-        player.setLocal(true);
-        player.profile = profile.name === player.name;
-
-        updateCurrentMessage();
-
-        if (player.profile) {
-            setProfileControls(player);
-        }
-
-        if (useTouch) {
-            player.setTouch();
-        }
+        adoptPlayer(player);
+        stopWaitingForPlayer();
     } else {
         notifier.notify('New player joined!');
     }
@@ -215,11 +214,56 @@ function onJoin(event: { detail: { player: Player } }): void {
     bump();
 }
 
+/** The players of this client that are already in the room: it comes back to a game after a reload or a lost connection */
+function adoptOwnPlayers(): void {
+    const own = (room.value?.players.items ?? []).filter((player) => player.client.id === client.id && !player.local);
+
+    own.forEach(adoptPlayer);
+
+    if (own.some((player) => player.profile)) {
+        profile.on('change', updateProfile);
+    }
+}
+
+/** A player of this client: it is controlled here */
+function adoptPlayer(player: Player): void {
+    player.on('control:change', onControlChange);
+    player.setLocal(true);
+    player.profile = profile.name === player.name;
+
+    updateCurrentMessage();
+
+    if (player.profile) {
+        setProfileControls(player);
+    }
+
+    if (useTouch) {
+        player.setTouch();
+    }
+}
+
+/** A running game takes the players that come after its start only if they are in the room: wait for the profile player */
+function stopWaitingForPlayer(): void {
+    waitingForPlayer = false;
+
+    if (waitingTimer) {
+        clearTimeout(waitingTimer);
+        waitingTimer = null;
+    }
+
+    if (startRequested) {
+        startRequested = false;
+        start();
+    }
+}
+
 // Profile:
 
 function addProfileUser(): void {
     if (room.value?.isNameAvailable(profile.name as string)) {
         profile.on('change', updateProfile);
+        waitingForPlayer = true;
+        waitingTimer = setTimeout(stopWaitingForPlayer, 3000);
         addPlayer(profile.name, profile.color);
     }
 }
@@ -312,6 +356,12 @@ function launch(): void {
 }
 
 function start(): void {
+    if (waitingForPlayer) {
+        startRequested = true;
+
+        return;
+    }
+
     if (room.value) {
         const query = room.value.config.open && room.value.config.password ? { password: room.value.config.password } : {};
 

@@ -7,7 +7,7 @@ import type { Avatar, Game } from '../../types';
 
 const props = defineProps<{ game: Game }>();
 
-const { client } = useServices();
+const { client, gameRepository } = useServices();
 
 const game = shallowRef(props.game);
 const bump = () => triggerRef(game);
@@ -39,7 +39,13 @@ useEvents(client, ['score:round'], ({ detail }) => {
     }
 });
 
-useEvents(client, ['game:leave'], bump);
+useEvents(client, ['game:leave', 'game:join', 'player:connection'], bump);
+
+// A player came in the middle of the game
+useEvents(gameRepository, ['game:player'], () => {
+    order.value = [...order.value, ...props.game.avatars.items.filter((avatar) => !order.value.includes(avatar))];
+    bump();
+});
 
 useEvents(client, ['round:new'], () => {
     inRound.value = true;
@@ -68,7 +74,7 @@ useEvents(client, ['die'], ({ detail }) => {
             :id="`avatar-${avatar.id}`"
             :key="avatar.id"
             class="player"
-            :class="{ local: avatar.local, dead: dead.has(avatar.id) }"
+            :class="{ local: avatar.local, dead: dead.has(avatar.id), away: !avatar.player.online || !avatar.present }"
         >
             <span class="line-color-preview" :style="{ backgroundColor: avatar.player.color }"></span>
             <span v-if="avatar.local" class="arrow" :style="{ borderLeftColor: avatar.player.color }"></span>

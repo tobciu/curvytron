@@ -16,6 +16,8 @@ export class Player extends BasePlayer {
     kicked: boolean;
     /** Is it the player of the profile? Set by the room view */
     profile: boolean = false;
+    /** Is the player connected? The others wait for a player whose connection dropped until the game is over */
+    online: boolean = true;
     position: string;
 
     constructor(id: any, client: Client, name: any, color: any, ready: any) {
@@ -38,6 +40,13 @@ export class Player extends BasePlayer {
      */
     createAvatar() {
         return new Avatar(this);
+    }
+
+    /**
+     * Get avatar
+     */
+    override getAvatar(): Avatar {
+        return super.getAvatar() as Avatar;
     }
 
     /**
