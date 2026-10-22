@@ -60,6 +60,8 @@ The `DATABASE_FILE` environment variable takes precedence over `file`.
 - **Docker**: mount a volume on `/curvytron/data` (the compose file does), otherwise the database is lost with the container.
 - **Backup**: copy the file only when the server is stopped (it runs in WAL mode), or make a consistent copy while it
   runs: `sqlite3 data/curvytron.db ".backup backup.db"`.
+- **What is kept**: only games with at least two browsers (nobody collects points alone), and only the first player of
+  every browser: more players on one device take part but are not kept.
 - **One server per file**: do not start two servers on the same database.
 - The rooms can be given a **tag** when they are created (`daily`, `launch`): the games of the room are stored with it,
   so that they can be grouped later.

@@ -117,7 +117,7 @@ CREATE TABLE games (
 CREATE TABLE game_players (
     game_id    INTEGER NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     slot       INTEGER NOT NULL,        -- Platz im Spiel (0, 1, 2, ...)
-    player_id  INTEGER REFERENCES players(id) ON DELETE SET NULL,  -- NULL: Gast
+    player_id  INTEGER REFERENCES players(id) ON DELETE SET NULL,  -- NULL: Identität unbekannt (Stufe 1)
     name       TEXT NOT NULL,           -- Name im Spiel, wie er angezeigt wurde
     color      TEXT NOT NULL,
     rank       INTEGER NOT NULL,        -- 1 = Sieger
@@ -253,9 +253,13 @@ Spiels nicht erreichbar ist.
 
 - Pro Browser gibt es einen Eintrag in `players`. Der Name wird bei jedem Spiel aktualisiert. In `game_players` steht
   der **Name im Spiel**, damit alte Spiele so aussehen, wie sie waren.
-- **Mehrere Spieler an einem Gerät** (lokale Spieler im selben Raum) teilen sich einen Code. Nur der erste lokale
-  Spieler wird der Identität zugeordnet, die weiteren zählen als **Gäste** (`player_id = NULL`). Sie stehen im Verlauf,
-  aber nicht in der Bestenliste.
+- **Mehrere Spieler an einem Gerät** (lokale Spieler im selben Raum) teilen sich einen Code. Nur der **erste** Spieler
+  eines Browsers zählt. Die weiteren spielen mit, werden aber **gar nicht gespeichert**: nicht im Verlauf, nicht in der
+  Bestenliste, nicht in den Summen. Die Ränge im gespeicherten Spiel gelten unter den gezählten Spielern, und eine
+  Runde, die ein nicht gespeicherter Spieler gewinnt, hat dort keinen Sieger.
+- **Mindestens zwei Browser**: Ein Spiel wird nur gespeichert, wenn mindestens zwei Browser daran teilnehmen
+  (mindestens zwei gezählte Spieler). Wer allein oder mit seinen eigenen lokalen Spielern spielt, bekommt keine
+  Statistik. So kann niemand allein Punkte sammeln.
 - **Verlorene Identität**: Löscht jemand den Browser-Speicher, ist er ein neuer Spieler, solange er den Code nicht
   gesichert hat. Der Abschnitt "Your identity" weist darauf hin ("Copy this code and keep it, or you lose your history").
 
@@ -268,8 +272,8 @@ Name und Identitäts-Hash gelten schon in einem Freundeskreis als personenbezoge
   der Spieler als **"Anonymous"**: in der Bestenliste, in den Rekorden und im Verlauf der Spiele, und die Bestenliste
   führt ihn nicht mehr. Die Spiele selbst bleiben gespeichert (sonst fehlen den anderen Ergebnisse), die Zuordnung
   läuft im Server über `players.public` und gilt **rückwirkend**: Wer den Schalter später ausschaltet, verschwindet auch
-  aus alten Spielen. Gäste (weitere lokale Spieler) können sich nicht herausnehmen.
-- **"Delete my data"** (Stufe 4): löscht den `players`-Eintrag; die Spiele bleiben, der Spieler darin wird zum Gast
+  aus alten Spielen. Weitere lokale Spieler werden ohnehin nicht gespeichert (5.3).
+- **"Delete my data"** (Stufe 4): löscht den `players`-Eintrag; die Spiele bleiben, der Spieler darin wird zum Spieler ohne Identität
   (`ON DELETE SET NULL`) und sein Name im Spiel wird durch "Anonymous" ersetzt.
 - Die Seite `#/stats` sagt klar, **was** gespeichert wird und **für wen** es sichtbar ist (alle, die den Server
   erreichen), und verlinkt auf den Schalter.
@@ -300,7 +304,7 @@ src/shared/model/GameResult.ts   # das serialisierbare Ergebnis eines Spiels, au
 - **Fehler**: `saveGame` fängt alles. Bei einem Fehler wird geloggt und `curvytron_storage_errors_total` erhöht, das
   Spiel läuft weiter. Es gibt **keine** Wiederholung und keine Warteschlange: Ein verlorenes Spiel in der Statistik ist
   nicht schlimm, ein hängender Server schon.
-- **Wann gespeichert wird**: **alle** Spiele mit mindestens einer beendeten Runde (auch zu zweit). Spiele, die ohne
+- **Wann gespeichert wird**: Spiele mit mindestens einer beendeten Runde **und mindestens zwei Browsern** (5.3), auch ohne Sieger. Spiele, die ohne
   Sieger enden (alle gegangen), bekommen `completed = 0` und zählen nicht für Siege, aber für Runden und Zähler. Ein
   Spiel, das beim Absturz des Servers läuft, geht verloren (wir schreiben nicht pro Runde, das hält den Code klein).
 
@@ -377,7 +381,7 @@ Stufe, weil die Wahl des Verfahrens Diskussion braucht.
 
 - Einheitentests mit `new DatabaseSync(':memory:')`: Migration von 0 auf die letzte Version, eine Datei mit alter
   Version wird hochgezogen, Speichern in einer Transaktion (Abbruch lässt nichts zurück), Summen entsprechen der
-  Neuberechnung, Rangfolge der Bestenliste, Löschen eines Spielers, Gäste.
+  Neuberechnung, Rangfolge der Bestenliste, Löschen eines Spielers, weitere lokale Spieler, weniger als zwei Browser.
 - `result.ts` ist ohne Datenbank testbar (reine Funktion).
 - Protokolltest: ein ganzes Spiel über Websocket, danach die HTTP-Schnittstelle abfragen.
 - E2E: die Seite `#/stats` zeigt nach einem Spiel das Spiel an.
@@ -403,9 +407,8 @@ Stufe, weil die Wahl des Verfahrens Diskussion braucht.
 Jede Stufe ist ein eigener PR und für sich nützlich:
 
 1. **Fundament**: Konfiguration (an), Schnittstelle `Storage`, `NullStorage`, `SqliteStorage` mit `games`, `game_players`,
-   `rounds`, `feats`, Migrationen, `result.ts`, Speichern am Spielende, **Tag in den Raumeinstellungen**, Metriken,
-   Dockerfile und Volume, Anleitung. **Noch ohne Spieler-Identität und ohne Anzeige**, nur Speichern (Spieler sind
-   Gäste). Damit sammeln wir schon Daten, und die Tags sind von Anfang an dabei.
+   `rounds`, `feats`, Migrationen, `result.ts`, Speichern am Spielende, **Tag beim Erstellen des Raums**, Metriken,
+   Dockerfile und Volume, Anleitung. **Noch ohne Spieler-Identität und ohne Anzeige**, nur Speichern (Spieler ohne Identität). Damit sammeln wir schon Daten, und die Tags sind von Anfang an dabei.
 2. **Identität und Summen**: Identitätscode im Browser, Nachricht nach dem Verbinden, `players`, `player_totals`,
    `storage:rebuild`.
 3. **Anzeige**: die HTTP-Schnittstelle (ohne `/me`) und die Seite `#/stats` mit Bestenliste, Spielen und Rekorden,
@@ -422,17 +425,17 @@ Jede Stufe ist ein eigener PR und für sich nützlich:
 
 ## 11. Entscheidungen
 
-| Frage             | Entscheidung                                                                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Identität         | Browser-Code, mit Möglichkeit zum Drehen und Setzen (für einen anderen Browser); als **eigener** Code, nicht das Sitzungs-Token (5.1) |
-| Standard          | Direkt an                                                                                                                             |
-| Sichtbarkeit      | Mit Schalter: im Spiel und in der Lobby der echte Name, in den gespeicherten Listen "Anonymous" (5.4)                                 |
-| Welche Spiele     | Alle, auch zu zweit und ohne Sieger; dazu ein **Tag** zum Gruppieren (4.5)                                                            |
-| Aufbewahrung      | Alles behalten                                                                                                                        |
-| Datenbank         | `node:sqlite`                                                                                                                         |
-| Sprache der Seite | Englisch                                                                                                                              |
-| Versteckte Feats  | Auf `#/stats` und in der Schnittstelle nur als "?" (7.3)                                                                              |
-| Eigene Feats      | In `GET /api/me` mit Namen, alle anderen sehen "?" (7.4)                                                                              |
-| Tag               | Wird beim Erstellen des Raums vom Spielleiter gesetzt, später **nicht** änderbar (auch nicht an abgeschlossenen Spielen) (4.5)        |
+| Frage             | Entscheidung                                                                                                                                              |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identität         | Browser-Code, mit Möglichkeit zum Drehen und Setzen (für einen anderen Browser); als **eigener** Code, nicht das Sitzungs-Token (5.1)                     |
+| Standard          | Direkt an                                                                                                                                                 |
+| Sichtbarkeit      | Mit Schalter: im Spiel und in der Lobby der echte Name, in den gespeicherten Listen "Anonymous" (5.4)                                                     |
+| Welche Spiele     | Mit mindestens zwei Browsern, auch zu zweit und ohne Sieger; dazu ein **Tag** zum Gruppieren (4.5). Weitere lokale Spieler werden nicht gespeichert (5.3) |
+| Aufbewahrung      | Alles behalten                                                                                                                                            |
+| Datenbank         | `node:sqlite`                                                                                                                                             |
+| Sprache der Seite | Englisch                                                                                                                                                  |
+| Versteckte Feats  | Auf `#/stats` und in der Schnittstelle nur als "?" (7.3)                                                                                                  |
+| Eigene Feats      | In `GET /api/me` mit Namen, alle anderen sehen "?" (7.4)                                                                                                  |
+| Tag               | Wird beim Erstellen des Raums vom Spielleiter gesetzt, später **nicht** änderbar (auch nicht an abgeschlossenen Spielen) (4.5)                            |
 
 Es gibt keine offenen Fragen mehr.

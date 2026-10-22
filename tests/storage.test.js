@@ -264,6 +264,62 @@ describe('the result of a game', () => {
         expect(result.endedAt - result.startedAt).toBeGreaterThanOrEqual(1000);
     });
 
+    it('has only the first player of every browser, the others are not kept', () => {
+        const { players } = (() => {
+            const created = createGame(['Alice', 'Alice 2', 'Bob']);
+
+            ({
+                game,
+                avatars: [alice, bob, carl]
+            } = created);
+            game.room.tag = 'daily';
+
+            return created;
+        })();
+
+        // Alice and her second player share a browser
+        players[1].client = players[0].client;
+        game.avatars.items.forEach((avatar) => avatar.printManager.stop());
+        startRound();
+        crash(carl, alice);
+        crash(bob, alice);
+        alice.setScore(4);
+        bob.setScore(9);
+        carl.setScore(2);
+        game.emit('round:end', { winner: bob });
+
+        const result = buildGameResult(game);
+
+        // The avatars: alice (Alice), bob (Alice 2, same browser), carl (Bob): Alice 2 is not kept
+        expect(result.players.map(({ name, slot, rank, score }) => [name, slot, rank, score])).toEqual([
+            ['Alice', 0, 1, 4],
+            ['Bob', 1, 2, 2]
+        ]);
+        expect(result.roundResults).toEqual([{ round: 1, winner: null, duration: expect.any(Number) }]);
+        expect(result.feats.every(({ slot }) => slot <= 1)).toBe(true);
+    });
+
+    it('is kept only with two browsers: nobody collects points alone', () => {
+        const saveGame = vi.fn();
+
+        game.room.storage = { saveGame, status: () => ({ state: 'ok' }), close: vi.fn() };
+
+        // Everybody on one browser
+        game.avatars.items.forEach((avatar) => (avatar.player.client = alice.player.client));
+        startRound();
+        game.emit('round:end', { winner: alice });
+        game.emit('end', { game });
+
+        expect(saveGame).not.toHaveBeenCalled();
+
+        // Two browsers
+        bob.player.client = { id: 99 };
+        game.emit('end', { game });
+
+        expect(saveGame).toHaveBeenCalledTimes(1);
+        expect(saveGame.mock.calls[0][0].players.map(({ name }) => name)).toEqual(['Alice', 'Bob']);
+    });
+
     it('never has the password of the room', () => {
         startRound();
         game.emit('round:end', { winner: null });
