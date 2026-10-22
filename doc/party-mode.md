@@ -1,7 +1,7 @@
 # Sternenjagd (Party-Modus, Entwurf)
 
-Stand: Idee und Plan, nichts ist umgesetzt. Der Arbeitsname ist „Sternenjagd" (Alternativen: „Sterne", „Turnier"),
-im Text steht „Party-Modus" für denselben Modus. Die offenen Fragen stehen am Ende.
+Stand: Idee und Plan, nichts ist umgesetzt. Der Modus heißt **Sternenjagd** (im Text auch „Party-Modus"). Die offenen
+Punkte stehen am Ende.
 
 ## Idee
 
@@ -37,6 +37,18 @@ unverändert. Die Sterne sind nur eine besondere Punktequelle mit hohem Wert.
   nah an Trails oder jagt Bonis, obwohl man sonst sicher fahren würde.
 - Gleichstand: Alle Gleichplatzierten bekommen den Stern. Bei Wert 0 bekommt niemand einen.
 
+**Anzeige während der Runde** (auch für Tote und Zuschauer, die weiter zusehen):
+
+- Die zwei Missionen stehen die ganze Runde über sichtbar am Rand des Spielfelds: Name, kurze Beschreibung und der
+  eigene Stand.
+- Dazu der Stand der anderen, zum Beispiel „du: 3 · Anna führt mit 5", und ein Status: **führt** (grün, der Stern wäre
+  jetzt deiner), **gleichauf**, **hinten** (mit Abstand zum Führenden) oder **keine Chance mehr**, wenn das nicht mehr
+  aufzuholen ist (zum Beispiel nach dem eigenen Tod bei „Marathon").
+- Missionen mit einem Ja/Nein-Ergebnis (Kamikaze, Comeback, Hartnäckig) zeigen „offen" / „geschafft" / „verpasst".
+- Wer den Stern gerade halten würde, bekommt einen kleinen Stern neben dem Namen in der Spielerliste.
+- Am Rundenende wird das Ergebnis jeder Mission festgestellt und im Overlay zwischen den Runden gezeigt (wer hat
+  den Stern bekommen).
+
 **Später**: „Ziel-Missionen" („schaffe mindestens …"). Jeder, der die Schwelle erreicht, bekommt Punkte, gestaffelt in
 Bronze / Silber / Gold (1 / 2 / 3 Punkte): leichte Ziele geben weniger, schwere mehr. Das braucht feste Schwellen, die wir
 erst nach Spieldaten sinnvoll setzen können. Die erste Version hat nur die Wettbewerbs-Missionen unten.
@@ -64,7 +76,7 @@ Pool (Wettbewerb):
   Runde (2 Spieler: 1, 3–4 Spieler: 2). Die Sterne erscheinen zeitlich verteilt, nicht alle auf einmal.
 - **Platzierung** bewusst an riskanten Orten (nah an Wand oder Trails) statt gleichverteilt wie die normalen Bonis. Dafür
   braucht es eine eigene Platzierung neben `BonusManager.getRandomPosition`.
-- **Verschwindet nach einer Zeit** wieder (mehr Druck). Der Client zeigt die Restzeit als **Ring um den Stern**, der
+- **Verschwindet nach einer Zeit** wieder (mehr Druck), nach mindestens 10 s. Der Client zeigt die Restzeit als **Ring um den Stern**, der
   immer kleiner wird (Fortschrittsanzeige als Ring). Der Server schickt beim Erscheinen die Lebensdauer mit und entfernt
   den Stern selbst (`bonus:clear` gibt es schon). Bei Reconnect wird die Restzeit mitgeschickt, damit der Ring stimmt.
 
@@ -84,7 +96,7 @@ es eine Stichrunde unter den Gleichplatzierten.
 
 | Idee | Wirkung | Aufwand |
 |---|---|---|
-| Overlay zwischen den Runden mit Aufschlüsselung der Punkte (Platz, Missionen, Stern) und längere Pause (8–10 s), nur in diesem Modus | Sichtbarkeit, Dramatik | gering |
+| Overlay zwischen den Runden mit Aufschlüsselung der Punkte (Platz, Missionen, Stern) und Pause von 8 s, nur in diesem Modus | Sichtbarkeit, Dramatik | gering |
 | Hilfe für die Letzten: bessere Bonus-Chancen über `getProbability` | kein Frust, enge Rennen | gering |
 | Der Führende trägt die Krone (der goldene Rand existiert schon) | alle jagen den Führenden | vorhanden |
 | Dieb-Bonus: nimmt dem Führenden 1 Punkt | Dramatik | mittel |
@@ -102,37 +114,41 @@ Vorschlag für den Start: Missionen, Stern-Item und Overlay.
 2. **Wertung als Strategie**: Ein Interface `ScoringMode` (`classic`, `party`) mit den Hooks `onKill`, `onBonusCatch` und
    `onRoundEnd`. `Game.resolveScores` und `isWon` geben dorthin ab. Der klassische Modus bleibt unverändert.
 3. **Missions-Modul**: Pool, Ziehung abhängig von der Spielerzahl (Squeezes sind mit 2 Spielern sinnlos) und
-   Auswertung am Rundenende.
+   Auswertung am Rundenende. Dazu der laufende Stand: Das Modul berechnet für jede Mission die Werte aller Spieler,
+   den Führenden und den Status je Spieler.
 4. **Raum-Einstellung**: Modus (`classic` / `party`) und Siegbedingung (Punkte oder Runden, mit Wert) in
    `BaseRoomConfig` und in den Raumparametern. Wertung und Siegbedingung sind getrennte Teile von `Game`.
-5. **Protokoll** (`src/shared/protocol.ts`): `round:missions` (Start) und `round:summary` (Ende, mit Aufschlüsselung
-   pro Spieler). Reconnect und Late Join müssen den Zustand mitführen: Wer mitten in der Runde zurückkommt, sieht die
-   aktuellen Missionen, und `present` / `away` bleiben bei der Auswertung richtig.
-6. **Client**: Anzeige der Missionen im Spiel, Overlay zwischen den Runden, Sprite für den Stern (`npm run sprite`),
+5. **Protokoll** (`src/shared/protocol.ts`): `round:missions` (Start), `mission:progress` (laufender Stand, nur wenn
+   sich ein Wert ändert; Strecke und Wandzeit höchstens einmal pro Sekunde, damit nicht jeder Frame etwas sendet) und
+   `round:summary` (Ende, mit Ergebnis der Missionen und Aufschlüsselung pro Spieler). Reconnect und Late Join müssen den Zustand mitführen: Wer mitten in der Runde zurückkommt, sieht die
+   aktuellen Missionen samt Stand, und `present` / `away` bleiben bei der Auswertung richtig.
+6. **Client**: Missionsanzeige im Spiel mit Live-Status (neue Komponente neben `PlayerList.vue`), Overlay zwischen den Runden, Sprite für den Stern (`npm run sprite`),
    Ring-Timer um den Stern.
 7. **Tests**: Missionen mit Gleichstand, Spieler, die gehen oder kommen, Reconnect mitten in der Runde, ein e2e-Lauf
-   des Modus.
+   des Modus. Der laufende Stand wird gegen die Endauswertung geprüft (wer am Ende „führt", bekommt den Stern).
 
 ## Risiken
 
 - **Farming**: Near Misses lassen sich absichtlich provozieren. Gegenmittel: Deckel pro Runde, nur der Beste bekommt den
   Stern, bei Unverwundbarkeit zählt nichts (ist schon so).
 - **Lesbarkeit**: Zu viele Quellen verwässern das Gefühl „wer war besser". Deshalb nur 2 Missionen und eine klare
-  Aufschlüsselung.
+  Aufschlüsselung. Die Missionsanzeige darf nicht vom Spielfeld ablenken: klein am Rand, nur der Status ändert sich.
 - **Spielerzahl**: Mit 2 Spielern sind Missionen schwach. Dann ein kleinerer Pool oder nur 1 Mission.
 
 ## Entschieden
 
-- Missionen sind angesagt, bei der ersten Version nur Wettbewerb mit gleichem Wert; Ziel-Missionen später.
-- Stern-Item kommt, klein, begrenzt nach Spielerzahl, mit Ring-Timer.
-- Siegbedingung (Punkte oder Runden) ist eine Raum-Einstellung, getrennt vom Modus.
+- Name: **Sternenjagd**.
+- Missionen sind angesagt und während der Runde mit Live-Status sichtbar; in der ersten Version nur Wettbewerb mit
+  gleichem Wert, Ziel-Missionen später.
+- Stern-Item kommt, klein, begrenzt nach Spielerzahl, mit Ring-Timer, Lebensdauer mindestens 10 s.
+- Siegbedingung (Punkte oder Runden) ist eine Raum-Einstellung, getrennt vom Modus. Standard: 8 Runden, Punktelimit wie
+  bisher.
+- Pause zwischen den Runden: 8 s, nur in der Sternenjagd.
 
-## Offene Fragen
+## Offene Punkte
 
-1. **Name** des Modus: „Sternenjagd" oder etwas anderes?
-2. **Pause**: 8–10 s nur im neuen Modus oder eine längere Pause für alle Modi?
-3. **Lebensdauer des Sterns**: Wie lang (Vorschlag 10–15 s)? Soll sie mit der Kartengröße wachsen?
-4. **Standardwerte**: Rundenzahl 8, Punktelimit wie bisher?
+- Lebensdauer des Sterns genau festlegen (mindestens 10 s), eventuell abhängig von der Kartengröße. Beim Testen klären.
+- Genaue Schwellen für „keine Chance mehr" in der Missionsanzeige.
 
 ## Vorgeschlagene Reihenfolge
 
