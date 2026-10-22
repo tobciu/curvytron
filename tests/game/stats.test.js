@@ -405,3 +405,33 @@ describe('gap runs', () => {
         expect(stats(alice).gapRuns).toBe(0);
     });
 });
+
+describe('win streaks', () => {
+    beforeEach(() => {
+        startRound();
+    });
+
+    const endRound = (winner) => game.emit('round:end', { winner });
+
+    it('keeps the best number of rounds won in a row', () => {
+        for (const winner of [alice, alice, alice, bob, alice, alice, null, alice]) {
+            endRound(winner);
+        }
+
+        expect(stats(alice).longestStreak).toBe(3);
+        expect(stats(alice).roundsWon).toBe(6);
+        expect(stats(bob).longestStreak).toBe(1);
+        expect(stats(carl).longestStreak).toBe(0);
+    });
+
+    it('gives the award for two rounds in a row, not for one', () => {
+        endRound(alice);
+        endRound(bob);
+
+        expect(game.stats.getAwards().map(({ id }) => id)).not.toContain('streak');
+
+        endRound(bob);
+
+        expect(game.stats.getAwards()).toContainEqual({ id: 'streak', player: bob.id, value: 2 });
+    });
+});

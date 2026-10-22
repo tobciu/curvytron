@@ -21,6 +21,11 @@ export const statInfo = {
         description: 'Rounds won.',
         how: 'Be the last one alive. If everybody dies together, nobody wins the round.'
     },
+    longestStreak: {
+        label: 'Win streak',
+        description: 'Most rounds won in a row: the best streak, not the sum of all rounds won.',
+        how: 'Win a round, and the next one, and the next one. A round that somebody else wins, or that nobody wins, ends your streak. Only your best streak counts.'
+    },
     bonuses: {
         label: 'Bonuses',
         description: 'Bonuses caught. Hover a number to see which ones.',
@@ -66,6 +71,12 @@ export const statInfo = {
 
 /** The awards of the end of the game: the field of the statistics they look at, and what they are for */
 export const awardInfo: Record<string, StatInfo & { field: keyof PlayerStats }> = {
+    streak: {
+        label: 'On fire',
+        field: 'longestStreak',
+        description: 'Won the most rounds in a row (at least two).',
+        how: 'Keep winning: one round is not enough, it takes a streak of two or more.'
+    },
     bonusHunter: {
         label: 'Bonus hunter',
         field: 'bonuses',

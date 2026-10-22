@@ -23,6 +23,8 @@ export interface PlayerStats {
     squeezes: number;
     /** Gaps in the trails of other players that the avatar went through (every gap once) */
     gapRuns: number;
+    /** Most rounds won in a row */
+    longestStreak: number;
     distance: number;
     /** Distance driven while leaving a trail */
     trailLength: number;

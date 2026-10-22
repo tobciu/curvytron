@@ -23,8 +23,14 @@ export const awardFields: Record<string, keyof PlayerStats> = {
     gapRunner: 'gapRuns',
     hunter: 'kills',
     marathon: 'distance',
-    survivor: 'longestLife'
+    survivor: 'longestLife',
+    streak: 'longestStreak'
 };
+
+/**
+ * Awards that need more than one: a streak of one round is no streak
+ */
+const awardMinimum: Record<string, number> = { streak: 2 };
 
 /**
  * Game statistics
@@ -51,6 +57,8 @@ export class GameStats {
     openGaps: Map<number, number> = new Map();
     /** Where the last body of the gap of an avatar is */
     lastGapPoint: Map<number, [number, number]> = new Map();
+    /** Rounds in a row that an avatar has won right now */
+    streaks: Map<number, number> = new Map();
     /** Last number given to a gap */
     gapCount: number = 0;
     /** The gaps an avatar went through already */
@@ -102,6 +110,7 @@ export class GameStats {
             nearMisses: 0,
             squeezes: 0,
             gapRuns: 0,
+            longestStreak: 0,
             distance: 0,
             trailLength: 0,
             longestLife: 0
@@ -382,6 +391,14 @@ export class GameStats {
         if (winner) {
             winner.roundsWon++;
         }
+
+        // A round that nobody wins, or that somebody else wins, ends the streak
+        for (const stats of this.players.values()) {
+            const streak = stats === winner ? (this.streaks.get(stats.id) ?? 0) + 1 : 0;
+
+            this.streaks.set(stats.id, streak);
+            stats.longestStreak = Math.max(stats.longestStreak, streak);
+        }
     }
 
     /**
@@ -395,7 +412,11 @@ export class GameStats {
             const sorted = players.toSorted((a, b) => (b[field] as number) - (a[field] as number));
             const best = sorted[0];
 
-            if (best && (best[field] as number) > 0 && (sorted.length < 2 || sorted[1][field] !== best[field])) {
+            if (
+                best &&
+                (best[field] as number) >= (awardMinimum[id] ?? 1) &&
+                (sorted.length < 2 || sorted[1][field] !== best[field])
+            ) {
                 awards.push({ id, player: best.id, value: Math.round(best[field] as number) });
             }
         }
