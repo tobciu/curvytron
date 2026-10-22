@@ -36,7 +36,8 @@ export const featInfo: Record<string, FeatInfo> = {
     },
     badKarma: {
         label: 'Bad karma',
-        description: 'Died right after catching a bonus that made their own life harder.'
+        description:
+            'Died right after catching a bonus that is a risk for the player themselves: slower, faster or angular.'
     },
     earlyExit: {
         label: 'Early exit',

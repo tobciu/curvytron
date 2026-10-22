@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AvatarBody } from '../../src/server/core/AvatarBody.ts';
+import { BonusSelfFast } from '../../src/server/model/Bonus/BonusSelfFast.ts';
+import { BonusSelfSmall } from '../../src/server/model/Bonus/BonusSelfSmall.ts';
 import { BonusSelfSlow } from '../../src/server/model/Bonus/BonusSelfSlow.ts';
 import { createGame } from '../helpers/game.js';
 
@@ -184,6 +186,26 @@ describe('feats', () => {
         bob.setPosition(50, 50);
         game.bonusManager.testCatch(bob);
         vi.advanceTimersByTime(4000);
+        crash(bob);
+
+        expect(feats('badKarma')).toHaveLength(1);
+    });
+
+    it('counts the rocket as a risk, a bonus that is good for you not', () => {
+        startRound();
+        game.bonusManager.add(new BonusSelfFast(50, 50));
+        alice.setPosition(50, 50);
+        game.bonusManager.testCatch(alice);
+        vi.advanceTimersByTime(1000);
+        crash(alice);
+
+        expect(feats('badKarma')).toEqual([{ id: 'badKarma', player: alice.id, round: 1 }]);
+
+        startRound();
+        game.bonusManager.add(new BonusSelfSmall(50, 50));
+        bob.setPosition(50, 50);
+        game.bonusManager.testCatch(bob);
+        vi.advanceTimersByTime(1000);
         crash(bob);
 
         expect(feats('badKarma')).toHaveLength(1);
