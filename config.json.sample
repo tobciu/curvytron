@@ -3,6 +3,10 @@
     "metrics": {
         "enabled": true
     },
+    "storage": {
+        "enabled": true,
+        "file": "data/curvytron.db"
+    },
     "inspector": {
         "enabled": false,
         "host": "localhost",

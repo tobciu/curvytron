@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Server } from './core/Server.ts';
 import { teeConsole } from './service/FileLog.ts';
+import { createStorage } from './storage/index.ts';
 
 const rootDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const dev = process.argv.includes('--dev');
@@ -11,7 +12,7 @@ const dev = process.argv.includes('--dev');
  * Load the optional config.json (see config.json.sample)
  */
 async function loadConfig() {
-    const defaults = { port: 8080, inspector: { enabled: false } };
+    const defaults = { port: 8080, inspector: { enabled: false }, storage: { enabled: true } };
 
     try {
         const config = JSON.parse(await readFile(path.join(rootDirectory, 'config.json'), 'utf8'));
@@ -61,9 +62,12 @@ for (const event of ['uncaughtException', 'unhandledRejection'] as const) {
     });
 }
 
+const storage = await createStorage(config.storage, rootDirectory, packageInfo.version);
+
 const server = new Server({
     port: process.env.PORT ? Number(process.env.PORT) : config.port,
     metrics: config.metrics,
+    storage,
     version: packageInfo.version,
     publicDirectory: path.join(rootDirectory, 'dist'),
     middleware: dev ? await createDevMiddleware() : null

@@ -1,5 +1,11 @@
 /** Statistics of a game, sent by the server at the end of every round */
 
+/**
+ * Version of the definitions of the statistics: raise it when something is counted in another way (it is stored with
+ * the games, so that old and new games are not mixed up)
+ */
+export const statsVersion = 1;
+
 /** Counters of one player */
 export interface PlayerStats {
     id: number;

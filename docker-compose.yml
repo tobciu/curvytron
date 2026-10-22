@@ -10,6 +10,11 @@ services:
         ports:
             # Behind a reverse proxy on a VPS, bind to localhost only: '127.0.0.1:8080:8080'
             - '28080:8080'
-        # Optional configuration (see config.json.sample):
-        # volumes:
-        #     - ./config.json:/curvytron/config.json:ro
+        volumes:
+            # The database of the games (statistics, history): without this volume it is lost with the container
+            - curvytron-data:/curvytron/data
+            # Optional configuration (see config.json.sample):
+            # - ./config.json:/curvytron/config.json:ro
+
+volumes:
+    curvytron-data:

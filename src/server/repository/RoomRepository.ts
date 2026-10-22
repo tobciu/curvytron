@@ -2,6 +2,7 @@ import { EventEmitter } from '#event-emitter';
 import { Room } from '../model/Room.ts';
 import { RoomNameGenerator } from '../service/RoomNameGenerator.ts';
 import { Collection } from '../../shared/Collection.ts';
+import type { Storage } from '../storage/Storage.ts';
 
 /**
  * Room Repository
@@ -12,10 +13,12 @@ export class RoomRepository extends EventEmitter {
 
     generator: RoomNameGenerator;
     rooms: Collection;
+    storage: Storage | null;
 
-    constructor() {
+    constructor(storage: Storage | null = null) {
         super();
 
+        this.storage = storage;
         this.generator = new RoomNameGenerator();
         this.rooms = new Collection([], 'name');
 
@@ -25,7 +28,7 @@ export class RoomRepository extends EventEmitter {
     /**
      * Create a room
      */
-    create(name?: string) {
+    create(name?: string, tag: string | null = null) {
         if (name === undefined || !name) {
             name = this.getRandomRoomName();
         }
@@ -35,6 +38,9 @@ export class RoomRepository extends EventEmitter {
         }
 
         const room = new Room(name);
+
+        room.tag = tag;
+        room.storage = this.storage;
 
         if (!this.rooms.add(room)) {
             return false;

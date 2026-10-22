@@ -44,6 +44,8 @@ export class GameStats {
     players: Map<number, PlayerStats> = new Map();
     positions: Map<number, [number, number]> = new Map();
     roundStart: number = 0;
+    /** When the first round started, for the storage of the game */
+    startedAt: number | null = null;
     rounds: RoundResult[] = [];
     /** Avatars that are close to a trail of somebody else right now */
     near: Set<number> = new Set();
@@ -148,6 +150,7 @@ export class GameStats {
      */
     onRoundStart() {
         this.roundStart = Date.now();
+        this.startedAt ??= this.roundStart;
         this.positions.clear();
         this.near.clear();
         this.squeezing.clear();

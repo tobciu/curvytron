@@ -40,6 +40,30 @@ host manage its size. In Docker, mount a volume on `/curvytron/logs` to keep it.
 { "log": { "file": "logs/curvytron.log" } }
 ```
 
+**Storage:**
+
+The results of the finished games (players, scores, statistics, rounds, special feats) are kept in a SQLite database, the
+one built into Node (nothing to install). A game is written once, when it ends. A problem of the database never
+disturbs a game: the server says it in the log and in `/health` and goes on without keeping the games.
+
+| Variable | Description                                                                             | Default value     | Type    | Required |
+| -------- | --------------------------------------------------------------------------------------- | ----------------- | ------- | -------- |
+| enabled  | Keep the games                                                                          | true              | Boolean | Optional |
+| file     | Path of the database, relative to the application (`:memory:` for one that is not kept) | data/curvytron.db | String  | Optional |
+
+The `DATABASE_FILE` environment variable takes precedence over `file`.
+
+```json
+{ "storage": { "enabled": true, "file": "data/curvytron.db" } }
+```
+
+- **Docker**: mount a volume on `/curvytron/data` (the compose file does), otherwise the database is lost with the container.
+- **Backup**: copy the file only when the server is stopped (it runs in WAL mode), or make a consistent copy while it
+  runs: `sqlite3 data/curvytron.db ".backup backup.db"`.
+- **One server per file**: do not start two servers on the same database.
+- The rooms can be given a **tag** when they are created (`daily`, `launch`): the games of the room are stored with it,
+  so that they can be grouped later.
+
 **Metrics:**
 
 The server exposes its metrics in the Prometheus format on `/metrics` (see [monitoring](monitoring.md)).

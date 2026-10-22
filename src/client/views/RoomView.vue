@@ -412,6 +412,7 @@ void onFail;
         <div class="container room">
             <h2 class="header">
                 {{ room?.name }}
+                <small v-if="room?.tag" class="tag">#{{ room.tag }}</small>
                 <i class="icon-params" :class="{ active: displayParameters }" @click="toggleParameters"></i>
             </h2>
 

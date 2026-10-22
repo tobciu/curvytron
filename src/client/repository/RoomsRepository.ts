@@ -65,16 +65,20 @@ export class RoomsRepository extends EventEmitter {
     /**
      * Create
      */
-    create(name?: string, callback?: (...args: any[]) => any) {
-        // Without a name the server picks one
-        this.client.addEvent('room:create', { name: (name ?? '').substring(0, Room.maxLength).trim() }, callback);
+    create(name?: string, tag?: string, callback?: (...args: any[]) => any) {
+        // Without a name the server picks one; the server cleans the tag
+        this.client.addEvent(
+            'room:create',
+            { name: (name ?? '').substring(0, Room.maxLength).trim(), tag: (tag ?? '').trim() || undefined },
+            callback
+        );
     }
 
     /**
      * Create room proxy object from data
      */
     createRoom(data: any) {
-        return new RoomListItem(data.name, data.players, data.game, data.open);
+        return new RoomListItem(data.name, data.players, data.game, data.open, data.tag ?? null);
     }
 
     // EVENTS:

@@ -2,6 +2,7 @@ import { EventEmitter } from '#event-emitter';
 import { SocketGroup } from '../core/SocketGroup.ts';
 import { Room } from '../model/Room.ts';
 import { invalidData, isShape, rules } from '../core/validate.ts';
+import { normalizeTag } from '../../shared/tag.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
 import type { RoomRepository } from '../repository/RoomRepository.ts';
 import type { ClientEvents, Reply } from '../../shared/protocol.ts';
@@ -107,12 +108,12 @@ export class RoomsController extends EventEmitter {
      * On new room
      */
     onCreateRoom(client: SocketClient, data: ClientEvents['room:create']['data'], callback?: Reply<'room:create'>) {
-        if (!isShape(data, { name: rules.string() })) {
+        if (!isShape(data, { name: rules.string(), tag: rules.optional(rules.string(100)) })) {
             return callback?.(invalidData);
         }
 
         const name = data.name.substring(0, Room.maxLength).trim(),
-            room = this.repository.create(name);
+            room = this.repository.create(name, normalizeTag(data.tag));
 
         callback?.(room ? { success: true, room: room.serialize(false) } : { success: false });
 

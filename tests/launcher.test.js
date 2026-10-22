@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 describe('launcher', () => {
     it('starts under Node and serves the metrics', async () => {
         const child = spawn(process.execPath, ['src/server/launcher.ts'], {
-            env: { ...process.env, PORT: '0' },
+            env: { ...process.env, PORT: '0', DATABASE_FILE: ':memory:' },
             stdio: ['ignore', 'pipe', 'pipe']
         });
         let output = '';

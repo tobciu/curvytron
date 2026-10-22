@@ -38,9 +38,9 @@
         }
     },
     "scripts": {
-        "dev": "node src/server/launcher.ts --dev",
+        "dev": "node --disable-warning=ExperimentalWarning src/server/launcher.ts --dev",
         "build": "vite build",
-        "start": "node src/server/launcher.ts",
+        "start": "node --disable-warning=ExperimentalWarning src/server/launcher.ts",
         "lint": "eslint .",
         "format": "prettier --write .",
         "test": "vitest run",

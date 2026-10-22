@@ -7,6 +7,7 @@ import { asset } from '../assets';
 import { useServices } from '../services';
 import { useEmitterVersion } from '../composables/useEmitter';
 import { pluralizePlayers } from '../utils';
+import { normalizeTag, tagMaxLength } from '../../shared/tag';
 import type { RoomListItem, RoomsRepository as Repository } from '../types';
 
 const { client } = useServices();
@@ -23,6 +24,7 @@ const { version, bump } = useEmitterVersion(repository, [
 ]);
 
 const roomName = ref('');
+const roomTag = ref('');
 const roomMaxLength = (Room as unknown as { maxLength: number }).maxLength;
 
 const rooms = computed(() => (version.value >= 0 ? repository.rooms.items.slice() : []));
@@ -57,7 +59,7 @@ function join(room: RoomListItem): void {
 }
 
 function createRoom(): void {
-    repository.create(roomName.value, (result: { success: boolean; room: unknown }) => {
+    repository.create(roomName.value, roomTag.value, (result: { success: boolean; room: unknown }) => {
         if (result.success) {
             join(repository.createRoom(result.room));
             bump();
@@ -117,6 +119,19 @@ function createRoom(): void {
                 </form>
             </h2>
 
+            <p class="room-tag">
+                <label for="room-tag">Tag for the games of the new room (optional):</label>
+                <input
+                    id="room-tag"
+                    v-model="roomTag"
+                    type="text"
+                    name="tag"
+                    placeholder="daily"
+                    :maxlength="tagMaxLength + 8"
+                    @blur="roomTag = normalizeTag(roomTag) ?? ''"
+                />
+            </p>
+
             <table v-if="rooms.length" id="rooms" class="rooms table table-hover v-align-middle">
                 <tbody>
                     <template v-for="inGame in [false, true]" :key="String(inGame)">
@@ -127,7 +142,10 @@ function createRoom(): void {
                             :class="{ 'in-game': inGame, private: !room.open }"
                             @click="join(room)"
                         >
-                            <td class="room-name">{{ room.name }}</td>
+                            <td class="room-name">
+                                {{ room.name }}
+                                <span v-if="room.tag" class="tag">#{{ room.tag }}</span>
+                            </td>
                             <td class="room-nb-players">{{ pluralizePlayers(room.players) }}</td>
                             <td class="room-enter-col">
                                 <i v-if="!room.open" class="icon-lock"></i>

@@ -6,7 +6,7 @@ const visualPort = port + 1;
 
 const server = (serverPort: number) => ({
     command: 'node src/server/launcher.ts',
-    env: { PORT: String(serverPort) },
+    env: { PORT: String(serverPort), DATABASE_FILE: ':memory:' },
     url: `http://localhost:${serverPort}`,
     reuseExistingServer: !process.env.CI,
     stdout: 'ignore' as const

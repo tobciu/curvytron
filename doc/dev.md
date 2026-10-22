@@ -11,6 +11,17 @@
     tools       # Scripts: sprite builder, load test
     tests       # Vitest unit / integration tests and Playwright end-to-end tests
 
+### Server storage
+
+    src/server/storage
+     |- Storage.ts, NullStorage.ts    # What the server needs to keep a game; the implementation that keeps nothing
+     |- SqliteStorage.ts, schema.ts   # node:sqlite, one transaction per game; the tables as numbered steps (user_version)
+     |- result.ts                     # GameStats + room => `GameResult` (plain data, `src/shared/model/GameResult.ts`)
+     |- index.ts                      # `createStorage`: opens the database, or falls back to NullStorage with a message
+
+`Game` keeps its result on the `end` event (before the avatars are released), through `room.storage`. The concept and the
+next steps are in [persistence.md](persistence.md). Never change a released step of `schema.ts`: add a new one.
+
 ### Client
 
     src/client
