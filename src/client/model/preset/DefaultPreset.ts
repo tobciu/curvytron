@@ -1,4 +1,4 @@
-import { presetBonuses } from '../../../shared/bonuses.ts';
+import { bonusNames } from '../../../shared/bonuses.ts';
 import { Preset } from '../../../shared/model/Preset.ts';
 
 /**
@@ -11,9 +11,9 @@ export class DefaultPreset extends Preset {
     override name: string = 'All';
 
     /**
-     * Bonuses
+     * Bonuses: every bonus of the game
      */
-    override bonuses: string[] = presetBonuses('all');
+    override bonuses: string[] = [...bonusNames];
 
     constructor() {
         super();
