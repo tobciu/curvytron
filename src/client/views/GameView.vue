@@ -204,8 +204,8 @@ function backToRoom(): void {
                 </div>
                 <div v-if="spectating" class="spectating">
                     <template v-if="hasPlayers">
-                        <h2><i class="icon-viewer"></i> You are in the game as soon as the round is over</h2>
-                        <p>Your score is kept. Please wait for the next round.</p>
+                        <h2><i class="icon-viewer"></i> You join the next round</h2>
+                        <p>Please wait until the current round is over.</p>
                     </template>
                     <template v-else>
                         <h2><i class="icon-viewer"></i> You are in spectator mode</h2>

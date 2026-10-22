@@ -28,6 +28,20 @@ export async function openPlayer(
         })
     );
 
+    // The sockets of the page, to cut them like a network that drops
+    await page.addInitScript(() => {
+        const sockets: WebSocket[] = [];
+        const Native = window.WebSocket;
+
+        (window as unknown as { __sockets: WebSocket[] }).__sockets = sockets;
+        window.WebSocket = class extends Native {
+            constructor(url: string | URL, protocols?: string | string[]) {
+                super(url, protocols);
+                sockets.push(this);
+            }
+        };
+    });
+
     if (options.profile !== false) {
         const profile = { name, color: options.color ?? '#ff0000', sound: false };
 

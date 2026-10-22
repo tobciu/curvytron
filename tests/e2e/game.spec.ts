@@ -111,7 +111,8 @@ test('shows the connecting players while the game loads, scores and metrics', as
 test('spectators can join a running game', async ({ browser }) => {
     const name = roomName('spectate');
     const alice = await startShortGame(browser, name);
-    const bob = await openPlayer(browser, 'Spectator');
+    // The name of the profile is taken by a player of the game: nothing to play with, the page only watches
+    const bob = await openPlayer(browser, 'Alice');
 
     await bob.goto('/');
 

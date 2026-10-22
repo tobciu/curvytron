@@ -59,6 +59,23 @@ counts what each player did (including what is around the avatar, looked at once
 of the data is in `src/shared/model/GameStats.ts`. The client keeps the last one in `game.stats` and shows it with the
 final ranking, after the last round only (`components/game/GameStats.vue`). The data is plain JSON, so it can be stored later.
 
+### Reconnection and late join
+
+A browser is recognized by a `token` (in `localStorage`, so it survives a closed tab) and a `tab` (in `sessionStorage`,
+so a reload keeps it and a second tab does not); the client sends both in the query of the websocket url
+(`src/client/core/session.ts`). The server keeps the `SocketClient` of a client whose connection dropped while it plays
+a game (`SocketClient.suspend()`, decided by `RoomController.canSuspend()`) and gives it the new socket when the same
+browser connects again (`Server.findSession()`, `SocketClient.resume()`): the client keeps its id, its room and its players.
+The client reconnects by itself (`SocketClient.reconnect()`, with a heartbeat to notice a connection that died silently)
+and reloads the page when it is back, so that room and game are built again from the server (`room:join` brings the
+client back to its room, then `room:game:start` and `ready` as for a spectator).
+
+Until it is back, the client is `away`: its players stay in the game (`player:connection` tells the others). Who takes part
+in a round is decided between two rounds (`Game.syncPresence()`: in the room, not away): the others sit out, with their score
+(`game:leave`), and come back with `game:join`. The avatar of a connection that dropped goes on until it dies. When the game
+is over, the players that did not come back leave the room. Players that are added while a game runs (`Game.addPlayer()`)
+join the same way, with a score of zero. Clients without a token behave as before: they leave the game when the connection drops.
+
 ### Defaults and constants
 
 Default values are class fields (`duration = 4000;`). Constants that are read from outside of the class are `static`

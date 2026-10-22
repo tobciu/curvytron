@@ -74,10 +74,14 @@ useEvents(client, ['die'], ({ detail }) => {
             :id="`avatar-${avatar.id}`"
             :key="avatar.id"
             class="player"
-            :class="{ local: avatar.local, dead: dead.has(avatar.id), away: !avatar.player.online || !avatar.present }"
+            :class="{
+                local: avatar.player.local,
+                dead: dead.has(avatar.id),
+                away: !avatar.player.online || !avatar.present
+            }"
         >
             <span class="line-color-preview" :style="{ backgroundColor: avatar.player.color }"></span>
-            <span v-if="avatar.local" class="arrow" :style="{ borderLeftColor: avatar.player.color }"></span>
+            <span v-if="avatar.player.local" class="arrow" :style="{ borderLeftColor: avatar.player.color }"></span>
             <span :id="`avatar-round-score-${avatar.id}`" class="round-points">{{
                 avatar.roundScore ? `+${avatar.roundScore}` : ''
             }}</span>

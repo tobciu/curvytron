@@ -215,8 +215,9 @@ describe('a player that comes in the middle of a game', () => {
         late.send('ready');
 
         expect((await spectate).away).toContain(id);
-        await late.waitFor('game:join', (avatar) => avatar === id, 40000);
-
-        expect(players[0].client.events).toContainEqual(['game:join', id]);
+        // Everybody in the room sees the new player take part
+        await Promise.all(
+            [late, players[0].client].map((client) => client.waitFor('game:join', (avatar) => avatar === id, 40000))
+        );
     }, 80000);
 });
