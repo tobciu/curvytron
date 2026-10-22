@@ -11,6 +11,41 @@
     tools       # Scripts: sprite builder, load test
     tests       # Vitest unit / integration tests and Playwright end-to-end tests
 
+### Server storage
+
+    src/server/storage
+     |- Storage.ts, NullStorage.ts    # What the server needs to keep a game; the implementation that keeps nothing
+     |- SqliteStorage.ts, schema.ts   # node:sqlite, one transaction per game; the tables as numbered steps (user_version)
+     |- result.ts                     # GameStats + room => `GameResult` (plain data, `src/shared/model/GameResult.ts`)
+     |- totals.ts                     # The totals of a player, added up game by game (and built again by `rebuildTotals`)
+     |- index.ts                      # `createStorage`: opens the database, or falls back to NullStorage with a message
+
+`Game` keeps its result on the `end` event (before the avatars are released), through `room.storage`. The concept and the
+next steps are in [persistence.md](persistence.md). Never change a released step of `schema.ts`: add a new one.
+
+### Statistics interface
+
+`src/server/core/StatsApi.ts` is the read-only JSON interface of the kept games, `src/server/storage/queries.ts` what it asks
+of the database, `src/shared/model/StatsApi.ts` the types of the answers (the page `#/stats` uses them).
+
+| Path                              | Answer                                                                                    |
+| --------------------------------- | ----------------------------------------------------------------------------------------- |
+| `GET /api/games?limit&before&tag` | The latest games with the players by rank (`next` is the `before` of the next page)       |
+| `GET /api/games/:id`              | A game with its statistics as shown at its end (the player ids are slots)                 |
+| `GET /api/leaderboard?by&tag`     | `by`: `wins`, `winRate`, `roundsWon`, `kills`, `games`; players out of the lists left out |
+| `GET /api/records?tag`            | The best values (the texts are in `src/client/content/stats.ts`)                          |
+| `GET /api/tags`                   | The tags that were used, with their games                                                 |
+| `GET /api/me`                     | The own totals and feats (with their names); needs the header `X-Identity`                |
+| `POST /api/me`                    | `{ "public": boolean }`: show in the public lists or not (works before the first game)    |
+| `POST /api/me/rotate`             | `{ "code": "<new code>" }`: the same player with a new code (`409` if it is taken)        |
+| `DELETE /api/me`                  | Forget the player: entry and totals go, the games stay as "Anonymous"                     |
+
+The four `/api/me` calls need the identity code in the header `X-Identity` (a page of another site can not send it) and are not cached.
+
+The answers are public: names of players who keep out of the lists are `Anonymous`, and the special feats are `?` (no
+id, no text) for everybody but their owner. A request with the header `X-Identity: <code>` is told its own name and its own
+feats and is not cached. 120 requests per minute and address (`apiLimit`), `503` when nothing is kept.
+
 ### Client
 
     src/client

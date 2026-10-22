@@ -106,9 +106,13 @@ describe('RoomsRepository', () => {
     });
 
     it('asks the server to create a room, trimming the name', () => {
-        rooms.create(' My room ', vi.fn());
+        rooms.create(' My room ', '', vi.fn());
 
         expect(client.last('room:create').data).toEqual({ name: 'My room' });
+
+        rooms.create('Daily', ' Daily Runde ', vi.fn());
+
+        expect(client.last('room:create').data).toEqual({ name: 'Daily', tag: 'Daily Runde' });
 
         rooms.create();
 

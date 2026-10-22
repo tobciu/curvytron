@@ -38,9 +38,9 @@
         }
     },
     "scripts": {
-        "dev": "node src/server/launcher.ts --dev",
+        "dev": "node --disable-warning=ExperimentalWarning src/server/launcher.ts --dev",
         "build": "vite build",
-        "start": "node src/server/launcher.ts",
+        "start": "node --disable-warning=ExperimentalWarning src/server/launcher.ts",
         "lint": "eslint .",
         "format": "prettier --write .",
         "test": "vitest run",
@@ -49,6 +49,7 @@
         "typecheck": "vue-tsc --noEmit",
         "load-test": "node tools/load-test.ts",
         "sprite": "node tools/build-sprite.ts",
+        "storage:rebuild": "node --disable-warning=ExperimentalWarning tools/storage-rebuild.ts",
         "test:visual": "npm run build && playwright test --project=visual",
         "test:visual:update": "npm run build && playwright test --project=visual --update-snapshots"
     },

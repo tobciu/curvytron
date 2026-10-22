@@ -47,6 +47,11 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
 ## Later
 
 - [ ] **SQLite persistence** of the game statistics (leaderboard, history)
+    - [x] Concept: [`doc/persistence.md`](persistence.md) (what is stored, how players are recognized, five steps)
+    - [x] Step 1: `Storage`, SQLite (`node:sqlite`), games, players of the games, rounds and feats kept at the end of a game, tag of a room, metrics, `/health`, Docker volume
+    - [x] Step 2: identity code of the browser (sent as a message, only its hash is kept), `players`, `player_totals`, `npm run storage:rebuild`
+    - [x] Step 3: HTTP interface (`/api/...`) and the page `#/stats` (leaderboard, games, records, tag filter; hidden feats as ?)
+    - [x] Step 4: `/api/me`, identity (show, set, rotate), "Show me in public lists", delete my data, own feats
     - [ ] Keep the `GameStats` result format serializable so that storing it is only an adapter
     - [ ] Database file in a Docker volume
 - [x] Bonus registry (`src/shared/bonuses.ts`) and sprite built from one image per bonus (`npm run sprite`), see `doc/bonuses.md`

@@ -14,6 +14,9 @@ export abstract class BaseRoom extends EventEmitter {
     config: BaseRoomConfig;
     game: BaseGame | undefined;
 
+    /** Groups the games of the room by an occasion ("daily"), set when the room is created, see `shared/tag.ts` */
+    tag: string | null = null;
+
     /**
      * Number of player needed to start a room
      */
@@ -141,6 +144,10 @@ export abstract class BaseRoom extends EventEmitter {
             game: !!this.game,
             open: this.config.open
         };
+
+        if (this.tag) {
+            data.tag = this.tag;
+        }
 
         if (full) {
             data.config = this.config.serialize();

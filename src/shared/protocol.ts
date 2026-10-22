@@ -16,6 +16,8 @@ export interface RoomData {
     players: PlayerData[] | number;
     game: boolean;
     open: boolean;
+    /** Groups the games of the room, only when there is one */
+    tag?: string;
     config?: RoomConfigData;
 }
 
@@ -74,8 +76,10 @@ export interface Failure {
 export interface ClientEvents {
     whoami: { data: void; reply: number };
     activity: { data: boolean; reply: void };
+    /** Who the browser is, for the statistics: the identity code, kept in its storage (never in the address) */
+    identity: { data: { code: string }; reply: void };
     'room:fetch': { data: void; reply: void };
-    'room:create': { data: { name: string }; reply: Failure | (Result & { room?: RoomData }) };
+    'room:create': { data: { name: string; tag?: string }; reply: Failure | (Result & { room?: RoomData }) };
     'room:join': {
         data: { name: string; password: string | null };
         reply:

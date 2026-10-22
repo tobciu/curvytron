@@ -5,27 +5,30 @@ Grafana draws them.
 
 ## Metrics
 
-| Metric                             | Type      | Description                                                            |
-| ---------------------------------- | --------- | ---------------------------------------------------------------------- |
-| `curvytron_clients`                | gauge     | Connected clients                                                      |
-| `curvytron_rooms`                  | gauge     | Open rooms                                                             |
-| `curvytron_games`                  | gauge     | Games being played                                                     |
-| `curvytron_players`                | gauge     | Players in the rooms                                                   |
-| `curvytron_avatars`                | gauge     | Avatars in the games being played                                      |
-| `curvytron_connections_total`      | counter   | Clients that connected since the start                                 |
-| `curvytron_games_total`            | counter   | Games started                                                          |
-| `curvytron_rounds_total`           | counter   | Rounds started                                                         |
-| `curvytron_bonuses_caught_total`   | counter   | Bonuses caught, label `type`                                           |
-| `curvytron_event_errors_total`     | counter   | Events of the clients whose handler failed (wrong data, or a bug)      |
-| `curvytron_game_errors_total`      | counter   | Games ended because of an error in the game loop (a bug)               |
-| `curvytron_events_dropped_total`   | counter   | Events dropped because a client sent too many                          |
-| `curvytron_deaths_total`           | counter   | Deaths, label `cause` (`wall`, `self`, `trail`)                        |
-| `curvytron_tick_duration_seconds`  | histogram | Time the server needs to compute a frame (should stay far below 16 ms) |
-| `curvytron_tick_interval_seconds`  | histogram | Time between two frames (more than ~17 ms: the game loop is late)      |
-| `curvytron_client_latency_seconds` | histogram | Round trip time of the pings sent to the clients                       |
-| `curvytron_process_memory_bytes`   | gauge     | Memory of the server, label `type` (`rss`, `heap_used`)                |
-| `curvytron_process_cpu_seconds`    | gauge     | CPU time used by the server, label `mode` (`user`, `system`)           |
-| `curvytron_process_uptime_seconds` | gauge     | Time since the server started                                          |
+| Metric                                     | Type      | Description                                                            |
+| ------------------------------------------ | --------- | ---------------------------------------------------------------------- |
+| `curvytron_clients`                        | gauge     | Connected clients                                                      |
+| `curvytron_rooms`                          | gauge     | Open rooms                                                             |
+| `curvytron_games`                          | gauge     | Games being played                                                     |
+| `curvytron_players`                        | gauge     | Players in the rooms                                                   |
+| `curvytron_avatars`                        | gauge     | Avatars in the games being played                                      |
+| `curvytron_connections_total`              | counter   | Clients that connected since the start                                 |
+| `curvytron_games_total`                    | counter   | Games started                                                          |
+| `curvytron_rounds_total`                   | counter   | Rounds started                                                         |
+| `curvytron_bonuses_caught_total`           | counter   | Bonuses caught, label `type`                                           |
+| `curvytron_event_errors_total`             | counter   | Events of the clients whose handler failed (wrong data, or a bug)      |
+| `curvytron_game_errors_total`              | counter   | Games ended because of an error in the game loop (a bug)               |
+| `curvytron_events_dropped_total`           | counter   | Events dropped because a client sent too many                          |
+| `curvytron_deaths_total`                   | counter   | Deaths, label `cause` (`wall`, `self`, `trail`)                        |
+| `curvytron_storage_games_saved_total`      | counter   | Games kept in the database                                             |
+| `curvytron_storage_errors_total`           | counter   | Games that could not be kept in the database (look at the log)         |
+| `curvytron_storage_write_duration_seconds` | histogram | Time taken to keep a game: it blocks the server while it runs          |
+| `curvytron_tick_duration_seconds`          | histogram | Time the server needs to compute a frame (should stay far below 16 ms) |
+| `curvytron_tick_interval_seconds`          | histogram | Time between two frames (more than ~17 ms: the game loop is late)      |
+| `curvytron_client_latency_seconds`         | histogram | Round trip time of the pings sent to the clients                       |
+| `curvytron_process_memory_bytes`           | gauge     | Memory of the server, label `type` (`rss`, `heap_used`)                |
+| `curvytron_process_cpu_seconds`            | gauge     | CPU time used by the server, label `mode` (`user`, `system`)           |
+| `curvytron_process_uptime_seconds`         | gauge     | Time since the server started                                          |
 
 The tick histograms are the ones to look at when players see stutter: `tick_duration` tells if the server is too slow
 to compute a frame, `tick_interval` tells if the frames come too late (busy machine, garbage collection...).

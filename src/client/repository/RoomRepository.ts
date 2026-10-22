@@ -153,6 +153,8 @@ export class RoomRepository extends EventEmitter {
         const room = new Room(data.name),
             length = data.players.length;
 
+        room.tag = data.tag ?? null;
+
         for (let client, i = 0; i < length; i++) {
             client = clients.getById(data.players[i].client);
 

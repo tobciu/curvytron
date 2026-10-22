@@ -1,10 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { createHash } from 'node:crypto';
 import { WebSocket } from 'ws';
 import { Server } from '../src/server/core/Server.ts';
+import { SqliteStorage } from '../src/server/storage/SqliteStorage.ts';
 import { metrics } from '../src/server/service/Metrics.ts';
 import { TestClient } from './helpers/TestClient.ts';
 
 let server;
+let storage;
 let port;
 let clients;
 
@@ -20,7 +23,7 @@ async function connect() {
 async function createRoom(name, players, config = {}) {
     const [master] = players;
 
-    await master.client.request('room:create', { name });
+    await master.client.request('room:create', { name, tag: config.tag });
 
     const ids = [];
 
@@ -52,7 +55,8 @@ async function readyAll(players, ids) {
 
 beforeEach(async () => {
     clients = [];
-    server = new Server({ port: 0, publicDirectory: 'dist' });
+    storage = new SqliteStorage(':memory:', 'test');
+    server = new Server({ port: 0, publicDirectory: 'dist', storage });
     await server.listen();
     port = server.server.address().port;
 });
@@ -70,7 +74,12 @@ describe('a whole game over the socket', () => {
             players.push({ client: await connect(), player });
         }
 
-        const ids = await createRoom('whole', players, { maxScore: 1 });
+        // Alice and Bob say who they are, Carl does not
+        players[0].client.send('identity', { code: 'alice-code-0123456789' });
+        players[1].client.send('identity', { code: 'bob-code-0123456789ab' });
+        players[2].client.send('identity', { code: 'x' });
+
+        const ids = await createRoom('whole', players, { maxScore: 1, tag: 'Daily Runde' });
         const stats = players.map(({ client }) => client.waitFor('game:stats', () => true, 30000));
         const end = players.map(({ client }) => client.waitFor('end', () => true, 30000));
 
@@ -88,6 +97,19 @@ describe('a whole game over the socket', () => {
         expect(first.players.map((player) => player.name).toSorted()).toEqual(['Alice', 'Bob', 'Carl']);
         expect(first.players.reduce((total, player) => total + player.roundsWon, 0)).toBeLessThanOrEqual(1);
         expect(first.players.reduce((total, player) => total + player.wallDeaths, 0)).toBeGreaterThan(0);
+
+        // The game is kept, with the cleaned tag of the room, and the room list tells it
+        expect(storage.db.prepare('SELECT room, tag, completed, app_version FROM games').all()).toEqual([
+            { room: 'whole', tag: 'daily-runde', completed: 1, app_version: 'test' }
+        ]);
+        expect(storage.db.prepare('SELECT COUNT(*) AS players FROM game_players').get()).toEqual({ players: 3 });
+
+        // Only the hash of the code is kept, never the code; a wrong code is no identity
+        expect(storage.db.prepare('SELECT identity_hash, name FROM players ORDER BY name').all()).toEqual([
+            { identity_hash: createHash('sha256').update('alice-code-0123456789').digest('hex'), name: 'Alice' },
+            { identity_hash: createHash('sha256').update('bob-code-0123456789ab').digest('hex'), name: 'Bob' }
+        ]);
+        expect(storage.db.prepare('SELECT COUNT(*) AS totals FROM player_totals').get()).toEqual({ totals: 2 });
     }, 40000);
 
     it('goes on when a client leaves in the middle of it', async () => {

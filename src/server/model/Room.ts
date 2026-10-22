@@ -4,6 +4,7 @@ import { RoomConfig } from './RoomConfig.ts';
 import { Game } from './Game.ts';
 import type { Player } from './Player.ts';
 import type { Collection } from '../../shared/Collection.ts';
+import type { Storage } from '../storage/Storage.ts';
 
 /**
  * Room
@@ -13,6 +14,8 @@ export class Room extends BaseRoom {
     declare game: Game | undefined;
     declare players: Collection<Player>;
     controller: RoomController;
+    /** Where the results of the games are kept, none in the tests */
+    storage: Storage | null = null;
 
     constructor(name: string) {
         super(name);

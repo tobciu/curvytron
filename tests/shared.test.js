@@ -3,6 +3,7 @@ import { Collection } from '../src/shared/Collection.ts';
 import { Compressor } from '../src/shared/service/Compressor.ts';
 import { BaseSocketClient } from '../src/shared/core/BaseSocketClient.ts';
 import { EventEmitter } from '#event-emitter';
+import { normalizeTag } from '../src/shared/tag.ts';
 
 describe('Collection', () => {
     it('indexes items by id', () => {
@@ -120,5 +121,22 @@ describe('BaseSocketClient', () => {
         });
 
         expect(answers).toEqual([42]);
+    });
+});
+
+describe('tag', () => {
+    it('cleans what the owner of a room typed', () => {
+        expect(normalizeTag('daily')).toBe('daily');
+        expect(normalizeTag(' Daily Runde ')).toBe('daily-runde');
+        expect(normalizeTag('Product_Launch!')).toBe('product-launch');
+        expect(normalizeTag('--a---b--')).toBe('a-b');
+        expect(normalizeTag('x'.repeat(40))).toBe('x'.repeat(24));
+        expect(normalizeTag('abc-'.repeat(10))).toBe('abc-abc-abc-abc-abc-abc');
+    });
+
+    it('is no tag when nothing is left', () => {
+        for (const value of ['', '   ', '!!!', '-', undefined, null, 3, {}]) {
+            expect(normalizeTag(value)).toBeNull();
+        }
     });
 });

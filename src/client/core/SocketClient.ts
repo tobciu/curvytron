@@ -1,6 +1,6 @@
 import type { ClientEventName, ClientEvents } from '../../shared/protocol.ts';
 import { BaseSocketClient } from '../../shared/core/BaseSocketClient.ts';
-import { getSession } from './session.ts';
+import { getIdentity, getSession } from './session.ts';
 
 /**
  * SocketClient
@@ -184,6 +184,9 @@ export class SocketClient extends BaseSocketClient<Sent> {
         this.connected = true;
         this.wasConnected = true;
         this.retries = 0;
+
+        // Who the browser is, before anything else is asked of the server
+        this.addEvent('identity', { code: getIdentity() });
 
         this.start();
         this.heartbeat ??= setInterval(this.onHeartbeat, SocketClient.heartbeatInterval);

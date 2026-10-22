@@ -148,6 +148,10 @@ export class Metrics {
         new Counter('curvytron_events_dropped_total', 'Events of the clients dropped because they sent too many')
     );
     deaths = this.add(new Counter('curvytron_deaths_total', 'Deaths of the avatars, by cause'));
+    gamesSaved = this.add(new Counter('curvytron_storage_games_saved_total', 'Games kept in the database'));
+    storageErrors = this.add(
+        new Counter('curvytron_storage_errors_total', 'Games that could not be kept in the database')
+    );
 
     clients = this.add(new Gauge('curvytron_clients', 'Connected clients'));
     rooms = this.add(new Gauge('curvytron_rooms', 'Open rooms'));
@@ -176,6 +180,15 @@ export class Metrics {
         )
     );
 
+    /** Time taken to keep a finished game: it blocks the server while it runs, so it has to stay small */
+    storageWrite = this.add(
+        new Histogram(
+            'curvytron_storage_write_duration_seconds',
+            'Time taken to keep a game in the database',
+            [0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1]
+        )
+    );
+
     latency = this.add(
         new Histogram(
             'curvytron_client_latency_seconds',
@@ -192,7 +205,9 @@ export class Metrics {
             this.rounds,
             this.eventErrors,
             this.eventsDropped,
-            this.gameErrors
+            this.gameErrors,
+            this.gamesSaved,
+            this.storageErrors
         ]) {
             counter.inc({}, 0);
         }

@@ -5,6 +5,7 @@ import { BasePlayer } from '../../shared/model/BasePlayer.ts';
 import { useServices } from '../services';
 import { useLive } from '../composables/useEmitter';
 import ColorPicker from './ColorPicker.vue';
+import IdentityPanel from './IdentityPanel.vue';
 
 const { profile: model, profilePanel: panel, sound } = useServices();
 const { live: profile, bump } = useLive(model, model, ['change']);
@@ -136,6 +137,8 @@ onBeforeUnmount(() => panel.reset());
                             </div>
                         </div>
                     </fieldset>
+
+                    <IdentityPanel />
 
                     <div class="text-center">
                         <button type="button" class="btn btn-save" @click="panel.toggleProfile()">

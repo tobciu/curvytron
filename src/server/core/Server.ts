@@ -9,6 +9,8 @@ import { RoomRepository } from '../repository/RoomRepository.ts';
 import { Collection } from '../../shared/Collection.ts';
 import { metrics } from '../service/Metrics.ts';
 import type { Room } from '../model/Room.ts';
+import type { Storage } from '../storage/Storage.ts';
+import { createStatsApi } from './StatsApi.ts';
 
 /**
  * Seconds between two keep-alive pings sent to every connected socket.
@@ -38,6 +40,8 @@ export interface ServerConfig {
     version?: string;
     /** The `/metrics` endpoint: `enabled` (default true) and an optional `token` */
     metrics?: { enabled?: boolean; token?: string };
+    /** Where the results of the games are kept (none: they are not) */
+    storage?: Storage;
 }
 
 /**
@@ -70,7 +74,7 @@ export class Server extends EventEmitter {
         });
         this.clients = new Collection([], 'id', true);
 
-        this.roomRepository = new RoomRepository();
+        this.roomRepository = new RoomRepository(config.storage ?? null);
         this.roomsController = new RoomsController(this.roomRepository);
 
         this.authorizationHandler = this.authorizationHandler.bind(this);
@@ -84,6 +88,7 @@ export class Server extends EventEmitter {
         this.onHealthRequest = this.onHealthRequest.bind(this);
 
         this.app.get('/health', this.onHealthRequest);
+        this.app.use('/api', createStatsApi(config.storage ?? null));
 
         if (config.metrics?.enabled !== false) {
             metrics.addCollector(this.collectMetrics);
@@ -134,6 +139,7 @@ export class Server extends EventEmitter {
 
         this.sockets.close();
         this.server.close();
+        this.config.storage?.close();
     }
 
     /**
@@ -269,7 +275,8 @@ export class Server extends EventEmitter {
             status: 'ok',
             version: this.config.version,
             uptime: Math.round(process.uptime()),
-            ...this.getStatus()
+            ...this.getStatus(),
+            storage: this.config.storage?.status() ?? { state: 'off' }
         });
     }
 

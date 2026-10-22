@@ -9,6 +9,7 @@ import { FPSLogger } from '../service/FPSLogger.ts';
 import { BonusManager } from '../manager/BonusManager.ts';
 import { GameStats } from '../service/GameStats.ts';
 import { metrics } from '../service/Metrics.ts';
+import { buildGameResult, minPlayers } from '../storage/result.ts';
 import type { Body } from '../core/Body.ts';
 import type { Room } from './Room.ts';
 import type { Player } from './Player.ts';
@@ -47,6 +48,10 @@ export class Game extends BaseGame {
         this.deathInFrame = false;
 
         this.onPoint = this.onPoint.bind(this);
+        this.saveResult = this.saveResult.bind(this);
+
+        // Before the end releases the avatars
+        this.on('end', this.saveResult);
 
         let avatar, i;
 
@@ -54,6 +59,36 @@ export class Game extends BaseGame {
             avatar = this.avatars.items[i];
             avatar.clear();
             avatar.on('point', this.onPoint);
+        }
+    }
+
+    /**
+     * Keep the result of the game. A game that did not finish a round has none, nor has a game of fewer than two
+     * players (browsers): nobody collects points alone. A problem of the storage is told and counted, and never reaches
+     * the game.
+     */
+    saveResult() {
+        const storage = this.room.storage;
+
+        if (!storage || !this.stats || this.stats.rounds.length === 0) {
+            return;
+        }
+
+        const start = performance.now();
+
+        try {
+            const result = buildGameResult(this);
+
+            if (result.players.length < minPlayers) {
+                return;
+            }
+
+            storage.saveGame(result);
+            metrics.gamesSaved.inc();
+            metrics.storageWrite.observe((performance.now() - start) / 1000);
+        } catch (error) {
+            metrics.storageErrors.inc();
+            console.error('Can not keep the game "%s":', this.name, error);
         }
     }
 

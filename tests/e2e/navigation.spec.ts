@@ -83,6 +83,23 @@ test('created rooms are listed for other players, with their player count', asyn
     await expect(row.locator('.room-nb-players')).toContainText('2 players');
 });
 
+test('a room can be created with a tag, which is cleaned and shown in the list and in the room', async ({
+    browser
+}) => {
+    const name = roomName('tag');
+    const alice = await openPlayer(browser, 'Alice');
+    const bob = await openPlayer(browser, 'Bob');
+
+    await bob.goto('/');
+    await alice.goto('/');
+    await alice.locator('#room-tag').fill(' Daily Runde ');
+    await alice.locator('.room-list .top-right-form input').fill(name);
+    await alice.keyboard.press('Enter');
+
+    await expect(alice.locator('.room .header')).toContainText('#daily-runde');
+    await expect(bob.locator('#rooms tr.room', { hasText: name }).locator('.tag')).toHaveText('#daily-runde');
+});
+
 test('the room header counts the rooms', async ({ browser }) => {
     const alice = await openPlayer(browser, 'Alice');
 

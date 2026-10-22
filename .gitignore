@@ -9,3 +9,4 @@ playwright-report/
 coverage/
 .scannerwork/
 logs
+data/

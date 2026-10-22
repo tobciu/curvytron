@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SocketClient } from '../../src/client/core/SocketClient.ts';
+import { getIdentity } from '../../src/client/core/session.ts';
 
 class FakeSocket {
     url: string;
@@ -124,6 +125,15 @@ describe('SocketClient', () => {
         expect(client.connected).toBe(true);
         expect(connected).toHaveBeenCalledTimes(1);
         expect(client.serialize()).toEqual({ id: 42 });
+    });
+
+    it('tells the server who the browser is as soon as it is connected, with a code that does not change', () => {
+        const { socket } = connect();
+        const identity = (socket.sent.flat(1) as unknown[][]).find((event) => event[0] === 'identity');
+
+        expect(identity).toEqual(['identity', { code: expect.stringMatching(/^[\w-]{16,64}$/) }]);
+        expect(getIdentity()).toBe((identity as [string, { code: string }])[1].code);
+        expect(getIdentity()).toBe(getIdentity());
     });
 
     it('sends typed events and routes the server answer to the callback', () => {

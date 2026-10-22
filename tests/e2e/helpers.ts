@@ -93,3 +93,25 @@ export async function readyAll(page: Page): Promise<void> {
         await rows.nth(index).locator('.player-ready').click();
     }
 }
+
+/** Alice and Bob play in two browsers, in a game that goes on for a while (victory score 9 by default). */
+export async function startDuo(browser: Browser, name: string, maxScore = '9'): Promise<{ alice: Page; bob: Page }> {
+    const alice = await openPlayer(browser, 'Alice', { color: '#ff0000' });
+    const bob = await openPlayer(browser, 'Bob', { color: '#00ff00' });
+
+    await createRoom(alice, name);
+    await joinRoom(bob, name);
+    await expect(playerRows(alice)).toHaveCount(2);
+    await alice.locator('.icon-params').click();
+    await alice.locator('#max-score').fill(maxScore);
+    await alice.locator('.icon-params').click();
+    await readyAll(alice);
+    await readyAll(bob);
+
+    for (const page of [alice, bob]) {
+        await expect(page).toHaveURL(new RegExp(`#/game/${name}`));
+        await expect(page.locator('.game-players .player')).toHaveCount(2);
+    }
+
+    return { alice, bob };
+}

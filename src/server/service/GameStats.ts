@@ -5,6 +5,7 @@ import { metrics } from './Metrics.ts';
 import { Body } from '../core/Body.ts';
 import { World } from '../core/World.ts';
 import { Feats } from './Feats.ts';
+import { computeAwards } from '../../shared/awards.ts';
 import type { Award, GameStatsData, PlayerStats, RoundResult } from '../../shared/model/GameStats.ts';
 
 /**
@@ -12,26 +13,7 @@ import type { Award, GameStatsData, PlayerStats, RoundResult } from '../../share
  */
 const maxStep = 5;
 
-/**
- * Awards: the player with the highest value of the field gets it, if it is not a tie and not zero
- */
-export const awardFields: Record<string, keyof PlayerStats> = {
-    bonusHunter: 'bonuses',
-    wallLover: 'wallDeaths',
-    clumsy: 'selfDeaths',
-    closeCall: 'nearMisses',
-    needle: 'squeezes',
-    gapRunner: 'gapRuns',
-    hunter: 'kills',
-    marathon: 'distance',
-    survivor: 'longestLife',
-    streak: 'longestStreak'
-};
-
-/**
- * Awards that need more than one: a streak of one round is no streak
- */
-const awardMinimum: Record<string, number> = { streak: 2 };
+export { awardFields } from '../../shared/awards.ts';
 
 /**
  * Game statistics
@@ -44,6 +26,8 @@ export class GameStats {
     players: Map<number, PlayerStats> = new Map();
     positions: Map<number, [number, number]> = new Map();
     roundStart: number = 0;
+    /** When the first round started, for the storage of the game */
+    startedAt: number | null = null;
     rounds: RoundResult[] = [];
     /** Avatars that are close to a trail of somebody else right now */
     near: Set<number> = new Set();
@@ -148,6 +132,7 @@ export class GameStats {
      */
     onRoundStart() {
         this.roundStart = Date.now();
+        this.startedAt ??= this.roundStart;
         this.positions.clear();
         this.near.clear();
         this.squeezing.clear();
@@ -453,23 +438,7 @@ export class GameStats {
      * Awards of the game so far
      */
     getAwards(): Award[] {
-        const awards: Award[] = [];
-        const players = [...this.players.values()];
-
-        for (const [id, field] of Object.entries(awardFields)) {
-            const sorted = players.toSorted((a, b) => (b[field] as number) - (a[field] as number));
-            const best = sorted[0];
-
-            if (
-                best &&
-                (best[field] as number) >= (awardMinimum[id] ?? 1) &&
-                (sorted.length < 2 || sorted[1][field] !== best[field])
-            ) {
-                awards.push({ id, player: best.id, value: Math.round(best[field] as number) });
-            }
-        }
-
-        return awards;
+        return computeAwards([...this.players.values()]);
     }
 
     /**
