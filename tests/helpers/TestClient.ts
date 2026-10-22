@@ -7,9 +7,13 @@ type Waiter = (name: string, data: any) => boolean;
  * a message is a list of events `[name, data?, callbackId?]`, a reply is `[callbackId, data]`.
  */
 export class TestClient {
-    static connect(port: number | string): Promise<TestClient> {
+    /**
+     * @param session What a browser sends to be recognized again after a lost connection or a reload
+     */
+    static connect(port: number | string, session?: { token: string; tab: string }): Promise<TestClient> {
         return new Promise((resolve, reject) => {
-            const client = new TestClient(new WebSocket(`ws://localhost:${port}/`, ['websocket']));
+            const query = session ? `?token=${session.token}&tab=${session.tab}` : '';
+            const client = new TestClient(new WebSocket(`ws://localhost:${port}/${query}`, ['websocket']));
 
             client.socket.once('open', () => resolve(client));
             client.socket.once('error', reject);
