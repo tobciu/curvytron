@@ -21,6 +21,10 @@ export interface PlayerStats {
     nearMisses: number;
     /** Times the avatar passed between two trails of other players that are close to each other (a gap) */
     squeezes: number;
+    /** Gaps in the trails of other players that the avatar went through (every gap once) */
+    gapRuns: number;
+    /** Most rounds won in a row */
+    longestStreak: number;
     distance: number;
     /** Distance driven while leaving a trail */
     trailLength: number;
@@ -33,6 +37,15 @@ export interface Award {
     id: string;
     player: number;
     value: number;
+}
+
+/** A special feat: something that happened in a round, shown when it happens */
+export interface Feat {
+    id: string;
+    player: number;
+    round: number;
+    /** The other player of the feat, when there is one (the one the revenge is on) */
+    other?: number;
 }
 
 /** How a round ended */
@@ -48,4 +61,5 @@ export interface GameStatsData {
     players: PlayerStats[];
     awards: Award[];
     rounds: RoundResult[];
+    feats: Feat[];
 }

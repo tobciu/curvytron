@@ -3,6 +3,8 @@ import type { Game } from '../model/Game.ts';
 import type { Bonus } from '../model/Bonus/Bonus.ts';
 import { metrics } from './Metrics.ts';
 import { Body } from '../core/Body.ts';
+import { World } from '../core/World.ts';
+import { Feats } from './Feats.ts';
 import type { Award, GameStatsData, PlayerStats, RoundResult } from '../../shared/model/GameStats.ts';
 
 /**
@@ -19,10 +21,17 @@ export const awardFields: Record<string, keyof PlayerStats> = {
     clumsy: 'selfDeaths',
     closeCall: 'nearMisses',
     needle: 'squeezes',
+    gapRunner: 'gapRuns',
     hunter: 'kills',
     marathon: 'distance',
-    survivor: 'longestLife'
+    survivor: 'longestLife',
+    streak: 'longestStreak'
 };
+
+/**
+ * Awards that need more than one: a streak of one round is no streak
+ */
+const awardMinimum: Record<string, number> = { streak: 2 };
 
 /**
  * Game statistics
@@ -40,6 +49,25 @@ export class GameStats {
     near: Set<number> = new Set();
     /** Avatars that are between two trails right now, or going through a trail while invincible */
     squeezing: Set<number> = new Set();
+    /**
+     * The gaps in the trails: while an avatar does not print, it leaves invisible bodies behind it, in a world of their own
+     * (they do not kill). Going through the gap of somebody else counts once per gap.
+     */
+    gaps: World | null = null;
+    /** Number of the gap an avatar is leaving right now */
+    openGaps: Map<number, number> = new Map();
+    /** Where the last body of the gap of an avatar is */
+    lastGapPoint: Map<number, [number, number]> = new Map();
+    /** Avatars that are invincible right now */
+    invincible: Set<number> = new Set();
+    /** Special feats of the game, they are hidden until they happen */
+    feats: Feats = new Feats();
+    /** Rounds in a row that an avatar has won right now */
+    streaks: Map<number, number> = new Map();
+    /** Last number given to a gap */
+    gapCount: number = 0;
+    /** The gaps an avatar went through already */
+    crossedGaps: Map<number, Set<number>> = new Map();
     /** Looks at the left and at the right of an avatar */
     probe: Body = new Body(0, 0, 0);
 
@@ -56,6 +84,8 @@ export class GameStats {
         this.onDie = this.onDie.bind(this);
         this.onPosition = this.onPosition.bind(this);
         this.onBonusCatch = this.onBonusCatch.bind(this);
+        this.onClear = this.onClear.bind(this);
+        this.onProperty = this.onProperty.bind(this);
 
         for (const avatar of game.avatars.items) {
             this.addAvatar(avatar);
@@ -63,6 +93,7 @@ export class GameStats {
 
         game.on('game:start', this.onRoundStart);
         game.on('round:end', this.onRoundEnd);
+        game.on('clear', this.onClear);
         game.bonusManager.on('bonus:catch', this.onBonusCatch);
     }
 
@@ -84,6 +115,8 @@ export class GameStats {
             kills: 0,
             nearMisses: 0,
             squeezes: 0,
+            gapRuns: 0,
+            longestStreak: 0,
             distance: 0,
             trailLength: 0,
             longestLife: 0
@@ -91,6 +124,7 @@ export class GameStats {
 
         avatar.on('die', this.onDie);
         avatar.on('position', this.onPosition);
+        avatar.on('property', this.onProperty);
     }
 
     /**
@@ -100,10 +134,12 @@ export class GameStats {
         for (const avatar of this.game.avatars?.items ?? []) {
             avatar.removeListener('die', this.onDie);
             avatar.removeListener('position', this.onPosition);
+            avatar.removeListener('property', this.onProperty);
         }
 
         this.game.removeListener('game:start', this.onRoundStart);
         this.game.removeListener('round:end', this.onRoundEnd);
+        this.game.removeListener('clear', this.onClear);
         this.game.bonusManager?.removeListener('bonus:catch', this.onBonusCatch);
     }
 
@@ -115,9 +151,93 @@ export class GameStats {
         this.positions.clear();
         this.near.clear();
         this.squeezing.clear();
+        this.onClear();
+        this.invincible.clear();
+        this.feats.start(this.game.avatars.items.filter((avatar) => avatar.present).map((avatar) => avatar.id));
 
         for (const avatar of this.game.avatars.items) {
             this.positions.set(avatar.id, [avatar.x, avatar.y]);
+        }
+    }
+
+    /**
+     * The invincibility of an avatar is over: it is the Master bonus running out, the end of a round does not count
+     */
+    onProperty(data: { avatar: Avatar; property: string; value: unknown }) {
+        if (data.property !== 'invincible') {
+            return;
+        }
+
+        if (data.value) {
+            this.invincible.add(data.avatar.id);
+        } else if (this.invincible.delete(data.avatar.id) && this.game.inRound) {
+            this.feats.invincibleEnd(data.avatar, Date.now() - this.roundStart);
+        }
+    }
+
+    /**
+     * The trails are gone (new round, clear bonus): so are the gaps
+     */
+    onClear() {
+        this.gaps = new World(this.game.size);
+        this.gaps.activate();
+        this.openGaps.clear();
+        this.lastGapPoint.clear();
+        this.crossedGaps.clear();
+    }
+
+    /**
+     * An avatar that is not printing leaves a gap: a line of bodies, one per radius or so. Not while it is invincible:
+     * the bonus makes a long gap that would be a gift to the others.
+     */
+    trackGap(avatar: Avatar) {
+        if (!this.gaps || avatar.printing || avatar.invincible) {
+            this.openGaps.delete(avatar.id);
+            this.lastGapPoint.delete(avatar.id);
+
+            return;
+        }
+
+        let gap = this.openGaps.get(avatar.id);
+
+        if (gap === undefined) {
+            gap = ++this.gapCount;
+            this.openGaps.set(avatar.id, gap);
+        }
+
+        const last = this.lastGapPoint.get(avatar.id);
+
+        if (!last || Math.hypot(avatar.x - last[0], avatar.y - last[1]) >= avatar.radius) {
+            this.gaps.addBody(new Body(avatar.x, avatar.y, avatar.radius, { avatar, gap }));
+            this.lastGapPoint.set(avatar.id, [avatar.x, avatar.y]);
+        }
+    }
+
+    /**
+     * Is the avatar in a gap of somebody else? Counted once per gap. Looks at the bodies of one island only.
+     */
+    testGaps(avatar: Avatar, stats: PlayerStats) {
+        const island = this.gaps?.getIslandByPoint(avatar.x, avatar.y);
+
+        if (!island) {
+            return;
+        }
+
+        let crossed = this.crossedGaps.get(avatar.id);
+
+        for (const body of island.bodies.items as Body[]) {
+            const { avatar: owner, gap } = body.data as { avatar: Avatar; gap: number };
+
+            if (owner.id === avatar.id || crossed?.has(gap)) {
+                continue;
+            }
+
+            if (Math.hypot(body.x - avatar.x, body.y - avatar.y) < body.radius + avatar.radius) {
+                crossed ??= new Set();
+                crossed.add(gap);
+                this.crossedGaps.set(avatar.id, crossed);
+                stats.gapRuns++;
+            }
         }
     }
 
@@ -138,6 +258,13 @@ export class GameStats {
 
             last[0] = avatar.x;
             last[1] = avatar.y;
+            this.trackGap(avatar);
+            this.feats.position(
+                avatar,
+                this.game.size,
+                this.game.borderless || avatar.ghost || avatar.invincible,
+                Date.now() - this.roundStart
+            );
         }
     }
 
@@ -163,6 +290,8 @@ export class GameStats {
 
             return;
         }
+
+        this.testGaps(avatar, stats);
 
         // The avatar did not touch anything in this frame: anything it touches with a larger body was a near miss
         body.radius = radius * (1 + this.nearMargin);
@@ -221,6 +350,10 @@ export class GameStats {
         if (!set.has(stats.id)) {
             set.add(stats.id);
             stats[field]++;
+
+            if (field === 'nearMisses') {
+                this.feats.nearMiss(stats.id, Date.now() - this.roundStart);
+            }
         }
     }
 
@@ -236,7 +369,10 @@ export class GameStats {
             return;
         }
 
-        stats.longestLife = Math.max(stats.longestLife, Date.now() - this.roundStart);
+        const time = Date.now() - this.roundStart;
+
+        stats.longestLife = Math.max(stats.longestLife, time);
+        this.feats.die(data.avatar, data.killer, time);
 
         if (!data.killer) {
             metrics.deaths.inc({ cause: 'wall' });
@@ -265,6 +401,7 @@ export class GameStats {
             metrics.bonuses.inc({ type });
             stats.bonuses++;
             stats.bonusesByType[type] = (stats.bonusesByType[type] ?? 0) + 1;
+            this.feats.catchBonus(data.avatar, type, Date.now() - this.roundStart);
         }
     }
 
@@ -273,6 +410,8 @@ export class GameStats {
      */
     onRoundEnd(data: { winner: Avatar | null }) {
         const duration = Date.now() - this.roundStart;
+
+        this.feats.end(data.winner);
 
         for (const avatar of this.game.avatars.items) {
             const stats = this.players.get(avatar.id);
@@ -293,6 +432,21 @@ export class GameStats {
         if (winner) {
             winner.roundsWon++;
         }
+
+        // The game is over when somebody wins it with this round
+        const gameWinner = this.game.isWon();
+
+        if (gameWinner && typeof gameWinner === 'object') {
+            this.feats.gameOver(gameWinner.id, this.players.get(gameWinner.id)?.roundsWon ?? 0);
+        }
+
+        // A round that nobody wins, or that somebody else wins, ends the streak
+        for (const stats of this.players.values()) {
+            const streak = stats === winner ? (this.streaks.get(stats.id) ?? 0) + 1 : 0;
+
+            this.streaks.set(stats.id, streak);
+            stats.longestStreak = Math.max(stats.longestStreak, streak);
+        }
     }
 
     /**
@@ -306,7 +460,11 @@ export class GameStats {
             const sorted = players.toSorted((a, b) => (b[field] as number) - (a[field] as number));
             const best = sorted[0];
 
-            if (best && (best[field] as number) > 0 && (sorted.length < 2 || sorted[1][field] !== best[field])) {
+            if (
+                best &&
+                (best[field] as number) >= (awardMinimum[id] ?? 1) &&
+                (sorted.length < 2 || sorted[1][field] !== best[field])
+            ) {
                 awards.push({ id, player: best.id, value: Math.round(best[field] as number) });
             }
         }
@@ -325,7 +483,8 @@ export class GameStats {
                 trailLength: Math.round(stats.trailLength)
             })),
             awards: this.getAwards(),
-            rounds: this.rounds
+            rounds: this.rounds,
+            feats: this.feats.feats
         };
     }
 }

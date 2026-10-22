@@ -21,6 +21,11 @@ export const statInfo = {
         description: 'Rounds won.',
         how: 'Be the last one alive. If everybody dies together, nobody wins the round.'
     },
+    longestStreak: {
+        label: 'Win streak',
+        description: 'Most rounds won in a row: the best streak, not the sum of all rounds won.',
+        how: 'Win a round, and the next one, and the next one. A round that somebody else wins, or that nobody wins, ends your streak. Only your best streak counts.'
+    },
     bonuses: {
         label: 'Bonuses',
         description: 'Bonuses caught. Hover a number to see which ones.',
@@ -45,22 +50,33 @@ export const statInfo = {
         label: 'Squeezes',
         description:
             'Times the player passed between trails of other players that are close to each other, like a gap.',
-        how: 'Drive through a narrow gap with the trail of other players on both sides. Every gap counts once.'
+        how: 'Pass between the trails of other players, for example two lines that run next to each other. Gaps in a single trail do not count, see Gap runs. Every pass counts once.'
+    },
+    gapRuns: {
+        label: 'Gap runs',
+        description: 'Gaps in the trails of other players that the player drove through.',
+        how: 'A trail has a short gap every few seconds. Cross a gap that another player left, wherever and at whatever angle. Every gap counts once for you, gaps in your own trail never count, and the gap you leave while you are invincible does not exist.'
     },
     distance: {
         label: 'Distance',
         description: 'Distance driven, in the units of the map.',
-        how: 'Stay alive and move: the longer you live, the further you go. Faster speed helps, a teleport through the border does not count.'
+        how: 'Stay alive and keep moving: the longer you live, the further you go. Every bit counts, also while you are invincible (Master bonus) and without a trail. Faster speed helps, a jump over the border does not count.'
     },
     longestLife: {
         label: 'Longest life',
-        description: 'Longest time the player stayed alive in a round.',
-        how: 'The best single round counts, not the total. The winner of a round counts until the end of it.'
+        description: 'Longest time the player stayed alive in one round: the best round, not the sum of all rounds.',
+        how: 'Survive one round for as long as you can. Only your best round counts, so it does not matter how many rounds you play. The winner of a round counts until the end of it.'
     }
 } as const satisfies Record<string, StatInfo>;
 
 /** The awards of the end of the game: the field of the statistics they look at, and what they are for */
 export const awardInfo: Record<string, StatInfo & { field: keyof PlayerStats }> = {
+    streak: {
+        label: 'On fire',
+        field: 'longestStreak',
+        description: 'Won the most rounds in a row (at least two).',
+        how: 'Keep winning: one round is not enough, it takes a streak of two or more.'
+    },
     bonusHunter: {
         label: 'Bonus hunter',
         field: 'bonuses',
@@ -91,6 +107,12 @@ export const awardInfo: Record<string, StatInfo & { field: keyof PlayerStats }> 
         description: 'Squeezed the most often between trails of other players that are close to each other.',
         how: 'Look for narrow gaps between the trails of others and go through them.'
     },
+    gapRunner: {
+        label: 'Gap runner',
+        field: 'gapRuns',
+        description: 'Drove through the most gaps in the trails of other players.',
+        how: 'Look for the gaps in the trails of others and go through them.'
+    },
     hunter: {
         label: 'Hunter',
         field: 'kills',
@@ -106,8 +128,8 @@ export const awardInfo: Record<string, StatInfo & { field: keyof PlayerStats }> 
     survivor: {
         label: 'Survivor',
         field: 'longestLife',
-        description: 'Stayed alive the longest in a round.',
-        how: 'Play safe in one round: the longest single round counts.'
+        description: 'Stayed alive the longest in one round (the best round, not the sum).',
+        how: 'Play safe in one round: only the longest single round counts.'
     }
 };
 
@@ -115,6 +137,6 @@ export const awardInfo: Record<string, StatInfo & { field: keyof PlayerStats }> 
 export const countingRules: readonly string[] = [
     'Statistics are counted for the whole game, over all rounds, and shown with the final ranking.',
     'An award goes to the player with the highest value. Nobody gets it for a value of zero or for a tie.',
-    'Close calls and squeezes are not counted while you are invincible, it would be too easy and takes no courage.',
+    'Close calls, squeezes and gap runs are not counted while you are invincible, it would be too easy and takes no courage. The other statistics (distance, bonuses, kills) count as usual.',
     'Players who join a running game start counting when they join.'
 ];

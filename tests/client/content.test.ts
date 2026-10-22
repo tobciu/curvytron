@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { bonusDefinitions, bonusTarget } from '../../src/shared/bonuses.ts';
 import { awardFields } from '../../src/server/service/GameStats.ts';
 import { awardInfo, statInfo } from '../../src/client/content/stats.ts';
+import { featIds } from '../../src/server/service/Feats.ts';
+import { featInfo } from '../../src/client/content/feats.ts';
 import { gameModes } from '../../src/client/content/modes.ts';
 
 describe('texts of the rules page', () => {
@@ -26,6 +28,15 @@ describe('texts of the rules page', () => {
             expect(info.label).not.toBe('');
             expect(info.description).not.toBe('');
             expect(info.how).not.toBe('');
+        }
+    });
+
+    it('has a text for every feat the server gives, and only those', () => {
+        expect(Object.keys(featInfo).toSorted()).toEqual([...featIds].toSorted());
+
+        for (const info of Object.values(featInfo)) {
+            expect(info.label).not.toBe('');
+            expect(info.description).not.toBe('');
         }
     });
 

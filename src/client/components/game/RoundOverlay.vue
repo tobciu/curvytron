@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, ref, shallowRef, triggerRef } from 'vue';
 import { useServices } from '../../services';
 import { useEvents } from '../../composables/useEmitter';
 import GameStats from './GameStats.vue';
+import FeatList from './FeatList.vue';
 import type { Avatar, Game } from '../../types';
 
 const props = defineProps<{ game: Game }>();
@@ -16,6 +17,8 @@ const warmup = ref(false);
 const tieBreak = ref(false);
 const count = ref<number | string>('');
 const end = ref(false);
+/** Are the statistics those of the round that just ended? They follow the end of the round. */
+const statsFresh = ref(false);
 /** Winner of the round or of the game, `false` when everybody died */
 const winner = shallowRef<Avatar | false | null>(null);
 
@@ -23,6 +26,13 @@ let warmupInterval: ReturnType<typeof setInterval> | null = null;
 let warmupTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const avatars = computed(() => game.value.avatars.items);
+
+/** The special feats of the round that just ended */
+const roundFeats = computed(() => {
+    const stats = statsFresh.value ? game.value.stats : null;
+
+    return stats ? stats.feats.filter((feat) => feat.round === stats.rounds.length) : [];
+});
 
 function clearWarmup(): void {
     if (warmupInterval) {
@@ -58,6 +68,7 @@ function displayWarmup(time: number): void {
 
 useEvents(client, ['round:new'], () => {
     end.value = false;
+    statsFresh.value = false;
     tieBreak.value = props.game.isTieBreak();
 
     displayWarmup(props.game.warmupTime);
@@ -69,11 +80,13 @@ useEvents(client, ['round:end'], () => {
     notifier.notifyInactive(roundWinner ? `${roundWinner.name} won round!` : 'Round end!');
 
     winner.value = roundWinner ?? false;
+    statsFresh.value = false;
     end.value = true;
     triggerRef(game);
 });
 
 useEvents(client, ['game:stats'], () => {
+    statsFresh.value = true;
     triggerRef(game);
 });
 
@@ -110,6 +123,7 @@ onBeforeUnmount(clearWarmup);
                     <i class="icon-dead"></i>
                     Oops, everybody died...
                 </p>
+                <FeatList v-if="game.started && game.stats" :feats="roundFeats" :players="game.stats.players" />
                 <div v-if="!game.started">
                     <button type="button" class="btn btn-hero btn-back-to-room" @click="emit('backToRoom')">
                         Back to the room

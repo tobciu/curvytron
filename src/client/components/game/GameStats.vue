@@ -3,6 +3,7 @@
 import { computed } from 'vue';
 import { bonusDefinitions } from '../../../shared/bonuses';
 import type { GameStatsData, PlayerStats } from '../../../shared/model/GameStats';
+import FeatList from './FeatList.vue';
 import { awardInfo, statInfo } from '../../content/stats';
 import type { StatInfo } from '../../content/stats';
 
@@ -11,11 +12,13 @@ const props = defineProps<{ stats: GameStatsData }>();
 /** The columns of the table: what they count, see `content/stats.ts` */
 const columns: Array<StatInfo & { value: (player: PlayerStats) => number; format?: (value: number) => string }> = [
     { ...statInfo.roundsWon, value: (player: PlayerStats) => player.roundsWon },
+    { ...statInfo.longestStreak, value: (player: PlayerStats) => player.longestStreak },
     { ...statInfo.bonuses, value: (player: PlayerStats) => player.bonuses },
     { ...statInfo.deaths, value: (player: PlayerStats) => deaths(player) },
     { ...statInfo.kills, value: (player: PlayerStats) => player.kills },
     { ...statInfo.nearMisses, value: (player: PlayerStats) => player.nearMisses },
     { ...statInfo.squeezes, value: (player: PlayerStats) => player.squeezes },
+    { ...statInfo.gapRuns, value: (player: PlayerStats) => player.gapRuns },
     { ...statInfo.distance, value: (player: PlayerStats) => player.distance },
     {
         ...statInfo.longestLife,
@@ -159,6 +162,7 @@ function bonusDetails(player: PlayerStats): string[] {
                 </tr>
             </tbody>
         </table>
+        <FeatList :feats="stats.feats" :players="stats.players" show-round />
         <ol v-if="rounds.length > 1" class="rounds">
             <li v-for="result in rounds" :key="result.round">
                 <span class="label">Round {{ result.round }}</span>
