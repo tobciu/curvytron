@@ -47,6 +47,7 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
 ## Later
 
 - [ ] **SQLite persistence** of the game statistics (leaderboard, history)
+    - [ ] Concept: [`doc/persistence.md`](persistence.md) (what is stored, how players are recognized, five steps)
     - [ ] Keep the `GameStats` result format serializable so that storing it is only an adapter
     - [ ] Database file in a Docker volume
 - [x] Bonus registry (`src/shared/bonuses.ts`) and sprite built from one image per bonus (`npm run sprite`), see `doc/bonuses.md`
