@@ -1,7 +1,8 @@
-import { Router, type Request, type Response } from 'express';
+import express, { Router, type NextFunction, type Request, type Response } from 'express';
 import { leaderboardBys, type LeaderboardBy } from '../../shared/model/StatsApi.ts';
 import { normalizeTag } from '../../shared/tag.ts';
 import { hashIdentityCode } from './identity.ts';
+import type { Accounts } from '../storage/accounts.ts';
 import type { Storage } from '../storage/Storage.ts';
 import type { StatsQueries } from '../storage/queries.ts';
 
@@ -74,6 +75,7 @@ export function createStatsApi(storage: Storage | null): Router {
     });
 
     const queries = (): StatsQueries => storage!.queries!;
+    const accounts = (): Accounts => storage!.accounts!;
 
     /** The player behind the identity of the request, null when it has none or it is unknown */
     const viewer = (request: Request): number | null => {
@@ -165,7 +167,91 @@ export function createStatsApi(storage: Storage | null): Router {
         response.json(queries().tags());
     });
 
+    // What a player does with their own entry. The identity code is the proof: it is sent in a header (a page of another
+    // site can not send it), and the body is JSON.
+    router.use('/me', express.json({ limit: '1kb' }));
+
+    /** The hash of the identity of the request, or an answer that it needs one */
+    const identity = (request: Request, response: Response): string | null => {
+        const hash = hashIdentityCode(request.headers['x-identity']);
+
+        if (!hash) {
+            fail(response, 401, 'Your identity is needed.');
+        }
+
+        return hash;
+    };
+
+    router.get('/me', (request, response) => {
+        const hash = identity(request, response);
+
+        if (hash) {
+            response.setHeader('Cache-Control', 'no-store');
+            response.json(accounts().me(hash));
+        }
+    });
+
+    router.post('/me', (request, response) => {
+        const hash = identity(request, response);
+
+        if (!hash) {
+            return;
+        }
+
+        const { public: shown } = (request.body ?? {}) as { public?: unknown };
+
+        if (typeof shown !== 'boolean') {
+            return fail(response, 400, 'Say whether to show you in the lists.');
+        }
+
+        accounts().setPublic(hash, shown);
+        response.json({ success: true });
+    });
+
+    router.post('/me/rotate', (request, response) => {
+        const oldHash = identity(request, response);
+
+        if (!oldHash) {
+            return;
+        }
+
+        const newHash = hashIdentityCode((request.body as { code?: unknown } | undefined)?.code);
+
+        if (!newHash) {
+            return fail(response, 400, 'Not a code.');
+        }
+
+        const result = accounts().rotate(oldHash, newHash);
+
+        if (result === 'unknown') {
+            return fail(response, 404, 'There is nothing kept for this identity.');
+        }
+
+        if (result === 'taken') {
+            return fail(response, 409, 'This code belongs to somebody else.');
+        }
+
+        response.json({ success: true });
+    });
+
+    router.delete('/me', (request, response) => {
+        const hash = identity(request, response);
+
+        if (hash) {
+            response.json({ success: accounts().forget(hash) });
+        }
+    });
+
     router.use((request, response) => fail(response, 404, 'Not found.'));
+
+    // A body that is not JSON, or too large
+    router.use((error: Error, request: Request, response: Response, next: NextFunction) => {
+        if (response.headersSent) {
+            return next(error);
+        }
+
+        fail(response, 400, 'Not understood.');
+    });
 
     return router;
 }

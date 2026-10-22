@@ -64,7 +64,11 @@ The `DATABASE_FILE` environment variable takes precedence over `file`.
   every browser: more players on one device take part but are not kept.
 - **Identity**: the browser keeps a secret code (`curvytron.identity` in its storage) and sends it once connected, not in
   the address of the socket. The server keeps only its SHA-256, so the players of a browser add up in `player_totals`
-  over all their games. `npm run storage:rebuild [file]` builds the totals again from the games (stop the server first).
+  over all their games. The players manage it in their profile ("Statistics"): show in the public lists or not (then they
+  are "Anonymous" in the lists, also in past games), show and copy the code to use it in another browser, use another code,
+  get a new one (the history goes along, the old code stops working), start fresh, or delete their data. The page `#/stats`
+  shows the leaderboard, the games, the records and the own totals and feats.
+  `npm run storage:rebuild [file]` builds the totals again from the games (stop the server first).
 - **One server per file**: do not start two servers on the same database.
 - The rooms can be given a **tag** when they are created (`daily`, `launch`): the games of the room are stored with it,
   so that they can be grouped later.

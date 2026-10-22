@@ -403,3 +403,166 @@ describe('the HTTP interface', () => {
         }
     });
 });
+
+describe('the entry of a player', () => {
+    const hash = (name) => hashIdentity(codes[name]);
+
+    beforeEach(() => {
+        for (let game = 0; game < 2; game++) {
+            storage.saveGame(result());
+        }
+    });
+
+    it('tells a player their totals and their feats, with the real names, and the other of a feat', () => {
+        const me = storage.accounts.me(hash('bob'));
+
+        expect(me).toMatchObject({
+            known: true,
+            name: 'Bob',
+            public: true,
+            totals: { games: 2, wins: 0, roundsWon: 2, deaths: 2 }
+        });
+        expect(me.feats.map(({ id, round, gameId, other }) => [id, round, gameId, other])).toEqual([
+            ['revenge', 2, 2, 'Alice'],
+            ['revenge', 2, 1, 'Alice']
+        ]);
+        expect(storage.accounts.me(hash('alice')).totals).toMatchObject({
+            wins: 2,
+            bestLife: 30000,
+            bestStreak: 3,
+            kills: 8
+        });
+    });
+
+    it('does not know a stranger', () => {
+        expect(storage.accounts.me(hashIdentity('somebody-else-0123456789'))).toEqual({ known: false });
+    });
+
+    it('names nobody who keeps out of the lists as the other of a feat', () => {
+        storage.db.prepare("UPDATE players SET public = 0 WHERE name = 'Alice'").run();
+
+        expect(storage.accounts.me(hash('bob')).feats[0].other).toBe(anonymous);
+    });
+
+    it('keeps a player out of the lists, and back in, even before their first game', () => {
+        const dora = hashIdentity('dora-code-0123456789ab');
+
+        storage.accounts.setPublic(dora, false);
+
+        expect(storage.accounts.me(dora)).toMatchObject({ known: true, public: false, totals: { games: 0 } });
+
+        // Her first game gives the entry her name, and she stays out of the lists
+        storage.saveGame(result({ players: [player('Dora', 0, 1, { identity: dora }), player('Bob', 1, 2)] }));
+
+        expect(storage.accounts.me(dora)).toMatchObject({ name: 'Dora', public: false, totals: { games: 1 } });
+        expect(queries.leaderboard('games', null).entries.map(({ name }) => name)).not.toContain('Dora');
+
+        storage.accounts.setPublic(dora, true);
+
+        expect(queries.leaderboard('games', null).entries.map(({ name }) => name)).toContain('Dora');
+    });
+
+    it('gives the same player a new code, with their history, and the old code is worth nothing', () => {
+        const fresh = hashIdentity('alice-new-code-0123456789');
+
+        expect(storage.accounts.rotate(hash('alice'), fresh)).toBe('ok');
+        expect(storage.accounts.me(fresh)).toMatchObject({ known: true, name: 'Alice', totals: { games: 2, wins: 2 } });
+        expect(storage.accounts.me(hash('alice'))).toEqual({ known: false });
+
+        // The next game of the new code goes on with the same totals
+        storage.saveGame(result({ players: [player('Alice', 0, 1, { identity: fresh }), player('Bob', 1, 2)] }));
+
+        expect(storage.accounts.me(fresh).totals.games).toBe(3);
+        expect(storage.db.prepare('SELECT COUNT(*) AS players FROM players').get()).toEqual({ players: 3 });
+    });
+
+    it('does not give a code that is somebody else’s, nor take one from a code without history', () => {
+        expect(storage.accounts.rotate(hash('alice'), hash('bob'))).toBe('taken');
+        expect(storage.accounts.rotate(hashIdentity('nobody-0123456789abcdef'), hashIdentity('x'.repeat(20)))).toBe(
+            'unknown'
+        );
+        expect(storage.accounts.rotate(hash('alice'), hash('alice'))).toBe('ok');
+        expect(storage.accounts.me(hash('alice'))).toMatchObject({ known: true });
+    });
+
+    it('forgets a player: entry and totals are gone, the games stay without their name', () => {
+        expect(storage.accounts.forget(hash('bob'))).toBe(true);
+        expect(storage.accounts.forget(hash('bob'))).toBe(false);
+
+        expect(storage.accounts.me(hash('bob'))).toEqual({ known: false });
+        expect(storage.db.prepare('SELECT COUNT(*) AS totals FROM player_totals').get()).toEqual({ totals: 2 });
+        expect(queries.getGame(1).players.map(({ name }) => name)).toEqual(['Alice', anonymous, 'Carl']);
+        expect(queries.leaderboard('games', null).entries.map(({ name }) => name)).toEqual(['Alice', 'Carl']);
+        expect(storage.db.prepare('SELECT COUNT(*) AS games FROM games').get()).toEqual({ games: 2 });
+    });
+});
+
+describe('the HTTP interface for the own entry', () => {
+    let server;
+    let base;
+
+    beforeEach(async () => {
+        storage.saveGame(result());
+
+        const app = express();
+
+        app.use('/api', createStatsApi(storage));
+        server = http.createServer(app);
+        await new Promise((resolve) => server.listen(0, resolve));
+        base = `http://localhost:${server.address().port}/api`;
+    });
+
+    afterEach(() => server.close());
+
+    const call = (method, path, code, body) =>
+        fetch(`${base}${path}`, {
+            method,
+            headers: {
+                ...(code ? { 'X-Identity': code } : {}),
+                ...(body ? { 'Content-Type': 'application/json' } : {})
+            },
+            body: body === undefined ? undefined : typeof body === 'string' ? body : JSON.stringify(body)
+        });
+
+    it('tells the player their entry, and nobody else', async () => {
+        const mine = await call('GET', '/me', codes.alice);
+
+        expect(mine.headers.get('cache-control')).toBe('no-store');
+        expect(await mine.json()).toMatchObject({ known: true, name: 'Alice', totals: { games: 1, wins: 1 } });
+        expect(await (await call('GET', '/me', 'a-code-nobody-has-0123')).json()).toEqual({ known: false });
+        expect((await call('GET', '/me')).status).toBe(401);
+        expect((await call('GET', '/me', 'short')).status).toBe(401);
+    });
+
+    it('keeps the player out of the lists', async () => {
+        expect((await call('POST', '/me', codes.bob, { public: false })).status).toBe(200);
+
+        const games = await (await call('GET', '/games')).json();
+
+        expect(games.games[0].players.map(({ name }) => name)).toEqual(['Alice', anonymous, 'Carl']);
+        expect((await call('POST', '/me', codes.bob, { public: 'no' })).status).toBe(400);
+        expect((await call('POST', '/me', codes.bob, '{not json')).status).toBe(400);
+        expect((await call('POST', '/me', null, { public: true })).status).toBe(401);
+    });
+
+    it('rotates the code', async () => {
+        const fresh = 'alice-new-code-0123456789';
+
+        expect((await call('POST', '/me/rotate', codes.alice, { code: 'x' })).status).toBe(400);
+        expect((await call('POST', '/me/rotate', codes.alice, { code: codes.bob })).status).toBe(409);
+        expect((await call('POST', '/me/rotate', 'unknown-code-0123456789', { code: fresh })).status).toBe(404);
+        expect((await call('POST', '/me/rotate', codes.alice, { code: fresh })).status).toBe(200);
+        expect(await (await call('GET', '/me', fresh)).json()).toMatchObject({ known: true, name: 'Alice' });
+        expect(await (await call('GET', '/me', codes.alice)).json()).toEqual({ known: false });
+    });
+
+    it('forgets the player', async () => {
+        expect(await (await call('DELETE', '/me', codes.carl)).json()).toEqual({ success: true });
+        expect(await (await call('DELETE', '/me', codes.carl)).json()).toEqual({ success: false });
+        expect((await call('DELETE', '/me')).status).toBe(401);
+    });
+
+    it('does not let in a body that is too large', async () => {
+        expect((await call('POST', '/me', codes.bob, { public: true, junk: 'x'.repeat(5000) })).status).toBe(400);
+    });
+});

@@ -51,6 +51,32 @@ export function getIdentity(): string {
     return stored(() => globalThis.localStorage, IDENTITY_KEY, identityFallback);
 }
 
+/** What a code looks like (the server checks it the same way) */
+export const identityCodePattern = /^[\w-]{16,64}$/;
+
+export function isIdentityCode(code: string): boolean {
+    return identityCodePattern.test(code);
+}
+
+/** A new random code, not yet used for anything */
+export function newIdentityCode(): string {
+    return randomId();
+}
+
+/**
+ * Be another player from now on: a code from another browser, or a new one. The page has to be loaded again, the server
+ * knows the old code from the connection.
+ */
+export function setIdentity(code: string): void {
+    identityFallback.value = code;
+
+    try {
+        globalThis.localStorage.setItem(IDENTITY_KEY, code);
+    } catch {
+        // Without a storage the code lives as long as the page
+    }
+}
+
 export function getSession(): Session {
     return {
         token: stored(() => globalThis.localStorage, TOKEN_KEY, tokenFallback),

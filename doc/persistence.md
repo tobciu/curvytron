@@ -1,6 +1,6 @@
 # Persistenz – Konzept
 
-Status: Stufe 1 bis 3 (Abschnitt 9) sind umgesetzt, der Rest ist Entwurf. Dieses Dokument beantwortet, **was** gespeichert wird, **wo**, **wie** Spieler
+Status: Stufe 1 bis 4 (Abschnitt 9) sind umgesetzt. Offen ist nur, was unter "Später" steht. Dieses Dokument beantwortet, **was** gespeichert wird, **wo**, **wie** Spieler
 erkannt werden und **in welchen Schritten** es gebaut wird. Die Entscheidungen des Spielleiters stehen in Abschnitt 11,
 dort sind auch die noch offenen Fragen.
 

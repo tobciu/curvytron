@@ -5,7 +5,9 @@ import { useRoute, useRouter } from 'vue-router';
 import GameStats from '../components/game/GameStats.vue';
 import { NotKeptError, statsApi } from '../core/statsApi';
 import { recordInfo } from '../content/stats';
-import { leaderboardBys, type ApiGame, type ApiGameDetail, type ApiLeaderboard, type ApiRecords, type ApiTag, type LeaderboardBy } from '../../shared/model/StatsApi';
+import { featInfo } from '../content/feats';
+import { leaderboardBys, type ApiGame, type ApiGameDetail, type ApiLeaderboard,
+    type ApiMe, type ApiRecords, type ApiTag, type LeaderboardBy } from '../../shared/model/StatsApi';
 
 const route = useRoute();
 const router = useRouter();
@@ -13,7 +15,8 @@ const router = useRouter();
 const tabs = [
     { id: 'leaderboard', title: 'Leaderboard' },
     { id: 'games', title: 'Games' },
-    { id: 'records', title: 'Records' }
+    { id: 'records', title: 'Records' },
+    { id: 'me', title: 'Me' }
 ] as const;
 type Tab = (typeof tabs)[number]['id'];
 
@@ -34,6 +37,7 @@ const leaderboard = ref<ApiLeaderboard | null>(null);
 const games = ref<ApiGame[]>([]);
 const next = ref<number | null>(null);
 const records = ref<ApiRecords | null>(null);
+const me = ref<ApiMe | null>(null);
 const details = ref(new Map<number, ApiGameDetail>());
 const opened = ref<number | null>(null);
 
@@ -63,6 +67,8 @@ async function load(): Promise<void> {
 
             games.value = page.games;
             next.value = page.next;
+        } else if (tab.value === 'me') {
+            me.value = await statsApi.me();
         } else {
             records.value = await statsApi.records(tag.value);
         }
@@ -230,6 +236,59 @@ function recordValue(id: string, value: number): string {
                 </li>
             </ul>
             <p v-if="next"><button type="button" class="btn btn-default" :disabled="loading" @click="more">More games</button></p>
+        </section>
+
+        <section v-if="tab === 'me' && me">
+            <p v-if="!me.known" class="empty">
+                Nothing kept for you yet: play a game with a friend. Your games are kept under the identity code of this
+                browser, see your profile (top right).
+            </p>
+            <template v-else>
+                <p class="who">
+                    {{ me.name }}
+                    <span v-if="!me.public" class="private">(not in the public lists)</span>
+                </p>
+                <ul class="records">
+                    <li>
+                        <span class="label">Games</span>
+                        <span class="value">{{ me.totals.games }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Wins</span>
+                        <span class="value">{{ me.totals.wins }}</span>
+                        <span class="where">{{ percent(me.totals.winRate) }} of your games</span>
+                    </li>
+                    <li>
+                        <span class="label">Rounds won</span>
+                        <span class="value">{{ me.totals.roundsWon }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Kills</span>
+                        <span class="value">{{ me.totals.kills }}</span>
+                        <span class="where">{{ me.totals.deaths }} deaths</span>
+                    </li>
+                    <li>
+                        <span class="label">Best life</span>
+                        <span class="value">{{ seconds(me.totals.bestLife) }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Best win streak</span>
+                        <span class="value">{{ me.totals.bestStreak }}</span>
+                    </li>
+                </ul>
+
+                <h2>My feats</h2>
+                <p v-if="!me.feats.length" class="empty">None yet. There are some to be found.</p>
+                <ul v-else class="my-feats">
+                    <li v-for="(feat, index) in me.feats" :key="index">
+                        <strong>{{ featInfo[feat.id]?.label ?? feat.id }}</strong>
+                        <span class="where">{{ feat.room }}, round {{ feat.round }}, {{ date(feat.endedAt) }}</span>
+                        <span class="description">
+                            {{ (featInfo[feat.id]?.description ?? '').replace('{other}', feat.other ?? 'somebody') }}
+                        </span>
+                    </li>
+                </ul>
+            </template>
         </section>
 
         <section v-if="tab === 'records' && records">

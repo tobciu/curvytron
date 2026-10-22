@@ -1,4 +1,5 @@
 import type { GameResult } from '../../shared/model/GameResult.ts';
+import type { Accounts } from './accounts.ts';
 import type { StatsQueries } from './queries.ts';
 
 /** How the storage is doing, for `/health` */
@@ -19,6 +20,8 @@ export interface Storage {
     saveGame(result: GameResult): void;
     /** What the statistics ask of the stored games, null when nothing is kept */
     readonly queries: StatsQueries | null;
+    /** What the players do with their own entry, null when nothing is kept */
+    readonly accounts: Accounts | null;
     status(): StorageStatus;
     close(): void;
 }

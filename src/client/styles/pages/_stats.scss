@@ -198,3 +198,37 @@
         }
     }
 }
+
+#stats {
+    .who {
+        font-size: 24px;
+
+        .private {
+            font-size: 14px;
+            opacity: 0.6;
+        }
+    }
+
+    h2 {
+        margin: 30px 0 10px;
+    }
+
+    .my-feats {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        li {
+            margin-bottom: 6px;
+            padding: 10px 14px;
+            background: #fff;
+        }
+
+        .where,
+        .description {
+            display: block;
+            font-size: 13px;
+            opacity: 0.6;
+        }
+    }
+}

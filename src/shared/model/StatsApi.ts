@@ -98,3 +98,32 @@ export interface GamesQuery {
     before: number | null;
     tag: string | null;
 }
+
+/** The totals of a player, over all their games */
+export interface ApiMyTotals {
+    games: number;
+    wins: number;
+    winRate: number;
+    roundsWon: number;
+    kills: number;
+    deaths: number;
+    /** The longest life and the longest streak of all their games, the best bonuses by type */
+    bestLife: number;
+    bestStreak: number;
+    bonuses: number;
+}
+
+/** A feat of the viewer, with its real id: they have seen it in the game already */
+export interface ApiMyFeat {
+    id: string;
+    round: number;
+    gameId: number;
+    endedAt: number;
+    room: string;
+    /** The name of the other player of the feat (the revenge was on them) */
+    other?: string;
+}
+
+/** What `/api/me` tells the browser about its own identity */
+export type ApiMe =
+    { known: false } | { known: true; name: string; public: boolean; totals: ApiMyTotals; feats: ApiMyFeat[] };

@@ -35,6 +35,12 @@ of the database, `src/shared/model/StatsApi.ts` the types of the answers (the pa
 | `GET /api/leaderboard?by&tag`     | `by`: `wins`, `winRate`, `roundsWon`, `kills`, `games`; players out of the lists left out |
 | `GET /api/records?tag`            | The best values (the texts are in `src/client/content/stats.ts`)                          |
 | `GET /api/tags`                   | The tags that were used, with their games                                                 |
+| `GET /api/me`                     | The own totals and feats (with their names); needs the header `X-Identity`                |
+| `POST /api/me`                    | `{ "public": boolean }`: show in the public lists or not (works before the first game)    |
+| `POST /api/me/rotate`             | `{ "code": "<new code>" }`: the same player with a new code (`409` if it is taken)        |
+| `DELETE /api/me`                  | Forget the player: entry and totals go, the games stay as "Anonymous"                     |
+
+The four `/api/me` calls need the identity code in the header `X-Identity` (a page of another site can not send it) and are not cached.
 
 The answers are public: names of players who keep out of the lists are `Anonymous`, and the special feats are `?` (no
 id, no text) for everybody but their owner. A request with the header `X-Identity: <code>` is told its own name and its own
