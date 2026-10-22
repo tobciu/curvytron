@@ -6,7 +6,7 @@ on:
 
 jobs:
     check:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04 # not ubuntu-latest: Playwright does not support the Ubuntu 26.04 image yet
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
