@@ -1,6 +1,7 @@
-# Party-Modus (Entwurf)
+# Sternenjagd (Party-Modus, Entwurf)
 
-Stand: Idee und Plan, nichts ist umgesetzt. Die offenen Fragen stehen am Ende.
+Stand: Idee und Plan, nichts ist umgesetzt. Der Arbeitsname ist „Sternenjagd" (Alternativen: „Sterne", „Turnier"),
+im Text steht „Party-Modus" für denselben Modus. Die offenen Fragen stehen am Ende.
 
 ## Idee
 
@@ -28,12 +29,19 @@ unverändert. Die Sterne sind nur eine besondere Punktequelle mit hohem Wert.
 ### 1. Rundenmissionen („Bonus-Sterne" nach der Runde)
 
 - Zu Rundenbeginn werden 2 Missionen aus einem Pool gezogen und allen angezeigt.
-- Nach der Runde bekommt der Beste jeder Mission einen Stern, etwa 3 Punkte wert.
+- Nach der Runde bekommt der Beste jeder Mission einen Stern, 3 Punkte wert, bei allen Missionen gleich. Die Schwierigkeit
+  gleicht sich selbst aus, weil man sich nur mit den anderen vergleicht.
+- Pro Runde zählt jede Mission für einen Spieler nur einmal. Dieselbe Mission darf in späteren Runden wieder gezogen
+  werden, aber nicht direkt in der Folgerunde.
 - Die Missionen werden **vorher angesagt** (Mario Party deckt sie erst am Ende auf). Das ändert das Verhalten: Man fährt
   nah an Trails oder jagt Bonis, obwohl man sonst sicher fahren würde.
 - Gleichstand: Alle Gleichplatzierten bekommen den Stern. Bei Wert 0 bekommt niemand einen.
 
-Pool:
+**Später**: „Ziel-Missionen" („schaffe mindestens …"). Jeder, der die Schwelle erreicht, bekommt Punkte, gestaffelt in
+Bronze / Silber / Gold (1 / 2 / 3 Punkte): leichte Ziele geben weniger, schwere mehr. Das braucht feste Schwellen, die wir
+erst nach Spieldaten sinnvoll setzen können. Die erste Version hat nur die Wettbewerbs-Missionen unten.
+
+Pool (Wettbewerb):
 
 | Mission | Messwert |
 |---|---|
@@ -50,15 +58,27 @@ Pool:
 ### 2. Stern als Item im Spielfeld
 
 - Neuer Bonus-Typ „Stern" (über das Bonus-Registry, siehe `doc/bonuses.md`), ohne Effekt, +2 Punkte beim Einsammeln.
-- Selten: höchstens 1 bis 2 pro Runde, bewusst an riskanten Orten (nah an Wand oder Trails) statt gleichverteilt wie die
-  normalen Bonis. Dafür braucht es eine eigene Platzierung neben `BonusManager.getRandomPosition`.
-- Er zwingt zum Mitmachen. Offen: Verschwindet er nach einer Zeit wieder (mehr Druck)?
+- **Kleiner** als die normalen Bonis, man muss genauer treffen. Dafür muss die Größe pro Bonus-Typ einstellbar werden
+  (`BaseBonus.radius` ist heute statisch für alle gleich).
+- **Selten und begrenzt**, abhängig von der Spielerzahl: zum Beispiel `aufgerundet(Spieler / 2)`, höchstens 3 pro
+  Runde (2 Spieler: 1, 3–4 Spieler: 2). Die Sterne erscheinen zeitlich verteilt, nicht alle auf einmal.
+- **Platzierung** bewusst an riskanten Orten (nah an Wand oder Trails) statt gleichverteilt wie die normalen Bonis. Dafür
+  braucht es eine eigene Platzierung neben `BonusManager.getRandomPosition`.
+- **Verschwindet nach einer Zeit** wieder (mehr Druck). Der Client zeigt die Restzeit als **Ring um den Stern**, der
+  immer kleiner wird (Fortschrittsanzeige als Ring). Der Server schickt beim Erscheinen die Lebensdauer mit und entfernt
+  den Stern selbst (`bonus:clear` gibt es schon). Bei Reconnect wird die Restzeit mitgeschickt, damit der Ring stimmt.
 
 ### 3. Wie das Spiel gewonnen wird
 
-- Feste Rundenzahl (zum Beispiel 8) statt `maxScore`: Die Dauer ist planbar, und die Spannung bleibt bis zum Schluss,
-  weil Sterne alles drehen können.
-- Finale: In den letzten 2 Runden zählt alles doppelt.
+Der Spielleiter legt vor dem Spiel zwei Dinge fest, **unabhängig voneinander**:
+
+- **Modus (Wertung)**: Klassisch oder Sternenjagd.
+- **Siegbedingung**: Punktelimit (wie heute `maxScore`) oder feste Rundenzahl (zum Beispiel 8). Beides ist in beiden
+  Modi wählbar.
+
+Bei fester Rundenzahl ist die Dauer planbar, und die Spannung bleibt bis zum Schluss, weil Sterne alles drehen können.
+Nur dabei gilt das **Finale**: In den letzten 2 Runden zählt alles doppelt. Bei Gleichstand nach der letzten Runde gibt
+es eine Stichrunde unter den Gleichplatzierten.
 
 ## Weitere Ideen, nach Aufwand sortiert
 
@@ -83,11 +103,13 @@ Vorschlag für den Start: Missionen, Stern-Item und Overlay.
    `onRoundEnd`. `Game.resolveScores` und `isWon` geben dorthin ab. Der klassische Modus bleibt unverändert.
 3. **Missions-Modul**: Pool, Ziehung abhängig von der Spielerzahl (Squeezes sind mit 2 Spielern sinnlos) und
    Auswertung am Rundenende.
-4. **Raum-Einstellung**: Modus `classic` / `party` und Rundenzahl in `BaseRoomConfig` und in den Raumparametern.
+4. **Raum-Einstellung**: Modus (`classic` / `party`) und Siegbedingung (Punkte oder Runden, mit Wert) in
+   `BaseRoomConfig` und in den Raumparametern. Wertung und Siegbedingung sind getrennte Teile von `Game`.
 5. **Protokoll** (`src/shared/protocol.ts`): `round:missions` (Start) und `round:summary` (Ende, mit Aufschlüsselung
    pro Spieler). Reconnect und Late Join müssen den Zustand mitführen: Wer mitten in der Runde zurückkommt, sieht die
    aktuellen Missionen, und `present` / `away` bleiben bei der Auswertung richtig.
-6. **Client**: Anzeige der Missionen im Spiel, Overlay zwischen den Runden, Sprite für den Stern (`npm run sprite`).
+6. **Client**: Anzeige der Missionen im Spiel, Overlay zwischen den Runden, Sprite für den Stern (`npm run sprite`),
+   Ring-Timer um den Stern.
 7. **Tests**: Missionen mit Gleichstand, Spieler, die gehen oder kommen, Reconnect mitten in der Runde, ein e2e-Lauf
    des Modus.
 
@@ -99,12 +121,18 @@ Vorschlag für den Start: Missionen, Stern-Item und Overlay.
   Aufschlüsselung.
 - **Spielerzahl**: Mit 2 Spielern sind Missionen schwach. Dann ein kleinerer Pool oder nur 1 Mission.
 
+## Entschieden
+
+- Missionen sind angesagt, bei der ersten Version nur Wettbewerb mit gleichem Wert; Ziel-Missionen später.
+- Stern-Item kommt, klein, begrenzt nach Spielerzahl, mit Ring-Timer.
+- Siegbedingung (Punkte oder Runden) ist eine Raum-Einstellung, getrennt vom Modus.
+
 ## Offene Fragen
 
-1. **Sieg**: Feste Rundenzahl (planbar) oder weiter wer zuerst eine Punktzahl erreicht?
-2. **Missionen**: Vorher angesagt (ändert das Verhalten) oder erst am Ende enthüllt (Überraschung)? Vorschlag: ansagen.
-3. **Stern-Item**: Zusätzlich zu den Missionen oder für die erste Version weglassen?
-4. **Pause**: 8–10 s nur im Party-Modus oder eine längere Pause für alle Modi?
+1. **Name** des Modus: „Sternenjagd" oder etwas anderes?
+2. **Pause**: 8–10 s nur im neuen Modus oder eine längere Pause für alle Modi?
+3. **Lebensdauer des Sterns**: Wie lang (Vorschlag 10–15 s)? Soll sie mit der Kartengröße wachsen?
+4. **Standardwerte**: Rundenzahl 8, Punktelimit wie bisher?
 
 ## Vorgeschlagene Reihenfolge
 
