@@ -114,7 +114,7 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
     {
         name: 'BonusEnemyStraightAngle',
         label: 'Right angles',
-        description: 'The other players can only turn in sharp right angles.',
+        description: 'Every key press turns the other players by exactly 90°, instead of a smooth curve.',
         css: 'bonus-enemy-straight-angle',
         enabled: true,
         presets: ['all']
@@ -122,21 +122,21 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
     {
         name: 'BonusSelfRandom',
         label: 'Angular',
-        description: 'You steer in fixed steps of 45° instead of smooth curves.',
+        description: 'Every key press turns you by exactly 45°, instead of a smooth curve.',
         css: 'bonus-self-random',
         enabled: false
     },
     {
         name: 'BonusLeaderRandom',
         label: 'Angular leader',
-        description: 'The leader steers in fixed steps of 45° instead of smooth curves.',
+        description: 'Every key press turns the leader by exactly 45°, instead of a smooth curve.',
         css: 'bonus-leader-random',
         enabled: false
     },
     {
         name: 'BonusEnemyRandom',
         label: 'Angular enemies',
-        description: 'The other players steer in fixed steps of 45° instead of smooth curves.',
+        description: 'Every key press turns the other players by exactly 45°, instead of a smooth curve.',
         css: 'bonus-enemy-random',
         enabled: false
     },
