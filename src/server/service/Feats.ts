@@ -24,8 +24,8 @@ const graveDelay = 300;
 /** Dying this soon (ms) after catching a bonus that is bad for you is bad karma */
 const karmaWindow = 3000;
 
-/** The bonuses that are a risk for the one who catches them: slower, faster (rocket, harder to steer), angular */
-const karmaBonuses = new Set(['BonusSelfSlow', 'BonusSelfFast', 'BonusSelfRandom']);
+/** The bonuses that are a risk for the one who catches them: faster (the rocket) is harder to steer, angular too */
+const karmaBonuses = new Set(['BonusSelfFast', 'BonusSelfRandom']);
 
 /** The last players of a round that die this close to each other (ms) died at the same moment */
 const photoFinishWindow = 50;
