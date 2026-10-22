@@ -49,6 +49,7 @@
         "typecheck": "vue-tsc --noEmit",
         "load-test": "node tools/load-test.ts",
         "sprite": "node tools/build-sprite.ts",
+        "storage:rebuild": "node --disable-warning=ExperimentalWarning tools/storage-rebuild.ts",
         "test:visual": "npm run build && playwright test --project=visual",
         "test:visual:update": "npm run build && playwright test --project=visual --update-snapshots"
     },

@@ -65,6 +65,18 @@ export const migrations: readonly string[] = [
     CREATE INDEX feats_game ON feats(game_id);
     CREATE INDEX games_ended ON games(ended_at DESC);
     CREATE INDEX games_tag ON games(tag, ended_at DESC);
+    `,
+    // 2: the totals of the players, for the leaderboard (they can be built again from the games)
+    `
+    CREATE TABLE player_totals (
+        player_id     INTEGER PRIMARY KEY REFERENCES players(id) ON DELETE CASCADE,
+        games         INTEGER NOT NULL DEFAULT 0,
+        wins          INTEGER NOT NULL DEFAULT 0,
+        rounds_won    INTEGER NOT NULL DEFAULT 0,
+        kills         INTEGER NOT NULL DEFAULT 0,
+        deaths        INTEGER NOT NULL DEFAULT 0,
+        totals_json   TEXT NOT NULL DEFAULT '{}'
+    );
     `
 ];
 

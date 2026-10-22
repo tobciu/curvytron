@@ -13,7 +13,7 @@ export const minPlayers = 2;
  * Who counts: the first player of every browser. The other players of a browser (several players on one device) take
  * part in the game, but they are not kept, so they can not be used to collect points against yourself.
  */
-function countedAvatars(game: Game): Set<number> {
+function countedAvatars(game: Game): Map<number, Avatar> {
     const first = new Map<unknown, Avatar>();
 
     for (const avatar of game.avatars.items) {
@@ -24,7 +24,7 @@ function countedAvatars(game: Game): Set<number> {
         }
     }
 
-    return new Set([...first.values()].map((avatar) => avatar.id));
+    return new Map([...first.values()].map((avatar) => [avatar.id, avatar]));
 }
 
 /**
@@ -38,6 +38,8 @@ export function buildGameResult(game: Game, endedAt: number = Date.now()): GameR
     const all = game.stats.serialize();
     const counted = countedAvatars(game);
     const stats = { ...all, players: all.players.filter((player) => counted.has(player.id)) };
+    // An identity counts once in a game (the same code in two browsers is one player)
+    const identities = new Set<string>();
     const slots = new Map(stats.players.map((player, index) => [player.id, index]));
     const slotOf = (id: number | null): number | null => (id === null ? null : (slots.get(id) ?? null));
     const config = game.room.config.serialize();
@@ -59,7 +61,13 @@ export function buildGameResult(game: Game, endedAt: number = Date.now()): GameR
         },
         statsVersion,
         players: stats.players.map((player, index) => {
-            const { id: _id, name, color, score, roundsWon, ...counters } = player;
+            const { id, name, color, score, roundsWon, ...counters } = player;
+            const identity = counted.get(id)?.player.client.identityHash ?? null;
+            const once = identity !== null && !identities.has(identity);
+
+            if (once) {
+                identities.add(identity);
+            }
 
             return {
                 slot: index,
@@ -69,7 +77,8 @@ export function buildGameResult(game: Game, endedAt: number = Date.now()): GameR
                 rank: 1 + stats.players.filter((other) => other.score > score).length,
                 score,
                 roundsWon,
-                counters: counters as PlayerCounters
+                counters: counters as PlayerCounters,
+                identity: once ? identity : null
             };
         }),
         roundResults: all.rounds.map((round) => ({

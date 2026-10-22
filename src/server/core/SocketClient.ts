@@ -1,4 +1,6 @@
+import { createHash } from 'node:crypto';
 import { metrics } from '../service/Metrics.ts';
+import { isShape, rules } from './validate.ts';
 import { PingLogger } from './PingLogger.ts';
 import { Collection } from '../../shared/Collection.ts';
 import type { ClientData, ServerEvents } from '../../shared/protocol.ts';
@@ -8,6 +10,9 @@ import { BaseTickrateLogger } from '../../shared/service/BaseTickrateLogger.ts';
 /**
  * Socket Client
  */
+/** What an identity code looks like: letters, digits, dashes (a UUID is one), long enough to be a secret */
+const identityCode = /^[\w-]{16,64}$/;
+
 /**
  * Events a client may send: `burst` at once, then `rate` per second.
  * The game itself sends a few per second (steering, chat, ready), this is far above it.
@@ -32,6 +37,11 @@ export class SocketClient extends BaseSocketClient<ServerEvents> {
     token: string | null = null;
     /** Tab of the browser: two tabs of a browser are two clients, a reload of a tab is the same client */
     tab: string | null = null;
+    /**
+     * Who the browser says it is: the SHA-256 of its identity code, never the code itself. Not the token of the
+     * session: that one is in the address of the socket and so in the logs of proxies, this one never is.
+     */
+    identityHash: string | null = null;
     /** Did the connection come back? The next `room:join` brings the client back to its room */
     resuming: boolean = false;
     /**
@@ -63,7 +73,10 @@ export class SocketClient extends BaseSocketClient<ServerEvents> {
         this.onActivity = this.onActivity.bind(this);
         this.onLatency = this.onLatency.bind(this);
 
+        this.onIdentity = this.onIdentity.bind(this);
+
         this.on('whoami', this.identify);
+        this.on('identity', this.onIdentity);
         this.on('activity', this.onActivity);
         this.pingLogger.on('latency', this.onLatency);
     }
@@ -203,6 +216,17 @@ export class SocketClient extends BaseSocketClient<ServerEvents> {
      */
     identify(event: any) {
         event[1](this.id);
+    }
+
+    /**
+     * The browser tells its identity code: keep what identifies it, not the code
+     */
+    onIdentity(data: unknown) {
+        if (isShape(data, { code: rules.string(64) }) && identityCode.test((data as { code: string }).code)) {
+            this.identityHash = createHash('sha256')
+                .update((data as { code: string }).code)
+                .digest('hex');
+        }
     }
 
     /**

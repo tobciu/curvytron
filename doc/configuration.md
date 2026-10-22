@@ -62,6 +62,9 @@ The `DATABASE_FILE` environment variable takes precedence over `file`.
   runs: `sqlite3 data/curvytron.db ".backup backup.db"`.
 - **What is kept**: only games with at least two browsers (nobody collects points alone), and only the first player of
   every browser: more players on one device take part but are not kept.
+- **Identity**: the browser keeps a secret code (`curvytron.identity` in its storage) and sends it once connected, not in
+  the address of the socket. The server keeps only its SHA-256, so the players of a browser add up in `player_totals`
+  over all their games. `npm run storage:rebuild [file]` builds the totals again from the games (stop the server first).
 - **One server per file**: do not start two servers on the same database.
 - The rooms can be given a **tag** when they are created (`daily`, `launch`): the games of the room are stored with it,
   so that they can be grouped later.

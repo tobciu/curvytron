@@ -16,6 +16,8 @@ export interface GameResultPlayer {
     score: number;
     roundsWon: number;
     counters: PlayerCounters;
+    /** SHA-256 of the identity code of the browser, null when it has none or when it is there twice in the game */
+    identity: string | null;
 }
 
 export interface GameResultRound {

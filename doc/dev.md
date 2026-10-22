@@ -17,6 +17,7 @@
      |- Storage.ts, NullStorage.ts    # What the server needs to keep a game; the implementation that keeps nothing
      |- SqliteStorage.ts, schema.ts   # node:sqlite, one transaction per game; the tables as numbered steps (user_version)
      |- result.ts                     # GameStats + room => `GameResult` (plain data, `src/shared/model/GameResult.ts`)
+     |- totals.ts                     # The totals of a player, added up game by game (and built again by `rebuildTotals`)
      |- index.ts                      # `createStorage`: opens the database, or falls back to NullStorage with a message
 
 `Game` keeps its result on the `end` event (before the avatars are released), through `room.storage`. The concept and the

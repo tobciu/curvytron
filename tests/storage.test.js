@@ -10,6 +10,7 @@ import { SqliteStorage } from '../src/server/storage/SqliteStorage.ts';
 import { createStorage } from '../src/server/storage/index.ts';
 import { migrate, migrations } from '../src/server/storage/schema.ts';
 import { buildGameResult } from '../src/server/storage/result.ts';
+import { addGame, emptyTotals } from '../src/server/storage/totals.ts';
 import { statsVersion } from '../src/shared/model/GameStats.ts';
 import { createGame } from './helpers/game.js';
 
@@ -27,8 +28,26 @@ function sampleResult(overrides = {}) {
         config: { bonuses: ['BonusSelfFast'], variables: { bonusRate: 0 } },
         statsVersion,
         players: [
-            { slot: 0, name: 'Alice', color: '#f00', rank: 1, score: 21, roundsWon: 2, counters: { kills: 3 } },
-            { slot: 1, name: 'Bob', color: '#00f', rank: 2, score: 5, roundsWon: 0, counters: { kills: 0 } }
+            {
+                slot: 0,
+                name: 'Alice',
+                color: '#f00',
+                rank: 1,
+                score: 21,
+                roundsWon: 2,
+                counters: { kills: 3 },
+                identity: null
+            },
+            {
+                slot: 1,
+                name: 'Bob',
+                color: '#00f',
+                rank: 2,
+                score: 5,
+                roundsWon: 0,
+                counters: { kills: 0 },
+                identity: null
+            }
         ],
         roundResults: [
             { round: 1, winner: 0, duration: 12000 },
@@ -55,7 +74,7 @@ describe('the schema', () => {
                 .prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
                 .all()
                 .map(({ name }) => name)
-        ).toEqual(['feats', 'game_players', 'games', 'players', 'rounds']);
+        ).toEqual(['feats', 'game_players', 'games', 'player_totals', 'players', 'rounds']);
     });
 
     it('refuses a database of a newer version than the server knows', () => {
@@ -64,6 +83,20 @@ describe('the schema', () => {
         db.exec(`PRAGMA user_version = ${migrations.length + 1}`);
 
         expect(() => migrate(db)).toThrow(/update the server/);
+    });
+
+    it('brings a database of the first version to the latest, and keeps its games', () => {
+        const db = new DatabaseSync(':memory:');
+
+        db.exec(migrations[0]);
+        db.exec('PRAGMA user_version = 1');
+        db.exec("INSERT INTO games VALUES (1, 1, 2, 'old', 'classic', NULL, 1, 10, 1, '{}', '3.1.0', 1)");
+
+        migrate(db);
+
+        expect(db.prepare('PRAGMA user_version').get()).toEqual({ user_version: migrations.length });
+        expect(db.prepare('SELECT room FROM games').get()).toEqual({ room: 'old' });
+        expect(db.prepare('SELECT COUNT(*) AS totals FROM player_totals').get()).toEqual({ totals: 0 });
     });
 
     it('does nothing of a step that failed', () => {
@@ -148,6 +181,116 @@ describe('the SQLite storage', () => {
         storage.saveGame(sampleResult({ room: name, players: [{ ...sampleResult().players[0], name }] }));
 
         expect(storage.db.prepare('SELECT room FROM games').get()).toEqual({ room: name });
+    });
+});
+
+describe('the identity and the totals', () => {
+    let storage;
+
+    /** A game of two players: the first with the identity hash */
+    const game = (overrides = {}, first = {}, second = {}) =>
+        sampleResult({
+            players: [
+                {
+                    ...sampleResult().players[0],
+                    identity: 'hash-of-alice',
+                    counters: {
+                        kills: 3,
+                        wallDeaths: 1,
+                        selfDeaths: 0,
+                        trailDeaths: 2,
+                        bonuses: 4,
+                        longestLife: 30000,
+                        longestStreak: 2,
+                        distance: 500,
+                        bonusesByType: { BonusSelfFast: 3, BonusSelfSmall: 1 }
+                    },
+                    ...first
+                },
+                { ...sampleResult().players[1], identity: 'hash-of-bob', ...second }
+            ],
+            ...overrides
+        });
+
+    beforeEach(() => {
+        storage = new SqliteStorage(':memory:', '3.1.0');
+    });
+
+    afterEach(() => storage.close());
+
+    it('gives a player with an identity an entry of its own, with the name of the last game', () => {
+        storage.saveGame(game());
+        storage.saveGame(game({ endedAt: 99000 }, { name: 'Alice B' }));
+
+        expect(storage.db.prepare('SELECT identity_hash, name, last_seen FROM players ORDER BY id').all()).toEqual([
+            { identity_hash: 'hash-of-alice', name: 'Alice B', last_seen: 99000 },
+            { identity_hash: 'hash-of-bob', name: 'Bob', last_seen: 99000 }
+        ]);
+        expect(storage.db.prepare('SELECT player_id FROM game_players ORDER BY game_id, slot').all()).toEqual([
+            { player_id: 1 },
+            { player_id: 2 },
+            { player_id: 1 },
+            { player_id: 2 }
+        ]);
+    });
+
+    it('adds the games up in the totals', () => {
+        storage.saveGame(game());
+        storage.saveGame(game({ completed: false }));
+
+        const alice = storage.db.prepare('SELECT * FROM player_totals WHERE player_id = 1').get();
+
+        // The win counts only in a game that somebody won
+        expect(alice).toMatchObject({ games: 2, wins: 1, rounds_won: 4, kills: 6, deaths: 6 });
+        expect(JSON.parse(alice.totals_json)).toEqual({
+            sums: { wallDeaths: 2, selfDeaths: 0, trailDeaths: 4, bonuses: 8, distance: 1000 },
+            best: { longestLife: 30000, longestStreak: 2 },
+            bonusesByType: { BonusSelfFast: 6, BonusSelfSmall: 2 }
+        });
+    });
+
+    it('does not count a game twice for one identity, nor a player without one', () => {
+        storage.saveGame(game({}, {}, { identity: 'hash-of-alice' }));
+        storage.saveGame(game({}, { identity: null }));
+
+        expect(storage.db.prepare('SELECT games FROM player_totals WHERE player_id = 1').get()).toEqual({ games: 1 });
+        // Alice, and Bob of the second game: the second player of the first game was Alice again
+        expect(storage.db.prepare('SELECT COUNT(*) AS players FROM players').get()).toEqual({ players: 2 });
+    });
+
+    it('has the same totals when they are built again from the games', () => {
+        storage.saveGame(game());
+        storage.saveGame(game({ completed: false, endedAt: 70000 }, { rank: 2, roundsWon: 1 }, { rank: 1 }));
+        storage.saveGame(game({ endedAt: 80000 }, {}, { counters: { kills: 1, bonusesByType: { BonusSelfFast: 1 } } }));
+
+        const before = storage.db.prepare('SELECT * FROM player_totals ORDER BY player_id').all();
+
+        expect(storage.rebuildTotals()).toBe(2);
+        expect(storage.db.prepare('SELECT * FROM player_totals ORDER BY player_id').all()).toEqual(before);
+    });
+});
+
+describe('the totals', () => {
+    it('add the best of a game, not the sum, for the longest life and the longest streak', () => {
+        const totals = emptyTotals();
+
+        addGame(totals, { won: false, roundsWon: 0, counters: { longestLife: 100, longestStreak: 3 } });
+        addGame(totals, { won: true, roundsWon: 2, counters: { longestLife: 50, longestStreak: 1, kills: 2 } });
+
+        expect(totals).toMatchObject({
+            games: 2,
+            wins: 1,
+            roundsWon: 2,
+            kills: 2,
+            best: { longestLife: 100, longestStreak: 3 },
+            sums: {}
+        });
+    });
+
+    it('take a statistic that a game did not have as nothing', () => {
+        const totals = addGame(emptyTotals(), { won: false, roundsWon: 0, counters: {} });
+
+        expect(totals).toMatchObject({ games: 1, kills: 0, deaths: 0, sums: {}, best: {}, bonusesByType: {} });
     });
 });
 
@@ -318,6 +461,33 @@ describe('the result of a game', () => {
 
         expect(saveGame).toHaveBeenCalledTimes(1);
         expect(saveGame.mock.calls[0][0].players.map(({ name }) => name)).toEqual(['Alice', 'Bob']);
+    });
+
+    it('has the hash of the identity of every browser, once', () => {
+        const { players } = (() => {
+            const created = createGame(['Alice', 'Bob', 'Carl']);
+
+            ({
+                game,
+                avatars: [alice, bob, carl]
+            } = created);
+
+            return created;
+        })();
+
+        players[0].client.identityHash = 'hash-1';
+        players[1].client.identityHash = 'hash-2';
+        // The same identity in two browsers is one player
+        players[2].client.identityHash = 'hash-1';
+        game.avatars.items.forEach((avatar) => avatar.printManager.stop());
+        startRound();
+        game.emit('round:end', { winner: alice });
+
+        expect(buildGameResult(game).players.map(({ name, identity }) => [name, identity])).toEqual([
+            ['Alice', 'hash-1'],
+            ['Bob', 'hash-2'],
+            ['Carl', null]
+        ]);
     });
 
     it('never has the password of the room', () => {
