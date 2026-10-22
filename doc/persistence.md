@@ -1,8 +1,8 @@
 # Persistenz – Konzept
 
 Status: Entwurf, nichts ist umgesetzt. Dieses Dokument beantwortet, **was** gespeichert wird, **wo**, **wie** Spieler
-erkannt werden und **in welchen Schritten** es gebaut wird. Die Fragen, die der Spielleiter entscheiden muss, stehen
-am Ende (Abschnitt 11).
+erkannt werden und **in welchen Schritten** es gebaut wird. Die Entscheidungen des Spielleiters stehen in Abschnitt 11,
+dort sind auch die noch offenen Fragen.
 
 ## 1. Ziel
 
@@ -19,16 +19,20 @@ um Spaß unter Freunden, nicht um Wettbewerb mit Preisen.
 
 ## 2. Entscheidungen im Überblick
 
-| Thema            | Vorschlag                                                                               |
-| ---------------- | --------------------------------------------------------------------------------------- |
-| Speicher         | SQLite, über das eingebaute `node:sqlite` (kein natives Modul, keine neue Abhängigkeit) |
-| Wann schreiben   | Einmal pro Spiel, am Ende, in einer Transaktion                                         |
-| Spieler erkennen | Anonym über das Browser-Token, nur als Hash gespeichert                                 |
-| Zähler           | Als JSON pro Spieler und Spiel, damit neue Statistiken keine Migration brauchen         |
-| Anzeige          | Nur lesende HTTP-Schnittstelle (`/api/...`) und eine Seite `#/stats`                    |
-| Fehler           | Ein Fehler der Datenbank darf nie ein Spiel stören: loggen, zählen, weiterspielen       |
-| Standard         | Zuerst **aus** (`storage.enabled`), nach der Erprobung an                               |
-| Lieferung        | In fünf Stufen, jede ein eigener PR (Abschnitt 9)                                       |
+| Thema            | Entscheidung                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| Speicher         | SQLite, über das eingebaute `node:sqlite` (kein natives Modul, keine neue Abhängigkeit)    |
+| Wann schreiben   | Einmal pro Spiel, am Ende, in einer Transaktion, **alle** Spiele                           |
+| Spieler erkennen | Anonym über einen **Identitätscode** im Browser, nur als Hash gespeichert, drehbar/setzbar |
+| Gruppen          | Ein frei wählbares **Tag** pro Spiel (zum Beispiel `daily`), Auswertung auch pro Tag       |
+| Zähler           | Als JSON pro Spieler und Spiel, damit neue Statistiken keine Migration brauchen            |
+| Anzeige          | Nur lesende HTTP-Schnittstelle (`/api/...`) und eine Seite `#/stats`, englisch             |
+| Versteckte Feats | Auf `#/stats` und in der Schnittstelle nur als **?**, der Server liefert sie unkenntlich   |
+| Sichtbarkeit     | Jeder Spieler kann sich mit einem Schalter aus den öffentlichen Listen nehmen              |
+| Fehler           | Ein Fehler der Datenbank darf nie ein Spiel stören: loggen, zählen, weiterspielen          |
+| Standard         | **An** (`storage.enabled`), mit Volume im Compose                                          |
+| Aufbewahrung     | Alles behalten, kein automatisches Löschen                                                 |
+| Lieferung        | In fünf Stufen, jede ein eigener PR (Abschnitt 9)                                          |
 
 ## 3. Wo die Daten liegen
 
@@ -58,13 +62,15 @@ Eingestellt wird der Modus WAL (`PRAGMA journal_mode = WAL`), damit Lesen und Sc
 ### 3.2 Konfiguration und Docker
 
 ```json
-{ "storage": { "enabled": false, "file": "data/curvytron.db" } }
+{ "storage": { "enabled": true, "file": "data/curvytron.db" } }
 ```
 
 - Die Umgebungsvariable `DATABASE_FILE` hat Vorrang vor der Konfiguration (wie `PORT`).
 - Das Dockerfile legt `data/` an und gibt es dem Benutzer `node`. `docker-compose.yml` bekommt einen Volume
   `curvytron-data:/curvytron/data`, **sonst sind die Daten beim Neuerzeugen des Containers weg**. Das muss in der
   Anleitung (`doc/installation.md`) fett stehen.
+- Lässt sich die Datei nicht öffnen (Rechte, voller Datenträger), läuft der Server mit `NullStorage` weiter und
+  meldet es im Log und in `/health`. Ein Spiel ist wichtiger als die Statistik.
 - Es gibt genau einen Server pro Datei. Mehrere Instanzen auf derselben Datei sind nicht vorgesehen.
 - **Sicherung**: `sqlite3 data/curvytron.db ".backup backup.db"` oder `VACUUM INTO`. Ein Kopieren der Datei im laufenden
   Betrieb ist wegen WAL unsicher, das steht in der Anleitung.
@@ -72,9 +78,8 @@ Eingestellt wird der Modus WAL (`PRAGMA journal_mode = WAL`), damit Lesen und Sc
 ### 3.3 Größe
 
 Ein Spieler in einem Spiel braucht grob 0,5 bis 1 KB (Zähler als JSON), dazu etwas für Runden und Feats. Ein Spiel mit
-5 Spielern sind etwa 5 KB. 10.000 Spiele sind 50 MB. Das ist für einen Freundeskreis kein Thema. Trotzdem gibt es
-`storage.retentionDays` (Standard: ohne Begrenzung), das alte Spiele löscht. Die Summen bleiben davon unberührt, weil
-sie in eigener Tabelle stehen (4.3).
+5 Spielern sind etwa 5 KB. 10.000 Spiele sind 50 MB. Das ist für einen Freundeskreis kein Thema, deshalb bleibt alles erhalten und es gibt
+kein automatisches Löschen.
 
 ## 4. Datenmodell
 
@@ -87,8 +92,9 @@ Versionierung der Tabellen über `PRAGMA user_version`. Die Migrationen sind ein
 -- Wer hat gespielt (anonym): ein Eintrag pro Browser
 CREATE TABLE players (
     id          INTEGER PRIMARY KEY,
-    token_hash  TEXT NOT NULL UNIQUE,   -- SHA-256 des Browser-Tokens
+    identity_hash TEXT NOT NULL UNIQUE, -- SHA-256 des Identitätscodes (Abschnitt 5)
     name        TEXT NOT NULL,          -- zuletzt benutzter Name
+    public      INTEGER NOT NULL DEFAULT 1,  -- 0: nicht in den öffentlichen Listen (5.4)
     created_at  INTEGER NOT NULL,       -- Unix-Zeit in ms
     last_seen   INTEGER NOT NULL
 );
@@ -99,6 +105,7 @@ CREATE TABLE games (
     ended_at      INTEGER NOT NULL,
     room          TEXT NOT NULL,
     mode          TEXT NOT NULL DEFAULT 'classic',
+    tag           TEXT,                 -- Gruppe, zum Beispiel 'daily' (NULL: keine), siehe 4.5
     rounds        INTEGER NOT NULL,
     max_score     INTEGER NOT NULL,
     completed     INTEGER NOT NULL,     -- 1: jemand hat gewonnen, 0: alle sind gegangen
@@ -150,6 +157,7 @@ CREATE TABLE player_totals (
 CREATE INDEX game_players_player ON game_players(player_id);
 CREATE INDEX feats_game ON feats(game_id);
 CREATE INDEX games_ended ON games(ended_at DESC);
+CREATE INDEX games_tag ON games(tag, ended_at DESC);
 ```
 
 ### 4.2 Warum die Zähler als JSON
@@ -176,43 +184,93 @@ Die Statistik wächst. Wer vor der Einführung von "Gap runs" gespielt hat, hat 
 - `games.stats_version` wird erhöht, wenn eine Zählweise sich ändert (zum Beispiel die Distanz).
 - Auswertungen für ein Feld nehmen nur Spiele, in denen es vorkommt.
 
+### 4.5 Tags
+
+Ein Tag gruppiert Spiele nach einem Anlass: `daily` für die Runden nach dem Daily, `launch` nach der
+Produktvorstellung und so weiter. Er hat zwei Orte:
+
+- **Raumeinstellungen**: Ein Textfeld "Tag (optional)" in den Raumparametern, nur der Spielleiter des Raums ändert es,
+  wie die übrigen Einstellungen. Es ist Teil von `RoomConfig` (Server und Client) und damit für alle im Raum sichtbar.
+- **Gespeichert** wird der Tag zum Zeitpunkt des Spielendes in `games.tag`.
+
+Regeln: höchstens 24 Zeichen, nach dem Bereinigen nur `a-z`, `0-9` und `-` (aus "Daily Runde" wird `daily-runde`),
+leer bedeutet "kein Tag". Das Feld schlägt die zuletzt benutzten Tags vor (`GET /api/tags`), damit nicht jeder eine
+eigene Schreibweise erfindet. Die Seite `#/stats` filtert nach Tag (Bestenliste, Spiele, Rekorde), damit "die Daily-Runde"
+eine eigene Rangliste hat.
+
+Summen pro Tag werden nicht vorgehalten, sondern bei Bedarf aus `game_players` berechnet (für den Freundeskreis schnell
+genug, dazu der Index `games_tag`). Die Gesamtsummen in `player_totals` bleiben die Abkürzung für "alle Spiele".
+
 ## 5. Spieler erkennen
 
 Das ist die schwierigste Frage, weil das Spiel **keine Konten** hat. Bekannt sind ein Name, eine Farbe und ein
-Browser-Token (`src/client/core/session.ts`), mit dem der Server wiedererkennt, wer nach einem Verbindungsabbruch
+Sitzungs-Token (`src/client/core/session.ts`), mit dem der Server wiedererkennt, wer nach einem Verbindungsabbruch
 zurückkommt.
 
-| Variante                         | Vorteil                                                | Nachteil                                                                                         |
-| -------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| **A. Nur der Name**              | Kein Aufwand                                           | Jeder kann jeden Namen nehmen, Doppelte vermischen sich, eine Namensänderung bricht die Historie |
-| **B. Browser-Token** (Vorschlag) | Anonym, kein Login, Namensänderungen sind kein Problem | Gilt nur für diesen Browser, wer den Speicher löscht, ist ein neuer Spieler                      |
-| **C. Konten**                    | Geräteübergreifend, sauber                             | Viel Aufwand, Passwörter, Datenschutz, passt nicht zum Spiel                                     |
+**Entscheidung: Identität über einen Code im Browser**, der gedreht und gesetzt werden kann. Der Name allein
+taugt nicht (jeder kann jeden Namen nehmen, Doppelte vermischen sich, eine Namensänderung bricht die Historie), Konten
+sind zu viel (Aufwand, Passwörter, Datenschutz, passt nicht zum Spiel).
 
-**Vorschlag: B.** Im Detail:
+### 5.1 Ein eigener Identitätscode statt des Sitzungs-Tokens
 
-- Gespeichert wird nur `SHA-256(token)`, nie das Token selbst. Das Token ist die Zugangsberechtigung zum laufenden
-  Spiel (Wiederverbinden). Wer die Datenbank liest, soll keine Sitzungen übernehmen können.
-- Das Token ist eine zufällige UUID mit hoher Entropie, ein einfacher SHA-256 reicht (kein Passwort-Hash nötig).
+Das Sitzungs-Token reist heute in der Adresse der Websocket (`?token=...&tab=...`). Dort landet es in den Zugriffsprotokollen
+von Reverse-Proxys (nginx und andere). Für das Wiederverbinden ist das harmlos, für eine **Identität mit Historie** nicht:
+Wer ein Protokoll liest, könnte als dieser Spieler auftreten.
+
+Darum bekommt die Identität einen **eigenen Code**, getrennt vom Sitzungs-Token:
+
+|                                 | Sitzungs-Token (besteht)                  | Identitätscode (neu)                                                                  |
+| ------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| Wofür                           | Wiederverbinden zu einem laufenden Spiel  | Wer ich bin, für Statistik und Bestenliste                                            |
+| Wo im Browser                   | `localStorage`, `curvytron.token`         | `localStorage`, `curvytron.identity`                                                  |
+| Wie übertragen                  | In der Adresse der Websocket (wie bisher) | **Nie in der Adresse**: als Nachricht nach dem Verbinden und als Header bei `/api/me` |
+| Auf dem Server                  | Im Speicher, `SocketClient.token`         | Nur als `SHA-256` in `players.identity_hash`                                          |
+| Zwei Browser mit demselben Wert | Würde Sitzungen verwechseln               | Unkritisch: zwei Browser, zwei Verbindungen, ein Spieler                              |
+
+Der Code ist eine zufällige UUID mit hoher Entropie, ein einfacher SHA-256 reicht (kein Passwort-Hash nötig).
+
+### 5.2 Drehen und Setzen
+
+Im Profil gibt es einen Abschnitt **"Your identity"**:
+
+- **Show code** / **Copy**: der Code, versteckt, bis man ihn anzeigt (er ist ein Geheimnis wie ein Passwort).
+- **Use another code**: Code einfügen, zum Beispiel aus einem anderen Browser, und ab dann dieser Spieler sein.
+  Der Server kennt den Hash und ordnet alles dieser Identität zu. Ist der Hash unbekannt, ist es einfach eine neue
+  Identität mit diesem Code.
+- **New code (keep my history)**: **Drehen**. Der Browser schickt den alten und den neuen Code, der Server beweist
+  den alten über den Hash und ersetzt ihn durch den Hash des neuen. Der alte Code ist danach wertlos. Das ist die
+  Antwort, falls ein Code irgendwo gelandet ist, wo er nicht hingehört.
+- **Start fresh**: nur den Code im Browser löschen und einen neuen anlegen, **ohne** Verbindung zum alten. Die alten
+  Daten bleiben unter der alten Identität.
+
+Auf dem Server sind das zwei Aufrufe, `POST /api/me/rotate` und die normale Anmeldung mit einem gesetzten Code
+(Abschnitt 7.1). Gedreht wird **nicht** mitten im Spiel: die Schaltfläche steht nur im Profil, das während eines
+Spiels nicht erreichbar ist.
+
+### 5.3 Wer wird gezählt
+
 - Pro Browser gibt es einen Eintrag in `players`. Der Name wird bei jedem Spiel aktualisiert. In `game_players` steht
   der **Name im Spiel**, damit alte Spiele so aussehen, wie sie waren.
-- **Mehrere Spieler an einem Gerät** (lokale Spieler im selben Raum) teilen sich ein Token. Nur der erste lokale
-  Spieler wird dem Browser zugeordnet, die weiteren zählen als **Gäste** (`player_id = NULL`). Sie stehen im Verlauf,
+- **Mehrere Spieler an einem Gerät** (lokale Spieler im selben Raum) teilen sich einen Code. Nur der erste lokale
+  Spieler wird der Identität zugeordnet, die weiteren zählen als **Gäste** (`player_id = NULL`). Sie stehen im Verlauf,
   aber nicht in der Bestenliste.
-- **Verlorene Identität**: Löscht jemand den Browser-Speicher, ist er ein neuer Spieler. Eine spätere Erweiterung ist
-  ein "Wiederherstellungscode" im Profil (das Token zum Kopieren und Einfügen), mit dem man auf einem neuen Gerät
-  weitermachen kann (Stufe 4).
+- **Verlorene Identität**: Löscht jemand den Browser-Speicher, ist er ein neuer Spieler, solange er den Code nicht
+  gesichert hat. Der Abschnitt "Your identity" weist darauf hin ("Copy this code and keep it, or you lose your history").
 
-### 5.1 Datenschutz
+### 5.4 Datenschutz und Sichtbarkeit
 
-Name und Token-Hash gelten schon in einem Freundeskreis als personenbezogene Daten. Deshalb:
+Name und Identitäts-Hash gelten schon in einem Freundeskreis als personenbezogene Daten. Deshalb:
 
-- Funktion "Meine Daten löschen" (Stufe 4): löscht den `players`-Eintrag; die Spiele bleiben erhalten, der Spieler darin
-  wird zum Gast (`ON DELETE SET NULL`), der Name im Spiel bleibt aber stehen. Wer den Namen auch entfernt haben will,
-  kann ihn durch "Anonym" ersetzen lassen.
+- **Schalter "Show me in public lists"** im Profil (Standard: an). Aus bedeutet: Der Name erscheint in der Bestenliste,
+  den Rekorden und der Spieleliste als **"Anonymous"**, und die Bestenliste führt den Spieler nicht mehr. Die Spiele
+  selbst bleiben gespeichert (sonst fehlen den anderen Ergebnisse), die Zuordnung läuft im Server über `players.public`
+  und gilt **rückwirkend**: Wer den Schalter später ausschaltet, verschwindet auch aus alten Spielen. Gäste
+  (weitere lokale Spieler) können sich nicht herausnehmen.
+- **"Delete my data"** (Stufe 4): löscht den `players`-Eintrag; die Spiele bleiben, der Spieler darin wird zum Gast
+  (`ON DELETE SET NULL`) und sein Name im Spiel wird durch "Anonymous" ersetzt.
 - Die Seite `#/stats` sagt klar, **was** gespeichert wird und **für wen** es sichtbar ist (alle, die den Server
-  erreichen).
-- Standardmäßig ausgeschaltet (`storage.enabled`), wer den Server betreibt, entscheidet bewusst.
-- Keine IP-Adressen, keine Browser-Kennungen außer dem Token-Hash.
+  erreichen), und verlinkt auf den Schalter.
+- Keine IP-Adressen, keine Browser-Kennungen außer dem Identitäts-Hash.
 
 ## 6. Aufbau im Code
 
@@ -220,7 +278,7 @@ Name und Token-Hash gelten schon in einem Freundeskreis als personenbezogene Dat
 src/server/storage/
  |- Storage.ts          # Schnittstelle: saveGame, leaderboard, recentGames, player, deletePlayer, close
  |- SqliteStorage.ts    # node:sqlite, Transaktion pro Spiel
- |- NullStorage.ts      # Persistenz aus: macht nichts (Standard)
+ |- NullStorage.ts      # Persistenz aus oder nicht erreichbar: macht nichts
  |- schema.ts           # Migrationen
  |- result.ts           # GameStats + Avatare + Raum => GameResult (rein, ohne Datenbank)
 src/shared/model/GameResult.ts   # das serialisierbare Ergebnis eines Spiels, auch für die API
@@ -229,14 +287,17 @@ src/shared/model/GameResult.ts   # das serialisierbare Ergebnis eines Spiels, au
 - **`GameResult`** ist ein reines Datenobjekt: Spiel (Zeiten, Raum, Runden, Maximalpunkte, Konfiguration), Spieler
   (Name, Farbe, Rang, Punkte, Zähler, Token-Hash oder nichts) und Feats. Es wird aus `GameStats.serialize()` und den
   Avataren gebaut. `GameStats.serialize()` liefert das schon als reines Datenobjekt (der Todo-Punkt "serializable" ist damit der Sache nach erledigt).
+- **Tag**: `RoomConfig` bekommt das Feld `tag` (Server und Client, validiert wie die übrigen Felder), `result.ts` nimmt
+  es beim Spielende aus der Konfiguration.
 - **Einhängen**: `Server` erzeugt den Speicher (je nach Konfiguration) und gibt ihn dem `RoomRepository`. Wenn ein Spiel
   entsteht (`Room.createGame`), hört der Speicher auf dessen `end`-Ereignis und ruft `saveGame(result)`.
-- **Token**: Der `SocketClient` kennt das Token schon. Der Spieler-Datensatz bekommt den Hash (nicht das Token) in die
-  Ergebnisdaten, `result.ts` bleibt damit frei von Sitzungslogik.
+- **Identität**: Der Client schickt den Identitätscode nach dem Verbinden als Nachricht (nicht in der Adresse, 5.1), der
+  Server hängt den **Hash** an den `SocketClient`. Der Spieler-Datensatz bekommt diesen Hash in die Ergebnisdaten,
+  `result.ts` bleibt damit frei von Sitzungslogik und kennt nie den Code selbst.
 - **Fehler**: `saveGame` fängt alles. Bei einem Fehler wird geloggt und `curvytron_storage_errors_total` erhöht, das
   Spiel läuft weiter. Es gibt **keine** Wiederholung und keine Warteschlange: Ein verlorenes Spiel in der Statistik ist
   nicht schlimm, ein hängender Server schon.
-- **Wann gespeichert wird**: nur bei mindestens 2 Spielern und mindestens einer beendeten Runde. Spiele, die ohne
+- **Wann gespeichert wird**: **alle** Spiele mit mindestens einer beendeten Runde (auch zu zweit). Spiele, die ohne
   Sieger enden (alle gegangen), bekommen `completed = 0` und zählen nicht für Siege, aber für Runden und Zähler. Ein
   Spiel, das beim Absturz des Servers läuft, geht verloren (wir schreiben nicht pro Runde, das hält den Code klein).
 
@@ -245,7 +306,7 @@ src/shared/model/GameResult.ts   # das serialisierbare Ergebnis eines Spiels, au
 ### 7.1 Schnittstelle
 
 Nur lesend, über HTTP und nicht über die Websocket, weil das Ergebnis ohne Verbindung zum Spiel abrufbar und
-zwischenspeicherbar sein soll:
+zwischenspeicherbar sein soll. `games`, `leaderboard` und `records` nehmen `tag=<tag>` als Filter:
 
 | Pfad                                  | Inhalt                                                                              |
 | ------------------------------------- | ----------------------------------------------------------------------------------- |
@@ -253,11 +314,14 @@ zwischenspeicherbar sein soll:
 | `GET /api/games/:id`                  | Ein Spiel mit allen Zählern, Runden und Feats (gleiches Format wie `GameStatsData`) |
 | `GET /api/leaderboard?by=wins`        | Bestenliste, nach `wins`, `winRate`, `roundsWon`, `kills`                           |
 | `GET /api/records`                    | Rekorde                                                                             |
-| `GET /api/me`                         | Eigene Summen und Feats; der Browser schickt sein Token im Header                   |
+| `GET /api/tags`                       | Verwendete Tags mit Anzahl der Spiele                                               |
+| `GET /api/me`                         | Eigene Summen und **alle eigenen Feats**; der Browser schickt den Code im Header    |
+| `POST /api/me`                        | Einstellungen: `public` (Schalter)                                                  |
+| `POST /api/me/rotate`                 | Code drehen (alter Code im Header, neuer im Inhalt)                                 |
 | `DELETE /api/me`                      | Eigene Daten löschen (Stufe 4)                                                      |
 
 Es gibt Begrenzungen: höchstens 100 Ergebnisse pro Aufruf, eine Anfragebegrenzung pro Adresse, und der Zugriff auf
-`/api/me` braucht das Token. Alle Abfragen laufen als vorbereitete Anweisungen (kein SQL aus Eingaben).
+`/api/me` braucht den Identitätscode (nur im Header, nie in der Adresse). Alle Abfragen laufen als vorbereitete Anweisungen (kein SQL aus Eingaben).
 
 ### 7.2 Die Seite `#/stats`
 
@@ -266,10 +330,32 @@ Es gibt Begrenzungen: höchstens 100 Ergebnisse pro Aufruf, eine Anfragebegrenzu
 - **Letzte Spiele**: die Liste, aufklappbar mit derselben Tabelle wie am Spielende. **`GameStats.vue` kann
   wiederverwendet werden**, weil das Format dasselbe ist.
 - **Rekorde**: längste Serie, meiste Kills in einem Spiel, längstes Leben, meiste Gap runs, meiste Feats.
-- **Meine Statistik**: Summen und eine Trophäenwand der **bereits erhaltenen Feats**. Nicht erhaltene werden nicht
-  gezeigt, auch keine Platzhalter und keine Anzahl, damit die versteckten Feats versteckt bleiben.
+- **Meine Statistik**: Summen und die Feats, die ich erhalten habe (siehe 7.4).
+- **Filter**: ein Feld "Tag" oberhalb von allem; "all games" ist der Standard.
 
-### 7.3 Fairness der Bestenliste
+### 7.3 Versteckte Feats
+
+Die Feats sollen in den Listen **nicht** verraten, was sie sind. Das gilt für die Seite **und** für die Daten:
+
+- Auf `#/stats` erscheint ein erhaltenes Feat nur als **"?"**: mit der Runde und dem Spieler, aber ohne Namen und
+  ohne Beschreibung. So sieht man, **dass** etwas passiert ist, aber nicht, was.
+- Der Server liefert **keine Feat-Kennung** an die Listen und Spiele der Schnittstelle (`/api/games`,
+  `/api/leaderboard`, `/api/records`, `/api/games/:id`). Er sendet `{ "round": 3, "player": 2, "hidden": true }`.
+  Ein Blick in die Netzwerkanzeige des Browsers verrät also nichts. Die Kennungen (`cleanSweep` und so weiter) stehen
+  nur in der Datenbank.
+- In den **Rekorden** gibt es keinen Rekord, der ein Feat nennt (zum Beispiel "meiste Clean sweeps"), sondern nur
+  "meiste Feats" als Zahl.
+- Die Feats **im Spiel** (am Rundenende und Spielende) ändern sich nicht: Dort sehen die Mitspielenden Namen und
+  Beschreibung, das ist der Moment, in dem man sie entdecken soll.
+
+### 7.4 Die eigenen Feats (offen)
+
+Soll ich mir meine **eigenen** erhaltenen Feats später mit Namen ansehen können (`GET /api/me`)? Dafür spricht: Man
+hat sie im Spiel schon gesehen, und es wäre schade, sie nur noch als "?" zu haben. Dagegen spricht: Wer ein Feat nie
+bemerkt hat, würde es hier erfahren. Mein Vorschlag: In `GET /api/me` stehen die eigenen Feats **mit** Namen, und alle
+anderen sehen "?". Das ist eine Entscheidung (Abschnitt 11, Frage 8).
+
+### 7.5 Fairness der Bestenliste
 
 Siege sind je nach Spielerzahl unterschiedlich schwer (gegen 1 Gegner oder gegen 7). Für den Anfang reichen einfache
 Zahlen. Später kann ein **Rating** dazukommen (Elo oder ein Mehrspieler-Verfahren wie TrueSkill). Das ist eine eigene
@@ -296,28 +382,34 @@ Stufe, weil die Wahl des Verfahrens Diskussion braucht.
 
 ### 8.3 Risiken
 
-| Risiko                                                    | Gegenmittel                                                             |
-| --------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `node:sqlite` ändert sich                                 | Eine Datei dahinter austauschbar, Node-Version begrenzt, CI-Test        |
-| Datenverlust beim Neuerzeugen des Containers              | Volume im Compose, deutlich dokumentiert, Sicherungsanleitung           |
-| Datenschutz                                               | Aus als Standard, nur Hash, Löschfunktion, Erklärung auf der Seite      |
-| Der Name allein ist kein Beweis (jeder kann jeden nehmen) | Anzeige zeigt Name im Spiel; die Zuordnung läuft über das Token         |
-| Statistik ändert ihre Bedeutung                           | `stats_version`, "nicht erfasst" ≠ 0                                    |
-| Migration geht schief                                     | Jede Migration in einer Transaktion, Sicherung vor dem Update empfehlen |
-| Die Bestenliste lädt langsam                              | Summen in eigener Tabelle, Zwischenspeicher 30 s, Indizes               |
+| Risiko                                                    | Gegenmittel                                                                            |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `node:sqlite` ändert sich                                 | Eine Datei dahinter austauschbar, Node-Version begrenzt, CI-Test                       |
+| Datenverlust beim Neuerzeugen des Containers              | Volume im Compose, deutlich dokumentiert, Sicherungsanleitung                          |
+| Datenschutz                                               | Nur Hash, Schalter für die öffentlichen Listen, Löschfunktion, Erklärung auf der Seite |
+| Identitätscode landet in einem Proxy-Protokoll            | Eigener Code, nie in der Adresse, nur als Nachricht oder Header; drehbar               |
+| Code geht verloren (Browser-Speicher gelöscht)            | Hinweis im Profil: Code sichern; "Use another code" stellt ihn wieder her              |
+| Tags werden unterschiedlich geschrieben                   | Bereinigung (Kleinbuchstaben, `-`), Vorschläge aus `/api/tags`                         |
+| Der Name allein ist kein Beweis (jeder kann jeden nehmen) | Anzeige zeigt Name im Spiel; die Zuordnung läuft über das Token                        |
+| Statistik ändert ihre Bedeutung                           | `stats_version`, "nicht erfasst" ≠ 0                                                   |
+| Migration geht schief                                     | Jede Migration in einer Transaktion, Sicherung vor dem Update empfehlen                |
+| Die Bestenliste lädt langsam                              | Summen in eigener Tabelle, Zwischenspeicher 30 s, Indizes                              |
 
 ## 9. Reihenfolge
 
 Jede Stufe ist ein eigener PR und für sich nützlich:
 
-1. **Fundament**: Konfiguration, Schnittstelle `Storage`, `NullStorage`, `SqliteStorage` mit `games`, `game_players`,
-   `rounds`, `feats`, Migrationen, `result.ts`, Speichern am Spielende, Metriken, Dockerfile und Volume, Anleitung.
-   **Noch ohne Spieler-Identität und ohne Anzeige**, nur Speichern (Spieler sind Gäste). Damit sammeln wir schon Daten.
-2. **Identität und Summen**: `players`, Token-Hash, `player_totals`, `storage:rebuild`.
-3. **Anzeige**: die HTTP-Schnittstelle (ohne `/me`) und die Seite `#/stats` mit Bestenliste, Spielen und Rekorden.
-4. **Persönliches**: `/api/me`, Trophäenwand, "Meine Daten löschen", Wiederherstellungscode.
-5. **Später**: Rating, Werte pro Runde (das Todo "Values per round"), Grafana-Panels der Spieldaten, Aufbewahrung nach
-   Tagen.
+1. **Fundament**: Konfiguration (an), Schnittstelle `Storage`, `NullStorage`, `SqliteStorage` mit `games`, `game_players`,
+   `rounds`, `feats`, Migrationen, `result.ts`, Speichern am Spielende, **Tag in den Raumeinstellungen**, Metriken,
+   Dockerfile und Volume, Anleitung. **Noch ohne Spieler-Identität und ohne Anzeige**, nur Speichern (Spieler sind
+   Gäste). Damit sammeln wir schon Daten, und die Tags sind von Anfang an dabei.
+2. **Identität und Summen**: Identitätscode im Browser, Nachricht nach dem Verbinden, `players`, `player_totals`,
+   `storage:rebuild`.
+3. **Anzeige**: die HTTP-Schnittstelle (ohne `/me`) und die Seite `#/stats` mit Bestenliste, Spielen und Rekorden,
+   Tag-Filter und **versteckten Feats als "?"**.
+4. **Persönliches**: `/api/me`, Abschnitt "Your identity" (anzeigen, setzen, drehen, neu anfangen), Schalter "Show me
+   in public lists", "Delete my data", eigene Feats.
+5. **Später**: Rating, Werte pro Runde (das Todo "Values per round"), Grafana-Panels der Spieldaten.
 
 ## 10. Was dieses Konzept nicht löst
 
@@ -325,13 +417,24 @@ Jede Stufe ist ein eigener PR und für sich nützlich:
 - Verlauf über mehrere Server oder Geräte hinweg (kein Konto).
 - Manipulationssicherheit: Wer das Token eines anderen kennt, spielt als er. Das ist beim Wiederverbinden schon so.
 
-## 11. Offene Entscheidungen
+## 11. Entscheidungen
 
-1. **Identität**: Browser-Token (B, Vorschlag) oder lieber nur der Name (A)?
-2. **Standard**: Persistenz zunächst aus (Vorschlag) oder gleich an?
-3. **Sichtbarkeit**: Dürfen alle auf dem Server die Liste sehen (Vorschlag), oder soll es einen Schalter geben, mit dem
-   man sich aus der öffentlichen Liste herausnimmt?
-4. **Welche Spiele**: auch 2-Spieler-Spiele und Spiele, die ohne Sieger enden? (Vorschlag: ja, mit `completed`-Flag.)
-5. **Aufbewahrung**: Alles behalten (Vorschlag) oder nach X Tagen löschen?
-6. **`node:sqlite`** (Vorschlag) oder `better-sqlite3`?
-7. **Sprache der Seite**: Englisch, wie der Rest der Oberfläche?
+| Frage             | Entscheidung                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Identität         | Browser-Code, mit Möglichkeit zum Drehen und Setzen (für einen anderen Browser); als **eigener** Code, nicht das Sitzungs-Token (5.1) |
+| Standard          | Direkt an                                                                                                                             |
+| Sichtbarkeit      | Mit Schalter, der Name wird zu "Anonymous" (5.4)                                                                                      |
+| Welche Spiele     | Alle, auch zu zweit und ohne Sieger; dazu ein **Tag** zum Gruppieren (4.5)                                                            |
+| Aufbewahrung      | Alles behalten                                                                                                                        |
+| Datenbank         | `node:sqlite`                                                                                                                         |
+| Sprache der Seite | Englisch                                                                                                                              |
+| Versteckte Feats  | Auf `#/stats` und in der Schnittstelle nur als "?" (7.3)                                                                              |
+
+### Noch offen
+
+8. **Eigene Feats mit Namen?** In `GET /api/me` mit Namen (Vorschlag) oder auch für mich nur als "?" (7.4)?
+9. **"Anonymous"**: Ein Spieler, der sich aus den Listen nimmt, steht überall als "Anonymous" (Vorschlag). Alternative:
+   Er erscheint mit seinem Namen im Verlauf der Spiele, aber nicht in Bestenliste und Rekorden. Welche?
+10. **Tag nachträglich ändern**: Soll man den Tag eines abgeschlossenen Spiels später ändern können (zum Beispiel, wenn
+    man ihn vergessen hat)? Mein Vorschlag: nein in Stufe 1, vielleicht später für den Spielleiter eines Raums.
+11. **Wer darf den Tag setzen**: nur der Spielleiter des Raums (Vorschlag), oder jeder Spieler?
