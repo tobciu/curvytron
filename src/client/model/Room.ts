@@ -69,7 +69,10 @@ export class Room extends BaseRoom {
      */
     override closeGame() {
         for (let i = this.players.items.length - 1; i >= 0; i--) {
-            if (!this.players.items[i].avatar?.present) {
+            const avatar = this.players.items[i].avatar;
+
+            // A player that came in the middle of the game stays in the room, the others are gone
+            if (!avatar?.present && !avatar?.late) {
                 this.removePlayer(this.players.items[i]);
             }
         }

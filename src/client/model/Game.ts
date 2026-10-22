@@ -4,6 +4,7 @@ import { BaseGame } from '../../shared/model/BaseGame.ts';
 import { FPSLogger } from '../service/FPSLogger.ts';
 import { BonusManager } from '../manager/BonusManager.ts';
 import type { Avatar } from './Avatar.ts';
+import type { Player } from './Player.ts';
 import type { Room } from './Room.ts';
 import type { GameStatsData } from '../../shared/model/GameStats.ts';
 import type { Collection } from '../../shared/Collection.ts';
@@ -49,6 +50,38 @@ export class Game extends BaseGame {
 
         for (let i = this.avatars.items.length - 1; i >= 0; i--) {
             this.avatars.items[i].on('die', this.onDie);
+        }
+    }
+
+    /**
+     * A player came in the middle of the game: the avatar takes part from the next round on
+     */
+    addAvatar(player: Player): Avatar | null {
+        const avatar = player.getAvatar();
+
+        if (!this.avatars.add(avatar)) {
+            return null;
+        }
+
+        avatar.late = true;
+        avatar.sitOut();
+        avatar.on('die', this.onDie);
+
+        if (this.render) {
+            this.onResize();
+        }
+
+        return avatar;
+    }
+
+    /**
+     * Give an avatar to the players that came after the start of the game
+     */
+    syncAvatars() {
+        for (const player of this.room.players.items.slice()) {
+            if (!this.avatars.getById(player.id)) {
+                this.addAvatar(player);
+            }
         }
     }
 

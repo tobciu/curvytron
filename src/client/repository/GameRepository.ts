@@ -3,6 +3,7 @@ import { MapBonus } from '../model/bonus/MapBonus.ts';
 import { StackedBonus } from '../model/bonus/StackedBonus.ts';
 import { Compressor } from '../../shared/service/Compressor.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
+import type { Player } from '../model/Player.ts';
 import type { RoomRepository } from './RoomRepository.ts';
 import type { SoundManager } from '../service/SoundManager.ts';
 import type { ServerEvent } from '../../shared/protocol.ts';
@@ -46,6 +47,8 @@ export class GameRepository extends EventEmitter {
         this.onEnd = this.onEnd.bind(this);
         this.onStats = this.onStats.bind(this);
         this.onLeave = this.onLeave.bind(this);
+        this.onJoin = this.onJoin.bind(this);
+        this.onPlayerJoin = this.onPlayerJoin.bind(this);
         this.onSpectate = this.onSpectate.bind(this);
     }
 
@@ -57,6 +60,9 @@ export class GameRepository extends EventEmitter {
             this.game = this.parent.room.game;
             this.attachEvents();
             this.attachIdleEvents();
+            this.parent.on('player:join', this.onPlayerJoin);
+            // The players that came after the game was created
+            this.game?.syncAvatars();
         }
     }
 
@@ -66,6 +72,7 @@ export class GameRepository extends EventEmitter {
     stop() {
         this.detachEvents();
         this.detachIdleEvents();
+        this.parent.off('player:join', this.onPlayerJoin);
         this.game = null;
     }
 
@@ -90,6 +97,7 @@ export class GameRepository extends EventEmitter {
         this.client.on('end', this.onEnd);
         this.client.on('game:stats', this.onStats);
         this.client.on('game:leave', this.onLeave);
+        this.client.on('game:join', this.onJoin);
         this.client.on('spectate', this.onSpectate);
     }
 
@@ -114,6 +122,7 @@ export class GameRepository extends EventEmitter {
         this.client.off('end', this.onEnd);
         this.client.off('game:stats', this.onStats);
         this.client.off('game:leave', this.onLeave);
+        this.client.off('game:join', this.onJoin);
         this.client.off('spectate', this.onSpectate);
     }
 
@@ -310,13 +319,42 @@ export class GameRepository extends EventEmitter {
     }
 
     /**
-     * On leave
+     * On leave: the avatar sits out, or its player is gone
      */
     onLeave(e: ServerEvent<'game:leave'>) {
         const avatar = this.game.avatars.getById(e.detail);
 
         if (avatar) {
-            this.game.removeAvatar(avatar);
+            if (avatar.alive) {
+                this.game.removeAvatar(avatar);
+            } else {
+                avatar.sitOut();
+            }
+
+            this.emit('game:leave', { avatar });
+        }
+    }
+
+    /**
+     * On join: the avatar takes part again, from the next round on
+     */
+    onJoin(e: ServerEvent<'game:join'>) {
+        const avatar = this.game.avatars.getById(e.detail);
+
+        if (avatar) {
+            avatar.rejoin();
+            this.emit('game:join', { avatar });
+        }
+    }
+
+    /**
+     * A player came in the middle of the game
+     */
+    onPlayerJoin(e: { detail: { player: Player } }) {
+        const avatar = this.game?.addAvatar(e.detail.player);
+
+        if (avatar) {
+            this.emit('game:player', { avatar });
         }
     }
 
@@ -328,9 +366,22 @@ export class GameRepository extends EventEmitter {
 
         this.game.maxScore = data.maxScore;
 
+        // The size of the map depends on who takes part
+        if (data.size !== this.game.size) {
+            this.game.size = data.size;
+
+            if (this.game.render) {
+                this.game.onResize();
+            }
+        }
+
         for (let i = this.game.avatars.items.length - 1; i >= 0; i--) {
             this.game.avatars.items[i].local = true;
             this.game.avatars.items[i].ready = true;
+        }
+
+        for (const id of data.away) {
+            this.game.avatars.getById(id)?.sitOut();
         }
 
         if (data.inRound) {

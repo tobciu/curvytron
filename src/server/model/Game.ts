@@ -11,6 +11,7 @@ import { GameStats } from '../service/GameStats.ts';
 import { metrics } from '../service/Metrics.ts';
 import type { Body } from '../core/Body.ts';
 import type { Room } from './Room.ts';
+import type { Player } from './Player.ts';
 
 /**
  * Game
@@ -28,6 +29,8 @@ export class Game extends BaseGame {
     roundWinner: Avatar | null;
     gameWinner: Avatar | null;
     deathInFrame: boolean;
+    /** The players that did not load the game in time are not waited for any more */
+    loadingOver: boolean = false;
 
     constructor(room: Room) {
         super(room);
@@ -93,7 +96,54 @@ export class Game extends BaseGame {
      * Get still loading avatars
      */
     override getLoadingAvatars(): Collection<Avatar> {
-        return super.getLoadingAvatars() as Collection<Avatar>;
+        if (this.loadingOver) {
+            return new Collection<Avatar>([], 'id');
+        }
+
+        // An absent player is not waited for
+        return (super.getLoadingAvatars() as Collection<Avatar>).filter(function () {
+            return !this.player.client.away;
+        });
+    }
+
+    /**
+     * Who takes part in the next round? The players that are in the room and connected (and loaded, at the very start).
+     * The others sit out, with their score: they come back at the start of a round, never in the middle of it.
+     */
+    syncPresence(requireReady: boolean = false) {
+        for (const avatar of this.avatars.items.slice()) {
+            const player = avatar.player;
+            const present = this.room.players.exists(player) && !player.client.away && (!requireReady || avatar.ready);
+
+            if (present === avatar.present) {
+                continue;
+            }
+
+            if (present) {
+                avatar.present = true;
+                this.emit('player:join', { player });
+            } else {
+                avatar.destroy();
+                this.emit('player:leave', { player });
+            }
+        }
+    }
+
+    /**
+     * A player comes in the middle of the game: the avatar takes part from the next round on
+     */
+    addPlayer(player: Player) {
+        const avatar = player.getAvatar();
+
+        if (!this.avatars.add(avatar)) {
+            return;
+        }
+
+        avatar.clear();
+        avatar.destroy();
+        avatar.on('point', this.onPoint);
+        this.stats.addAvatar(avatar);
+        this.controller.addAvatar(avatar);
     }
 
     /**
@@ -333,6 +383,8 @@ export class Game extends BaseGame {
      * On stop
      */
     override onStop() {
+        // Before the clients compute the size of the map, which depends on who takes part
+        this.syncPresence();
         this.emit('game:stop', { game: this });
 
         super.onStop();

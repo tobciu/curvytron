@@ -20,6 +20,10 @@ useEvents(client, ['connected'], () => {
 useEvents(client, ['disconnected'], () => {
     status.value = 'disconnected';
 });
+// Back after a lost connection: start again from what the server knows (the room and the game are waiting)
+useEvents(client, ['reconnected'], () => {
+    globalThis.location.reload();
+});
 
 const inGame = computed(() => route.name === 'game');
 const showProfile = computed(() => connected.value && !inGame.value);
@@ -51,8 +55,9 @@ function reload(): void {
 
     <div v-if="status === 'disconnected'" id="error" class="container text-center">
         <section class="centered">
-            <h3>Something went wrong :(</h3>
-            <p>You are not connected to the server.</p>
+            <h3>{{ client.wasConnected ? 'Connection lost' : 'Something went wrong :(' }}</h3>
+            <p v-if="client.wasConnected">Reconnecting... your place in the game is kept.</p>
+            <p v-else>You are not connected to the server.</p>
             <button class="btn btn-default" @click="reload">Try again now!</button>
         </section>
     </div>

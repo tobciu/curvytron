@@ -27,6 +27,16 @@ export class PingLogger extends EventEmitter {
     }
 
     /**
+     * Use another socket
+     */
+    setSocket(socket: PingLogger['socket']) {
+        this.socket.off('pong', this.pong);
+        this.socket = socket;
+        this.pending = null;
+        this.socket.on('pong', this.pong);
+    }
+
+    /**
      * Start ping
      */
     start() {

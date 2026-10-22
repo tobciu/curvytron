@@ -1,4 +1,5 @@
 import { Message } from '../model/message/Message.ts';
+import { MessageConnection } from '../model/message/MessageConnection.ts';
 import { MessageKick } from '../model/message/MessageKick.ts';
 import { MessagePlayer } from '../model/message/MessagePlayer.ts';
 import { MessageRoomMaster } from '../model/message/MessageRoomMaster.ts';
@@ -42,6 +43,7 @@ export class Chat extends BaseChat {
         this.onVoteNew = this.onVoteNew.bind(this);
         this.onKick = this.onKick.bind(this);
         this.onRoomMaster = this.onRoomMaster.bind(this);
+        this.onConnection = this.onConnection.bind(this);
         this.scrollDown = this.scrollDown.bind(this);
         this.onActivity = this.onActivity.bind(this);
         this.setRoom = this.setRoom.bind(this);
@@ -59,6 +61,7 @@ export class Chat extends BaseChat {
         this.repository.on('vote:new', this.onVoteNew);
         this.repository.on('room:kick', this.onKick);
         this.repository.on('room:master', this.onRoomMaster);
+        this.repository.on('player:connection', this.onConnection);
     }
 
     /**
@@ -71,6 +74,7 @@ export class Chat extends BaseChat {
         this.repository.off('vote:new', this.onVoteNew);
         this.repository.off('room:kick', this.onKick);
         this.repository.off('room:master', this.onRoomMaster);
+        this.repository.off('player:connection', this.onConnection);
     }
 
     /**
@@ -199,6 +203,13 @@ export class Chat extends BaseChat {
         if (e.detail.master) {
             this.addMessage(new MessageRoomMaster(e.detail.master));
         }
+    }
+
+    /**
+     * A player lost the connection, or is back
+     */
+    onConnection(e: { detail: { player: Player; online: boolean } }) {
+        this.addMessage(new MessageConnection(e.detail.player, e.detail.online));
     }
 
     /**

@@ -47,6 +47,7 @@ export class GameController {
         this.onRoundNew = this.onRoundNew.bind(this);
         this.onRoundEnd = this.onRoundEnd.bind(this);
         this.onPlayerLeave = this.onPlayerLeave.bind(this);
+        this.onPlayerJoin = this.onPlayerJoin.bind(this);
         this.onClear = this.onClear.bind(this);
         this.onBorderless = this.onBorderless.bind(this);
         this.onEnd = this.onEnd.bind(this);
@@ -80,6 +81,7 @@ export class GameController {
         this.game.on('end', this.onEnd);
         this.game.on('clear', this.onClear);
         this.game.on('player:leave', this.onPlayerLeave);
+        this.game.on('player:join', this.onPlayerJoin);
         this.game.on('round:new', this.onRoundNew);
         this.game.on('round:end', this.onRoundEnd);
         this.game.on('borderless', this.onBorderless);
@@ -102,6 +104,7 @@ export class GameController {
         this.game.removeListener('end', this.onEnd);
         this.game.removeListener('clear', this.onClear);
         this.game.removeListener('player:leave', this.onPlayerLeave);
+        this.game.removeListener('player:join', this.onPlayerJoin);
         this.game.removeListener('round:new', this.onRoundNew);
         this.game.removeListener('round:end', this.onRoundEnd);
         this.game.removeListener('borderless', this.onBorderless);
@@ -149,6 +152,42 @@ export class GameController {
     }
 
     /**
+     * On player join: back, or new, in the middle of the game
+     */
+    onPlayerJoin(data: { player: Player }) {
+        this.socketGroup.addEvent('game:join', data.player.id as number);
+    }
+
+    /**
+     * Follow an avatar that was added after the start of the game
+     */
+    addAvatar(avatar: Avatar) {
+        const client = avatar.player.client;
+
+        this.attachAvatar(avatar);
+
+        if (this.clients.exists(client)) {
+            // Once is enough
+            client.removeListener('player:move', this.callbacks.onMove);
+            client.on('player:move', this.callbacks.onMove);
+        }
+    }
+
+    /**
+     * Follow an avatar
+     */
+    attachAvatar(avatar: Avatar) {
+        avatar.on('die', this.onDie);
+        avatar.on('position', this.onPosition);
+        avatar.on('angle', this.onAngle);
+        avatar.on('point', this.onPoint);
+        avatar.on('score', this.onScore);
+        avatar.on('score:round', this.onRoundScore);
+        avatar.on('property', this.onProperty);
+        avatar.bonusStack.on('change', this.onBonusStack);
+    }
+
+    /**
      * Detach events
      */
     attachEvents(client: SocketClient) {
@@ -158,17 +197,8 @@ export class GameController {
             client.on('player:move', this.callbacks.onMove);
         }
 
-        for (let avatar, i = client.players.items.length - 1; i >= 0; i--) {
-            avatar = client.players.items[i].getAvatar();
-
-            avatar.on('die', this.onDie);
-            avatar.on('position', this.onPosition);
-            avatar.on('angle', this.onAngle);
-            avatar.on('point', this.onPoint);
-            avatar.on('score', this.onScore);
-            avatar.on('score:round', this.onRoundScore);
-            avatar.on('property', this.onProperty);
-            avatar.bonusStack.on('change', this.onBonusStack);
+        for (let i = client.players.items.length - 1; i >= 0; i--) {
+            this.attachAvatar(client.players.items[i].getAvatar());
         }
     }
 
@@ -190,6 +220,7 @@ export class GameController {
             if (avatar) {
                 avatar.removeListener('die', this.onDie);
                 avatar.removeListener('position', this.onPosition);
+                avatar.removeListener('angle', this.onAngle);
                 avatar.removeListener('point', this.onPoint);
                 avatar.removeListener('score', this.onScore);
                 avatar.removeListener('score:round', this.onRoundScore);
@@ -217,7 +248,9 @@ export class GameController {
                 {
                     inRound: this.game.inRound,
                     rendered: !!this.game.rendered,
-                    maxScore: this.game.maxScore
+                    maxScore: this.game.maxScore,
+                    size: this.game.size,
+                    away: this.game.avatars.items.filter((avatar) => !avatar.present).map((avatar) => avatar.id)
                 }
             ]
         ];
@@ -281,6 +314,10 @@ export class GameController {
      * On game loaded
      */
     onReady(client: SocketClient) {
+        // A client that comes back to the game: pings restart, its players are not absent any more
+        client.pingLogger.start();
+        client.setAway(false);
+
         if (this.game.started) {
             this.attachSpectator(client);
         } else {
@@ -301,6 +338,8 @@ export class GameController {
         if (this.game.isReady()) {
             clearTimeout(this.waiting ?? undefined);
             this.waiting = null;
+            // The players that are not there do not wait for the first round
+            this.game.syncPresence(true);
             this.game.newRound();
         }
     }
@@ -313,11 +352,8 @@ export class GameController {
             clearTimeout(this.waiting ?? undefined);
             this.waiting = null;
 
-            const avatars = this.game.getLoadingAvatars();
-
-            for (let i = avatars.items.length - 1; i >= 0; i--) {
-                this.detach(avatars.items[i].player.client);
-            }
+            // The ones that are still loading follow as spectators, and play from the next round on
+            this.game.loadingOver = true;
 
             this.checkReady();
         }

@@ -209,6 +209,11 @@
                     padding-right: 115px;
                 }
 
+                // Connection lost, or not in the round: the score is kept
+                &.away {
+                    opacity: 0.4;
+                }
+
                 &.local {
                     background: lighten($aside-background, 5%);
 

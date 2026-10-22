@@ -193,4 +193,122 @@ describe('SocketClient', () => {
             ]
         ]);
     });
+
+    it('tells the server who it is: the browser and the tab', () => {
+        new SocketClient();
+
+        const url = new URL(created[0].url);
+
+        expect(url.searchParams.get('token')).toMatch(/^[\w-]{8,64}$/);
+        expect(url.searchParams.get('tab')).toMatch(/^[\w-]{8,64}$/);
+
+        // Same browser, same tab: a reload is recognized
+        new SocketClient();
+
+        expect(new URL(created[1].url).searchParams.get('token')).toBe(url.searchParams.get('token'));
+        expect(new URL(created[1].url).searchParams.get('tab')).toBe(url.searchParams.get('tab'));
+    });
+
+    describe('after a lost connection', () => {
+        /** Answer the `whoami` that a socket sent when it opened */
+        const answerWhoami = (socket: FakeSocket, id: number) => {
+            socket.message([[(socket.sent[0] as unknown[][][])[0][2], id]]);
+        };
+
+        beforeEach(() => {
+            vi.useFakeTimers();
+        });
+
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it('opens a new socket by itself, and tells when it is back', () => {
+            const { client, socket } = connect();
+            const reconnected = vi.fn();
+
+            client.on('reconnected', reconnected);
+            socket.close();
+
+            expect(created).toHaveLength(1);
+
+            vi.advanceTimersByTime(SocketClient.retryDelays[0]);
+
+            expect(created).toHaveLength(2);
+
+            created[1].open();
+            answerWhoami(created[1], 42);
+
+            expect(client.connected).toBe(true);
+            expect(client.id).toBe(42);
+            expect(reconnected).toHaveBeenCalledTimes(1);
+        });
+
+        it('waits longer after every failed attempt, and starts again after a success', () => {
+            const { client, socket } = connect();
+
+            socket.close();
+
+            for (const delay of SocketClient.retryDelays.slice(0, 3)) {
+                const count = created.length;
+
+                vi.advanceTimersByTime(delay - 1);
+                expect(created).toHaveLength(count);
+
+                vi.advanceTimersByTime(1);
+                expect(created).toHaveLength(count + 1);
+
+                created.at(-1)?.close();
+            }
+
+            expect(client.retries).toBe(4);
+
+            vi.advanceTimersByTime(SocketClient.retryDelays[3]);
+            created.at(-1)?.open();
+            answerWhoami(created.at(-1) as FakeSocket, 42);
+
+            expect(client.retries).toBe(0);
+        });
+
+        it('does not call the first connection a reconnection', () => {
+            const client = new SocketClient();
+            const reconnected = vi.fn();
+
+            client.on('reconnected', reconnected);
+            created[0].close();
+            vi.advanceTimersByTime(SocketClient.retryDelays[0]);
+            created[1].open();
+            answerWhoami(created[1], 7);
+
+            expect(client.connected).toBe(true);
+            expect(reconnected).not.toHaveBeenCalled();
+        });
+
+        it('gives up on a connection whose server stopped answering', () => {
+            const { socket } = connect();
+            const close = vi.spyOn(socket, 'close');
+
+            vi.spyOn(console, 'warn').mockImplementation(() => {});
+            vi.advanceTimersByTime(SocketClient.heartbeatInterval);
+
+            // The heartbeat is a question to the server, it has some time to answer
+            expect(socket.sent.at(-1)).toEqual([['whoami', null, 1]]);
+            expect(close).not.toHaveBeenCalled();
+
+            vi.advanceTimersByTime(SocketClient.heartbeatWait);
+
+            expect(close).toHaveBeenCalled();
+        });
+
+        it('keeps a connection whose server answers', () => {
+            const { socket } = connect();
+            const close = vi.spyOn(socket, 'close');
+
+            vi.advanceTimersByTime(SocketClient.heartbeatInterval);
+            socket.message([[1, 42]]);
+            vi.advanceTimersByTime(SocketClient.heartbeatWait);
+
+            expect(close).not.toHaveBeenCalled();
+        });
+    });
 });

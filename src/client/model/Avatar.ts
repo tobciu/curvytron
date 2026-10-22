@@ -25,6 +25,8 @@ export class Avatar extends BaseAvatar {
     clearY: number;
     input: any;
     changed: boolean = false;
+    /** Came in the middle of the game and does not take part yet */
+    late: boolean = false;
 
     /**
      * Array width
@@ -198,6 +200,22 @@ export class Avatar extends BaseAvatar {
     updateWidth() {
         this.width = this.radius * 2;
         this.setScale(this.canvas.scale);
+    }
+
+    /**
+     * Sit out the next rounds (the player is away): unlike `destroy`, the avatar can come back
+     */
+    sitOut() {
+        this.present = false;
+        this.alive = false;
+    }
+
+    /**
+     * Take part again, from the next round on
+     */
+    rejoin() {
+        this.present = true;
+        this.late = false;
     }
 
     /**

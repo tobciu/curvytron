@@ -77,6 +77,15 @@ function kick(player: Player): void {
                     room master.
                 </span>
 
+                <!-- Connection -->
+                <span v-else-if="message.type === 'connection' && message.target">
+                    <span :style="{ color: message.target.color }">{{ message.target.name }}</span>
+                    <template v-if="message.online"> is back.</template>
+                    <template v-else>
+                        lost the connection. The game goes on, a return is possible until it is over.</template
+                    >
+                </span>
+
                 <!-- Mute -->
                 <span v-else-if="message.type === 'mute'">
                     You muted <span :style="{ color: message.player?.color }">{{ message.player?.name }}</span

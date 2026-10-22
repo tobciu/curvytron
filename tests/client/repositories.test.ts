@@ -500,8 +500,11 @@ describe('GameRepository', () => {
         const avatar = {
             id: 1,
             local: true,
+            alive: true,
             x: 10,
             y: 20,
+            sitOut: vi.fn(),
+            rejoin: vi.fn(),
             set: vi.fn(),
             setPositionFromServer: vi.fn(),
             setAngle: vi.fn(),
@@ -527,7 +530,12 @@ describe('GameRepository', () => {
             clearTrails: vi.fn(),
             setBorderless: vi.fn(),
             end: vi.fn(),
-            removeAvatar: vi.fn()
+            removeAvatar: vi.fn(),
+            syncAvatars: vi.fn(),
+            addAvatar: vi.fn(),
+            size: 80,
+            onResize: vi.fn(),
+            render: null
         };
 
         sounds = [];
@@ -535,7 +543,7 @@ describe('GameRepository', () => {
 
         repository = new GameRepository(
             client as any,
-            { room: { game } } as any,
+            { room: { game }, on: vi.fn(), off: vi.fn() } as any,
             { play: (name: string) => sounds.push(name) } as any
         );
         repository.start();
@@ -674,7 +682,7 @@ describe('GameRepository', () => {
     });
 
     it('enters spectate mode: running round, new round or waiting', () => {
-        client.receive('spectate', { maxScore: 10, inRound: true, rendered: true });
+        client.receive('spectate', { maxScore: 10, inRound: true, rendered: true, size: 80, away: [] });
 
         expect(game.maxScore).toBe(10);
         expect(game.newRound).toHaveBeenCalledWith(0);
@@ -683,14 +691,58 @@ describe('GameRepository', () => {
         expect(emitted).toContain('spectate');
 
         game.newRound.mockClear();
-        client.receive('spectate', { maxScore: 10, inRound: true, rendered: false });
+        client.receive('spectate', { maxScore: 10, inRound: true, rendered: false, size: 80, away: [] });
 
         expect(game.newRound).toHaveBeenCalledWith();
 
         game.start.mockClear();
-        client.receive('spectate', { maxScore: 10, inRound: false, rendered: false });
+        client.receive('spectate', { maxScore: 10, inRound: false, rendered: false, size: 80, away: [] });
 
         expect(game.start).toHaveBeenCalled();
+    });
+
+    it('takes the size of the map and the absent avatars from the spectate event', () => {
+        const avatar = game.avatars.getById(1);
+
+        game.render = {};
+        client.receive('spectate', { maxScore: 10, inRound: false, rendered: false, size: 100, away: [1, 404] });
+
+        expect(game.size).toBe(100);
+        expect(game.onResize).toHaveBeenCalled();
+        expect(avatar.sitOut).toHaveBeenCalled();
+    });
+
+    it('lets the avatars sit out and come back, only a living avatar is removed', () => {
+        const avatar = game.avatars.getById(1);
+        const events: string[] = [];
+
+        repository.on('game:leave', () => events.push('leave'));
+        repository.on('game:join', () => events.push('join'));
+
+        avatar.alive = false;
+        client.receive('game:leave', 1);
+
+        expect(avatar.sitOut).toHaveBeenCalled();
+        expect(game.removeAvatar).not.toHaveBeenCalled();
+
+        client.receive('game:join', 1);
+        client.receive('game:join', 404);
+
+        expect(avatar.rejoin).toHaveBeenCalledTimes(1);
+        expect(events).toEqual(['leave', 'join']);
+    });
+
+    it('gives an avatar to a player that comes in the middle of the game', () => {
+        const added: string[] = [];
+        const player = { id: 7 };
+
+        game.addAvatar.mockReturnValue({ id: 7 });
+        repository.on('game:player', () => added.push('player'));
+        repository.onPlayerJoin({ detail: { player } } as any);
+
+        expect(game.addAvatar).toHaveBeenCalledWith(player);
+        expect(added).toEqual(['player']);
+        expect(game.syncAvatars).toHaveBeenCalled();
     });
 
     it('stops listening when stopped', () => {

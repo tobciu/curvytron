@@ -112,7 +112,7 @@ export class KickManager extends EventEmitter {
     getTotalClients(): number {
         return this.controller.clients
             .filter(function (this: SocketClient) {
-                return this.isPlaying();
+                return this.isPlaying() && !this.away;
             })
             .count();
     }

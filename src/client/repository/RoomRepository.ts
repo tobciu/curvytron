@@ -42,6 +42,7 @@ export class RoomRepository extends EventEmitter {
         this.onKick = this.onKick.bind(this);
         this.onVote = this.onVote.bind(this);
         this.onClientActivity = this.onClientActivity.bind(this);
+        this.onPlayerConnection = this.onPlayerConnection.bind(this);
         this.forwardEvent = this.forwardEvent.bind(this);
     }
 
@@ -58,6 +59,7 @@ export class RoomRepository extends EventEmitter {
         this.client.on('player:ready', this.onPlayerReady);
         this.client.on('player:color', this.onPlayerColor);
         this.client.on('player:name', this.onPlayerName);
+        this.client.on('player:connection', this.onPlayerConnection);
         this.client.on('room:config:open', this.onConfigOpen);
         this.client.on('room:config:max-score', this.onConfigMaxScore);
         this.client.on('room:config:variable', this.onConfigVariable);
@@ -83,6 +85,7 @@ export class RoomRepository extends EventEmitter {
         this.client.off('player:ready', this.onPlayerReady);
         this.client.off('player:color', this.onPlayerColor);
         this.client.off('player:name', this.onPlayerName);
+        this.client.off('player:connection', this.onPlayerConnection);
         this.client.off('room:config:open', this.onConfigOpen);
         this.client.off('room:config:max-score', this.onConfigMaxScore);
         this.client.off('room:config:variable', this.onConfigVariable);
@@ -154,15 +157,16 @@ export class RoomRepository extends EventEmitter {
             client = clients.getById(data.players[i].client);
 
             if (client) {
-                room.addPlayer(
-                    new Player(
-                        data.players[i].id,
-                        client,
-                        data.players[i].name,
-                        data.players[i].color,
-                        data.players[i].ready
-                    )
+                const player = new Player(
+                    data.players[i].id,
+                    client,
+                    data.players[i].name,
+                    data.players[i].color,
+                    data.players[i].ready
                 );
+
+                player.online = data.players[i].online !== false;
+                room.addPlayer(player);
             } else {
                 console.error('Could not find a client:', data.players[i].client, clients);
             }
@@ -365,6 +369,8 @@ export class RoomRepository extends EventEmitter {
                 data.player.ready
             );
 
+        player.online = data.player.online !== false;
+
         if (this.room.addPlayer(player)) {
             this.emit('player:join', { player });
         }
@@ -391,6 +397,18 @@ export class RoomRepository extends EventEmitter {
         if (client) {
             client.active = e.detail.active;
             this.emit('client:activity', { client, active: client.active });
+        }
+    }
+
+    /**
+     * A player lost the connection, or is back
+     */
+    onPlayerConnection(e: ServerEvent<'player:connection'>) {
+        const player = this.room?.players.getById(e.detail.player);
+
+        if (player) {
+            player.online = e.detail.online;
+            this.emit('player:connection', { player, online: player.online });
         }
     }
 
