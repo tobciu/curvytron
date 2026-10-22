@@ -54,8 +54,15 @@ test('a player can keep out of the public lists, get a new code with their histo
 
     await alice.locator('.profile-link').click();
     await alice.locator('.identity .more summary').click();
+    // The page loads again with the new code: wait for it, or the next step meets the old page with the open panel
+    let reloaded = alice.waitForEvent('load');
+
     await alice.locator('#identity-rotate').click();
-    await expect.poll(() => identity(alice, before)).not.toBe(before);
+    await reloaded;
+
+    const rotated = await identity(alice, before);
+
+    expect(rotated).not.toBe(before);
     await alice.goto('/#/stats/me');
     await expect(alice.locator('#stats .who')).toContainText('Alice');
     await expect(alice.locator('#stats .who')).toContainText('not in the public lists');
@@ -64,8 +71,10 @@ test('a player can keep out of the public lists, get a new code with their histo
     alice.on('dialog', (dialog) => void dialog.accept());
     await alice.locator('.profile-link').click();
     await alice.locator('.identity .more summary').click();
+    reloaded = alice.waitForEvent('load');
     await alice.locator('#identity-forget').click();
-    await expect.poll(() => identity(alice, before)).not.toBe(before);
+    await reloaded;
+    expect(await identity(alice, rotated)).not.toBe(rotated);
     await alice.goto('/#/stats/me');
     await expect(alice.locator('#stats .empty')).toContainText('Nothing kept for you yet');
     await expect(await players(alice)).toContainText('Anonymous');
