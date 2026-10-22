@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AvatarBody } from '../../src/server/core/AvatarBody.ts';
 import { BonusSelfFast } from '../../src/server/model/Bonus/BonusSelfFast.ts';
+import { BonusSelfSmall } from '../../src/server/model/Bonus/BonusSelfSmall.ts';
 import { BonusSelfSlow } from '../../src/server/model/Bonus/BonusSelfSlow.ts';
 import { createGame } from '../helpers/game.js';
 
@@ -218,5 +219,162 @@ describe('feats', () => {
         endRound(carl);
 
         expect(feats('earlyExit')).toHaveLength(1);
+    });
+
+    it("gives time's up for dying right after the invincibility ran out, not later", () => {
+        startRound();
+        alice.setInvincible(true);
+        vi.advanceTimersByTime(1000);
+        alice.setInvincible(false);
+        vi.advanceTimersByTime(300);
+        crash(alice);
+
+        expect(feats('timesUp')).toEqual([{ id: 'timesUp', player: alice.id, round: 1 }]);
+
+        startRound();
+        bob.setInvincible(true);
+        bob.setInvincible(false);
+        vi.advanceTimersByTime(2000);
+        crash(bob);
+
+        expect(feats('timesUp')).toHaveLength(1);
+    });
+
+    it('gives a bonus rush for three bonuses within five seconds', () => {
+        startRound();
+
+        const catchBonus = () => {
+            game.bonusManager.add(new BonusSelfSmall(50, 50));
+            alice.setPosition(50, 50);
+            game.bonusManager.testCatch(alice);
+        };
+
+        catchBonus();
+        vi.advanceTimersByTime(2000);
+        catchBonus();
+
+        expect(ids()).not.toContain('bonusRush');
+
+        vi.advanceTimersByTime(2000);
+        catchBonus();
+
+        expect(feats('bonusRush')).toEqual([{ id: 'bonusRush', player: alice.id, round: 1 }]);
+    });
+
+    it('gives a daredevil for three close calls within three seconds', () => {
+        startRound();
+
+        const closeCall = () => game.stats.startCount(new Set(), game.stats.players.get(alice.id), 'nearMisses');
+
+        closeCall();
+        vi.advanceTimersByTime(1000);
+        closeCall();
+        vi.advanceTimersByTime(2500);
+        closeCall();
+
+        expect(ids()).not.toContain('daredevil');
+
+        vi.advanceTimersByTime(500);
+        closeCall();
+
+        expect(feats('daredevil')).toEqual([{ id: 'daredevil', player: alice.id, round: 1 }]);
+    });
+
+    it('gives a rookie mistake for crashing alone at the start, not later and not on a trail of somebody else', () => {
+        startRound();
+        crash(bob, alice);
+        crash(carl);
+
+        expect(feats('rookieMistake').map(({ player }) => player)).toEqual([carl.id]);
+
+        startRound();
+        vi.setSystemTime(Date.now() + 6000);
+        crash(alice);
+
+        expect(feats('rookieMistake')).toHaveLength(1);
+    });
+
+    it('gives a wall rider for three seconds close to a border, not when something interrupts it', () => {
+        startRound();
+
+        const ride = (x, seconds) => {
+            for (let i = 0; i <= seconds; i++) {
+                alice.setPosition(x, 20 + i);
+                vi.setSystemTime(Date.now() + 1000);
+            }
+        };
+
+        ride(1, 2);
+        alice.setPosition(40, 40);
+        vi.setSystemTime(Date.now() + 1000);
+        ride(1, 2);
+
+        expect(ids()).not.toContain('wallRider');
+
+        ride(1, 4);
+
+        expect(feats('wallRider')).toEqual([{ id: 'wallRider', player: alice.id, round: 1 }]);
+    });
+
+    it('gives no wall rider when the borders are no danger', () => {
+        startRound();
+        game.borderless = true;
+
+        for (let i = 0; i <= 5; i++) {
+            alice.setPosition(1, 20 + i);
+            vi.setSystemTime(Date.now() + 1000);
+        }
+
+        expect(ids()).not.toContain('wallRider');
+    });
+
+    it('gives a whitewash for winning the game without losing a round', () => {
+        game.maxScore = 10;
+
+        for (const winner of [alice, alice, alice]) {
+            startRound();
+
+            if (winner === alice && game.stats.rounds.length === 2) {
+                alice.setScore(10);
+            }
+
+            endRound(winner);
+        }
+
+        expect(feats('whitewash')).toEqual([{ id: 'whitewash', player: alice.id, round: 3 }]);
+    });
+
+    it('gives no whitewash after a lost round, or for a short game', () => {
+        game.maxScore = 10;
+
+        for (const winner of [alice, bob, alice, alice]) {
+            startRound();
+
+            if (game.stats.rounds.length === 3) {
+                alice.setScore(10);
+            }
+
+            endRound(winner);
+        }
+
+        expect(ids()).not.toContain('whitewash');
+
+        ({
+            game,
+            avatars: [alice, bob, carl]
+        } = createGame());
+        game.maxScore = 10;
+
+        for (const winner of [alice, alice]) {
+            startRound();
+
+            if (game.stats.rounds.length === 1) {
+                alice.setScore(10);
+            }
+
+            endRound(winner);
+        }
+
+        expect(ids()).not.toContain('whitewash');
     });
 });

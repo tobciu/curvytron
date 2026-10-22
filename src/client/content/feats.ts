@@ -39,6 +39,30 @@ export const featInfo: Record<string, FeatInfo> = {
         description:
             'Died right after catching a bonus that is a risk for the player themselves: faster (the rocket) or angular (turns of 45°).'
     },
+    timesUp: {
+        label: "Time's up",
+        description: 'Died right after the invincibility (Master bonus) ran out.'
+    },
+    bonusRush: {
+        label: 'Bonus rush',
+        description: 'Caught three bonuses within five seconds.'
+    },
+    daredevil: {
+        label: 'Daredevil',
+        description: 'Three close calls within three seconds.'
+    },
+    rookieMistake: {
+        label: 'Rookie mistake',
+        description: 'Crashed on a border or on their own trail in the first five seconds of the round.'
+    },
+    wallRider: {
+        label: 'Wall rider',
+        description: 'Rode along a border for three seconds without crashing.'
+    },
+    whitewash: {
+        label: 'Whitewash',
+        description: 'Won the game without losing a single round.'
+    },
     earlyExit: {
         label: 'Early exit',
         description: 'First one out, three rounds in a row.'

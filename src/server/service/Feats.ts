@@ -10,7 +10,13 @@ export const featIds = [
     'photoFinish',
     'pacifist',
     'badKarma',
-    'earlyExit'
+    'earlyExit',
+    'timesUp',
+    'bonusRush',
+    'daredevil',
+    'rookieMistake',
+    'wallRider',
+    'whitewash'
 ] as const;
 
 export type FeatId = (typeof featIds)[number];
@@ -29,6 +35,27 @@ const karmaBonuses = new Set(['BonusSelfFast', 'BonusSelfRandom']);
 
 /** The last players of a round that die this close to each other (ms) died at the same moment */
 const photoFinishWindow = 50;
+
+/** Dying this soon (ms) after the invincibility ended is no luck, it is bad timing */
+const timesUpWindow = 500;
+
+/** This many bonuses within this much time (ms) */
+const bonusRushCount = 3;
+const bonusRushWindow = 5000;
+
+/** This many close calls within this much time (ms) */
+const daredevilCount = 3;
+const daredevilWindow = 3000;
+
+/** Dying on your own, this soon (ms) after the start of the round */
+const rookieWindow = 5000;
+
+/** Staying this long (ms) close to a border, closer than this many radii */
+const wallRiderTime = 3000;
+const wallRiderRadii = 6;
+
+/** A game without a lost round needs at least this many rounds */
+const whitewashRounds = 3;
 
 /** First to die in this many rounds in a row */
 const earlyExitRounds = 3;
@@ -64,6 +91,13 @@ export class Feats {
     given: Set<string> = new Set();
     /** First to die, rounds in a row */
     firstDeaths: Map<number, number> = new Map();
+    /** When (ms since the start of the round) the invincibility of an avatar ended */
+    invincibleEnds: Map<number, number> = new Map();
+    /** When the avatars caught their last bonuses, and made their last close calls */
+    recentCatches: Map<number, number[]> = new Map();
+    recentNearMisses: Map<number, number[]> = new Map();
+    /** Since when (ms since the start of the round) an avatar is close to a border */
+    wallSince: Map<number, number> = new Map();
 
     start(participants: number[]) {
         this.participants = new Set(participants);
@@ -74,6 +108,10 @@ export class Feats {
         this.lastKill.clear();
         this.badCatches.clear();
         this.given.clear();
+        this.invincibleEnds.clear();
+        this.recentCatches.clear();
+        this.recentNearMisses.clear();
+        this.wallSince.clear();
     }
 
     /**
@@ -88,8 +126,17 @@ export class Feats {
             this.give('badKarma', avatar.id);
         }
 
+        const ended = this.invincibleEnds.get(avatar.id);
+
+        if (ended !== undefined && time - ended <= timesUpWindow) {
+            this.give('timesUp', avatar.id);
+        }
+
         if (killer && killer.id !== avatar.id) {
             this.kill(killer, avatar, time);
+        } else if (time <= rookieWindow) {
+            // A border or the own trail, right at the start
+            this.give('rookieMistake', avatar.id);
         }
     }
 
@@ -119,6 +166,62 @@ export class Feats {
     catchBonus(avatar: Avatar, type: string, time: number) {
         if (karmaBonuses.has(type)) {
             this.badCatches.set(avatar.id, time);
+        }
+
+        if (this.within(this.recentCatches, avatar.id, time, bonusRushWindow) >= bonusRushCount) {
+            this.give('bonusRush', avatar.id);
+        }
+    }
+
+    /** The avatar passed very close to the trail of somebody else */
+    nearMiss(id: number, time: number) {
+        if (this.within(this.recentNearMisses, id, time, daredevilWindow) >= daredevilCount) {
+            this.give('daredevil', id);
+        }
+    }
+
+    /** The invincibility of an avatar is over (the Master bonus ran out) */
+    invincibleEnd(avatar: Avatar, time: number) {
+        this.invincibleEnds.set(avatar.id, time);
+    }
+
+    /**
+     * Where the avatar is: close to a border for long enough is a feat. Not when the borders are no danger.
+     */
+    position(avatar: Avatar, size: number, safe: boolean, time: number) {
+        const distance = Math.min(avatar.x, avatar.y, size - avatar.x, size - avatar.y);
+
+        if (safe || distance > avatar.radius * wallRiderRadii) {
+            this.wallSince.delete(avatar.id);
+
+            return;
+        }
+
+        const since = this.wallSince.get(avatar.id) ?? time;
+
+        this.wallSince.set(avatar.id, since);
+
+        if (time - since >= wallRiderTime) {
+            this.give('wallRider', avatar.id);
+        }
+    }
+
+    /** Adds the time to the times of the avatar and returns how many are not older than the window */
+    private within(times: Map<number, number[]>, id: number, time: number, window: number): number {
+        const recent = (times.get(id) ?? []).filter((previous) => time - previous <= window);
+
+        recent.push(time);
+        times.set(id, recent);
+
+        return recent.length;
+    }
+
+    /**
+     * The game is over: the winner won every round, and there were enough of them to be worth saying
+     */
+    gameOver(winner: number, roundsWon: number) {
+        if (this.rounds >= whitewashRounds && roundsWon === this.rounds) {
+            this.give('whitewash', winner, undefined, this.rounds);
         }
     }
 
@@ -172,7 +275,7 @@ export class Feats {
     }
 
     /** Give the feat to a player, once per round (and once per other player) */
-    private give(id: FeatId, player: number, other?: number) {
+    private give(id: FeatId, player: number, other?: number, round: number = this.rounds + 1) {
         const key = `${id}:${player}:${other ?? ''}`;
 
         if (this.given.has(key)) {
@@ -180,6 +283,6 @@ export class Feats {
         }
 
         this.given.add(key);
-        this.feats.push({ id, player, round: this.rounds + 1, ...(other === undefined ? {} : { other }) });
+        this.feats.push({ id, player, round, ...(other === undefined ? {} : { other }) });
     }
 }

@@ -58,6 +58,8 @@ export class GameStats {
     openGaps: Map<number, number> = new Map();
     /** Where the last body of the gap of an avatar is */
     lastGapPoint: Map<number, [number, number]> = new Map();
+    /** Avatars that are invincible right now */
+    invincible: Set<number> = new Set();
     /** Special feats of the game, they are hidden until they happen */
     feats: Feats = new Feats();
     /** Rounds in a row that an avatar has won right now */
@@ -83,6 +85,7 @@ export class GameStats {
         this.onPosition = this.onPosition.bind(this);
         this.onBonusCatch = this.onBonusCatch.bind(this);
         this.onClear = this.onClear.bind(this);
+        this.onProperty = this.onProperty.bind(this);
 
         for (const avatar of game.avatars.items) {
             this.addAvatar(avatar);
@@ -121,6 +124,7 @@ export class GameStats {
 
         avatar.on('die', this.onDie);
         avatar.on('position', this.onPosition);
+        avatar.on('property', this.onProperty);
     }
 
     /**
@@ -130,6 +134,7 @@ export class GameStats {
         for (const avatar of this.game.avatars?.items ?? []) {
             avatar.removeListener('die', this.onDie);
             avatar.removeListener('position', this.onPosition);
+            avatar.removeListener('property', this.onProperty);
         }
 
         this.game.removeListener('game:start', this.onRoundStart);
@@ -147,10 +152,26 @@ export class GameStats {
         this.near.clear();
         this.squeezing.clear();
         this.onClear();
+        this.invincible.clear();
         this.feats.start(this.game.avatars.items.filter((avatar) => avatar.present).map((avatar) => avatar.id));
 
         for (const avatar of this.game.avatars.items) {
             this.positions.set(avatar.id, [avatar.x, avatar.y]);
+        }
+    }
+
+    /**
+     * The invincibility of an avatar is over: it is the Master bonus running out, the end of a round does not count
+     */
+    onProperty(data: { avatar: Avatar; property: string; value: unknown }) {
+        if (data.property !== 'invincible') {
+            return;
+        }
+
+        if (data.value) {
+            this.invincible.add(data.avatar.id);
+        } else if (this.invincible.delete(data.avatar.id) && this.game.inRound) {
+            this.feats.invincibleEnd(data.avatar, Date.now() - this.roundStart);
         }
     }
 
@@ -238,6 +259,12 @@ export class GameStats {
             last[0] = avatar.x;
             last[1] = avatar.y;
             this.trackGap(avatar);
+            this.feats.position(
+                avatar,
+                this.game.size,
+                this.game.borderless || avatar.ghost || avatar.invincible,
+                Date.now() - this.roundStart
+            );
         }
     }
 
@@ -323,6 +350,10 @@ export class GameStats {
         if (!set.has(stats.id)) {
             set.add(stats.id);
             stats[field]++;
+
+            if (field === 'nearMisses') {
+                this.feats.nearMiss(stats.id, Date.now() - this.roundStart);
+            }
         }
     }
 
@@ -400,6 +431,13 @@ export class GameStats {
 
         if (winner) {
             winner.roundsWon++;
+        }
+
+        // The game is over when somebody wins it with this round
+        const gameWinner = this.game.isWon();
+
+        if (gameWinner && typeof gameWinner === 'object') {
+            this.feats.gameOver(gameWinner.id, this.players.get(gameWinner.id)?.roundsWon ?? 0);
         }
 
         // A round that nobody wins, or that somebody else wins, ends the streak
