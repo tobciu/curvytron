@@ -34,6 +34,15 @@ test('about', async ({ browser }) => {
     await expect(page).toHaveScreenshot('about.png', snapshotOptions(page, ['#about img']));
 });
 
+test('rules', async ({ browser }) => {
+    const page = await openPlayer(browser, 'Alice', { color: '#ff0000' });
+
+    await page.goto('/#/rules');
+    await expect(page.locator('#rules')).toBeVisible();
+
+    await expect(page).toHaveScreenshot('rules.png', { ...snapshotOptions(page, []), fullPage: true });
+});
+
 test('profile panel', async ({ browser }) => {
     const page = await openPlayer(browser, 'Alice', { color: '#ff0000' });
 

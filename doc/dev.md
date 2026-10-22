@@ -15,7 +15,8 @@
 
     src/client
      |- main.ts, App.vue, router.ts   # Entry point, root component and routes (hash urls: #/room/name)
-     |- views/                        # One component per page: rooms list, room, game, about
+     |- views/                        # One component per page: rooms list, room, game, rules, about
+     |- content/                      # Texts of the rules page: statistics, awards, game modes (bonus texts: src/shared/bonuses.ts)
      |- components/                   # Profile panel, chat, room parameters, color picker, game widgets
      |- composables/                  # Bridge between the game model and Vue
      |- services.ts                   # Creates the services (socket, profile, chat...) and provides them to the components

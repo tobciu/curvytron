@@ -12,12 +12,13 @@ test('shows the room list with the tutorial', async ({ browser }) => {
     await expect(page.locator('.profile-link .name')).toHaveText('Alice');
 });
 
-test('about page lists the team', async ({ browser }) => {
+test('about page tells about the fork and lists the original team', async ({ browser }) => {
     const page = await openPlayer(browser, 'Alice');
 
     await page.goto('/#/about');
 
-    await expect(page.locator('#about h1').first()).toHaveText('Team');
+    await expect(page.locator('#about h1').first()).toHaveText('This version');
+    await expect(page.locator('#about')).toContainText('Original team');
     await expect(page.locator('#about')).toContainText('Thomas JARRAND');
     await expect(page.locator('#about')).toContainText('Johan DUFOUR');
 });
@@ -29,6 +30,21 @@ test('footer links to about page', async ({ browser }) => {
     await page.getByRole('link', { name: 'About Us' }).click();
 
     await expect(page).toHaveURL(/#\/about$/);
+});
+
+test('footer links to the rules, which explain the statistics', async ({ browser }) => {
+    const page = await openPlayer(browser, 'Alice');
+
+    await page.goto('/');
+    await page.getByRole('link', { name: 'Rules' }).first().click();
+
+    await expect(page).toHaveURL(/#\/rules$/);
+    await expect(page.locator('#rules')).toContainText('Close calls');
+    await expect(page.locator('#rules .bonus-table li').first()).toBeVisible();
+
+    await page.goto('/#/rules/statistics');
+
+    await expect(page.locator('#rules-statistics')).toBeInViewport();
 });
 
 test('unknown routes redirect to the room list', async ({ browser }) => {
