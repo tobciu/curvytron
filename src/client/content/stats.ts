@@ -59,8 +59,8 @@ export const statInfo = {
     },
     longestLife: {
         label: 'Longest life',
-        description: 'Longest time the player stayed alive in a round.',
-        how: 'The best single round counts, not the total. The winner of a round counts until the end of it.'
+        description: 'Longest time the player stayed alive in one round: the best round, not the sum of all rounds.',
+        how: 'Survive one round for as long as you can. Only your best round counts, so it does not matter how many rounds you play. The winner of a round counts until the end of it.'
     }
 } as const satisfies Record<string, StatInfo>;
 
@@ -117,8 +117,8 @@ export const awardInfo: Record<string, StatInfo & { field: keyof PlayerStats }> 
     survivor: {
         label: 'Survivor',
         field: 'longestLife',
-        description: 'Stayed alive the longest in a round.',
-        how: 'Play safe in one round: the longest single round counts.'
+        description: 'Stayed alive the longest in one round (the best round, not the sum).',
+        how: 'Play safe in one round: only the longest single round counts.'
     }
 };
 
