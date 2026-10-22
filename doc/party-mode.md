@@ -1,160 +1,192 @@
-# Sternenjagd (Party-Modus, Entwurf)
+# Sternenjagd – Game Design Document
 
-Stand: Idee und Plan, nichts ist umgesetzt. Der Modus heißt **Sternenjagd** (im Text auch „Party-Modus"). Die offenen
-Punkte stehen am Ende.
+Status: Entwurf, nichts ist umgesetzt.
 
-## Idee
+## 1. Überblick
 
-Eine alternative Art, ein Spiel zu werten, ähnlich den Sternen bei Mario Party: Gut fahren bleibt die Grundlage, reicht
-aber nicht mehr aus. Man muss sich auch um andere Dinge kümmern: Bonis einsammeln, auch wenn man nicht will, riskanter
-fahren, den Führenden jagen.
+Die **Sternenjagd** ist ein alternativer Spielmodus für Curvytron. Er ändert die Wertung, nicht die Steuerung und nicht
+das Fahrgefühl. Gutes Fahren bleibt die Grundlage, reicht aber nicht allein zum Sieg: Wer gewinnen will, muss sich auch
+um Rundenmissionen kümmern, kleine Sterne auf dem Spielfeld einsammeln und dafür Risiken eingehen. Das Vorbild sind
+Spiele wie Mario Party, in denen Sterne und Bonuspunkte den Ausgang bis zum Schluss offen halten.
 
-Es gibt **nur eine Punktzahl** (keine zweite Währung). So bleiben `PlayerList`, die Rangliste und das Spielende
-unverändert. Die Sterne sind nur eine besondere Punktequelle mit hohem Wert.
+**Designziele**
 
-## Ausgangslage
+- Risiko und Aufmerksamkeit werden belohnt, nicht nur Überleben.
+- Das Ergebnis bleibt bis zur letzten Runde offen.
+- Jeder sieht jederzeit, wofür es gerade Punkte gibt und wie er dasteht.
+- Es gibt weiterhin **eine einzige Punktzahl**. Rangliste, Spielerliste und Spielende funktionieren wie im klassischen
+  Modus. Die Sterne sind eine Punktequelle mit hohem Wert, keine zweite Währung.
 
-- **Punkte heute**: Jeder Tod gibt Punkte nach Reihenfolge (`Game.kill`, Anzahl der bereits toten Avatare), der
-  Rundensieger bekommt zusätzlich n-1 (`resolveScores`). Wer zuerst `maxScore` erreicht, gewinnt das Spiel (`isWon`).
-- **Bonis**: `BonusManager.testCatch` löst `bonus:catch` aus, `GameStats` hört schon darauf.
-- **Statistiken**: `GameStats` zählt über das ganze Spiel. Pro Runde gibt es nur Sieger und Dauer (`rounds[]`). Die Werte
-  pro Runde stehen schon in `doc/todo.md` und sind der erste Schritt für diesen Modus.
-- **Fahrstil-Messwerte**: Near Misses und Squeezes gibt es (`testSurroundings`), bei Unverwundbarkeit zählt nichts.
-- **Pause zwischen den Runden**: `warmdownTime = 5000`, `warmupTime = 3000` (`BaseGame`). Die Auszeichnungen werden nur am
-  Spielende gezeigt, weil 5 s zum Lesen zu kurz sind.
-- **Anzeige**: `PlayerList.vue` zeigt `+roundScore` und `score`.
+**Einstellungen des Spielleiters** (vor dem Spiel, im Raum):
 
-## Punktequellen im Party-Modus
+| Einstellung | Werte | Standard |
+|---|---|---|
+| Modus (Wertung) | Klassisch, Sternenjagd | Klassisch |
+| Siegbedingung | Punktelimit oder feste Rundenzahl | Sternenjagd: 8 Runden; Klassisch: Punktelimit wie bisher |
 
-### 1. Rundenmissionen („Bonus-Sterne" nach der Runde)
+Modus und Siegbedingung sind unabhängig: Beide Siegbedingungen sind in beiden Modi wählbar.
 
-- Zu Rundenbeginn werden 2 Missionen aus einem Pool gezogen und allen angezeigt.
-- Nach der Runde bekommt der Beste jeder Mission einen Stern, 3 Punkte wert, bei allen Missionen gleich. Die Schwierigkeit
-  gleicht sich selbst aus, weil man sich nur mit den anderen vergleicht.
-- Pro Runde zählt jede Mission für einen Spieler nur einmal. Dieselbe Mission darf in späteren Runden wieder gezogen
-  werden, aber nicht direkt in der Folgerunde.
-- Die Missionen werden **vorher angesagt** (Mario Party deckt sie erst am Ende auf). Das ändert das Verhalten: Man fährt
-  nah an Trails oder jagt Bonis, obwohl man sonst sicher fahren würde.
-- Gleichstand: Alle Gleichplatzierten bekommen den Stern. Bei Wert 0 bekommt niemand einen.
+## 2. Spielablauf einer Runde
 
-**Anzeige während der Runde** (auch für Tote und Zuschauer, die weiter zusehen):
+1. **Start**: Zwei Missionen werden gezogen und allen gezeigt (Spieler, Tote und Zuschauer). Die normale Aufwärmphase
+   (`warmupTime`, 3 s) läuft wie bisher.
+2. **Runde**: Alle fahren. Während der Runde stehen die Missionen mit Live-Stand am Rand, Sterne erscheinen auf dem
+   Spielfeld. Punkte für Platzierung gibt es wie im klassischen Modus.
+3. **Ende**: Sobald nur noch einer lebt, endet die Runde. Die Missionen werden ausgewertet, die Sterne vergeben.
+4. **Zwischenstand**: Ein Overlay zeigt die Aufschlüsselung der Punkte jedes Spielers (Platzierung, Missionen, gesammelte
+   Sterne) und den Gesamtstand. Die Pause (`warmdownTime`) beträgt in der Sternenjagd **8 s**.
+5. **Nächste Runde** oder Spielende nach der Siegbedingung.
 
-- Die zwei Missionen stehen die ganze Runde über sichtbar am Rand des Spielfelds: Name, kurze Beschreibung und der
-  eigene Stand.
-- Dazu der Stand der anderen, zum Beispiel „du: 3 · Anna führt mit 5", und ein Status: **führt** (grün, der Stern wäre
-  jetzt deiner), **gleichauf**, **hinten** (mit Abstand zum Führenden) oder **keine Chance mehr**, wenn das nicht mehr
-  aufzuholen ist (zum Beispiel nach dem eigenen Tod bei „Marathon").
-- Missionen mit einem Ja/Nein-Ergebnis (Kamikaze, Comeback, Hartnäckig) zeigen „offen" / „geschafft" / „verpasst".
-- Wer den Stern gerade halten würde, bekommt einen kleinen Stern neben dem Namen in der Spielerliste.
-- Am Rundenende wird das Ergebnis jeder Mission festgestellt und im Overlay zwischen den Runden gezeigt (wer hat
-  den Stern bekommen).
+## 3. Punktequellen
 
-**Später**: „Ziel-Missionen" („schaffe mindestens …"). Jeder, der die Schwelle erreicht, bekommt Punkte, gestaffelt in
-Bronze / Silber / Gold (1 / 2 / 3 Punkte): leichte Ziele geben weniger, schwere mehr. Das braucht feste Schwellen, die wir
-erst nach Spieldaten sinnvoll setzen können. Die erste Version hat nur die Wettbewerbs-Missionen unten.
-
-Pool (Wettbewerb):
-
-| Mission | Messwert |
+| Quelle | Punkte |
 |---|---|
-| Nahkampf | meiste Near Misses |
-| Nadelöhr | meiste Squeezes |
-| Sammler | meiste Bonis eingesammelt |
-| Jäger | meiste Kills auf den eigenen Trail |
-| Wandläufer | längste Zeit nah an der Wand, ohne zu sterben |
-| Marathon | längste Strecke |
-| Kamikaze | als Erster gestorben, aber dabei jemanden mitgenommen |
-| Comeback | gewinnt eine Runde nach letztem Platz in der Runde davor |
-| Hartnäckig | überlebt mit mindestens 2 Mali von Gegnern |
+| Platzierung in der Runde | wie im klassischen Modus (Reihenfolge der Tode, Rundensieger n-1) |
+| Mission gewonnen | 3 pro Mission |
+| Stern aufgesammelt | 2 pro Stern |
 
-### 2. Stern als Item im Spielfeld
+In den letzten 2 Runden einer Partie mit fester Rundenzahl (**Finale**) zählt jede Quelle doppelt.
 
-- Neuer Bonus-Typ „Stern" (über das Bonus-Registry, siehe `doc/bonuses.md`), ohne Effekt, +2 Punkte beim Einsammeln.
-- **Kleiner** als die normalen Bonis, man muss genauer treffen. Dafür muss die Größe pro Bonus-Typ einstellbar werden
-  (`BaseBonus.radius` ist heute statisch für alle gleich).
-- **Selten und begrenzt**, abhängig von der Spielerzahl: zum Beispiel `aufgerundet(Spieler / 2)`, höchstens 3 pro
-  Runde (2 Spieler: 1, 3–4 Spieler: 2). Die Sterne erscheinen zeitlich verteilt, nicht alle auf einmal.
-- **Platzierung** bewusst an riskanten Orten (nah an Wand oder Trails) statt gleichverteilt wie die normalen Bonis. Dafür
-  braucht es eine eigene Platzierung neben `BonusManager.getRandomPosition`.
-- **Verschwindet nach einer Zeit** wieder (mehr Druck), nach mindestens 10 s. Der Client zeigt die Restzeit als **Ring um den Stern**, der
-  immer kleiner wird (Fortschrittsanzeige als Ring). Der Server schickt beim Erscheinen die Lebensdauer mit und entfernt
-  den Stern selbst (`bonus:clear` gibt es schon). Bei Reconnect wird die Restzeit mitgeschickt, damit der Ring stimmt.
+## 4. Rundenmissionen
 
-### 3. Wie das Spiel gewonnen wird
+### 4.1 Regeln
 
-Der Spielleiter legt vor dem Spiel zwei Dinge fest, **unabhängig voneinander**:
+- Zu jeder Runde werden 2 verschiedene Missionen aus dem Pool gezogen. Sie sind vor der Runde bekannt und ändern das
+  Verhalten: Man fährt nah an Trails oder jagt Bonis, obwohl man sonst sicher fahren würde.
+- Es gewinnt der Spieler mit dem besten Wert der Mission. Bei Gleichstand bekommen alle Gleichplatzierten den Stern. Bei
+  Wert 0 bekommt niemand einen.
+- Alle Missionen sind gleich viel wert, die Schwierigkeit gleicht sich selbst aus, weil man sich nur mit den anderen
+  Spielern vergleicht.
+- Jede Mission zählt pro Runde für einen Spieler nur einmal. Dieselbe Mission kann in späteren Runden wieder gezogen
+  werden, aber nicht in der direkt folgenden.
+- Die Ziehung richtet sich nach der Spielerzahl: Missionen, die mit wenigen Spielern sinnlos sind (zum Beispiel
+  Nadelöhr), werden dann nicht gezogen. Bei 2 Spielern wird nur 1 Mission gezogen.
+- Nichts zählt, solange ein Avatar unverwundbar ist (wie bei den Statistiken). Pro Mission und Runde gibt es einen
+  Deckel für den Zähler, damit sich Werte nicht absichtlich hochtreiben lassen.
 
-- **Modus (Wertung)**: Klassisch oder Sternenjagd.
-- **Siegbedingung**: Punktelimit (wie heute `maxScore`) oder feste Rundenzahl (zum Beispiel 8). Beides ist in beiden
-  Modi wählbar.
+### 4.2 Pool
 
-Bei fester Rundenzahl ist die Dauer planbar, und die Spannung bleibt bis zum Schluss, weil Sterne alles drehen können.
-Nur dabei gilt das **Finale**: In den letzten 2 Runden zählt alles doppelt. Bei Gleichstand nach der letzten Runde gibt
-es eine Stichrunde unter den Gleichplatzierten.
+| Mission | Gewinnt, wer … |
+|---|---|
+| Nahkampf | die meisten Beinahe-Treffer (Near Misses) hat |
+| Nadelöhr | die meisten Engstellen (Squeezes) durchfährt |
+| Sammler | die meisten Bonis einsammelt |
+| Jäger | die meisten Kills auf den eigenen Trail erzielt |
+| Wandläufer | am längsten nah an der Wand fährt, ohne zu sterben |
+| Marathon | die längste Strecke fährt |
+| Kamikaze | als Erster stirbt, dabei aber jemanden mitnimmt |
+| Comeback | die Runde gewinnt, nachdem er in der Runde davor Letzter war |
+| Hartnäckig | mit mindestens 2 Mali von Gegnern überlebt |
 
-## Weitere Ideen, nach Aufwand sortiert
+### 4.3 Anzeige während der Runde
+
+Die Missionen stehen die ganze Runde über klein am Rand des Spielfelds, auch für Tote und Zuschauer. Sie lenken nicht vom
+Spielfeld ab: Nur der Stand ändert sich.
+
+- Je Mission: Name, kurze Beschreibung, der eigene Wert und der Wert des Führenden, zum Beispiel „du: 3 · Anna führt mit 5".
+- Status je Mission: **führt** (der Stern wäre jetzt deiner), **gleichauf** oder **hinten** (mit Abstand zum Führenden).
+  Es wird bewusst nie angezeigt, dass jemand „keine Chance mehr" hat: Das würde nur demotivieren.
+- Ja/Nein-Missionen (Kamikaze, Comeback, Hartnäckig) zeigen „offen", „geschafft" oder „verpasst".
+- Wer gerade einen Stern halten würde, trägt einen kleinen Stern neben dem Namen in der Spielerliste.
+- Am Rundenende zeigt das Overlay das Ergebnis jeder Mission und wer den Stern bekommen hat.
+
+## 5. Stern-Item
+
+Der Stern ist ein eigener Bonus-Typ ohne Effekt (er wird über das Bonus-Registry angelegt, siehe `doc/bonuses.md`). Wer
+ihn einsammelt, bekommt sofort 2 Punkte.
+
+- **Größe**: kleiner als die normalen Bonis, man muss genauer treffen. Die Größe ist daher pro Bonus-Typ einstellbar
+  (`BaseBonus.radius` ist heute für alle gleich).
+- **Anzahl**: selten und begrenzt, abhängig von der Spielerzahl: `aufgerundet(Spieler / 2)`, höchstens 3 pro Runde (2
+  Spieler: 1, 3–4 Spieler: 2). Die Sterne erscheinen zeitlich verteilt, nicht alle auf einmal.
+- **Platzierung**: bewusst an riskanten Orten, nah an der Wand oder an Trails, nicht gleichverteilt wie die normalen Bonis
+  (eigene Platzierung neben `BonusManager.getRandomPosition`).
+- **Lebensdauer**: Der Stern verschwindet nach einer Zeit wieder. Sie beträgt mindestens 10 s und wächst mit der
+  Kartengröße: `10 s · Kartengröße / Kartengröße für 2 Spieler` (bei 2 Spielern 10 s, bei 4 etwa 11,5 s, bei 8 etwa
+  14 s).
+- **Anzeige**: Ein Ring um den Stern zeigt die Restzeit und wird immer kleiner (Fortschrittsanzeige als Ring).
+
+## 6. Siegbedingung
+
+- **Feste Rundenzahl** (Standard 8): Die Dauer ist planbar, und die Spannung bleibt bis zum Schluss, weil Sterne alles
+  drehen können. Es gilt das Finale (doppelte Punkte in den letzten 2 Runden). Bei Gleichstand nach der letzten Runde
+  folgt eine Stichrunde unter den Gleichplatzierten.
+- **Punktelimit**: wie heute (`maxScore`). Kein Finale.
+
+## 7. Erweiterungen (nicht Teil der ersten Version)
 
 | Idee | Wirkung | Aufwand |
 |---|---|---|
-| Overlay zwischen den Runden mit Aufschlüsselung der Punkte (Platz, Missionen, Stern) und Pause von 8 s, nur in diesem Modus | Sichtbarkeit, Dramatik | gering |
+| Ziel-Missionen („schaffe mindestens …"), gestaffelt in Bronze / Silber / Gold (1 / 2 / 3 Punkte) | leichte Ziele geben weniger, schwere mehr | mittel (feste Schwellen aus Spieldaten) |
 | Hilfe für die Letzten: bessere Bonus-Chancen über `getProbability` | kein Frust, enge Rennen | gering |
-| Der Führende trägt die Krone (der goldene Rand existiert schon) | alle jagen den Führenden | vorhanden |
 | Dieb-Bonus: nimmt dem Führenden 1 Punkt | Dramatik | mittel |
 | Chaos-Runde (alle paar Sekunden ein zufälliger Bonus-Effekt) | Abwechslung | mittel |
 | Versteckte Mission (nur für einen Spieler sichtbar) | Mario-Party-Gefühl | höher |
-| Wetten: vor der Runde 1 Punkt auf den Sieger setzen | auch Tote bleiben beteiligt | höher |
+| Wetten: vor der Runde 1 Punkt auf den Rundensieger setzen | auch Tote bleiben beteiligt | höher |
 
-Vorschlag für den Start: Missionen, Stern-Item und Overlay.
+Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das bleibt in beiden Modi.
 
-## Umsetzung (grob)
+## 8. Technische Umsetzung
+
+### 8.1 Ausgangslage im Code
+
+- **Punkte**: `Game.kill` vergibt Punkte nach der Reihenfolge der Tode, `resolveScores` addiert n-1 für den Rundensieger,
+  `isWon` prüft `maxScore`.
+- **Bonis**: `BonusManager.testCatch` löst `bonus:catch` aus, `GameStats` hört darauf.
+- **Statistiken**: `GameStats` zählt über das ganze Spiel, pro Runde gibt es nur Sieger und Dauer (`rounds[]`).
+  Near Misses und Squeezes gibt es bereits (`testSurroundings`).
+- **Anzeige**: `PlayerList.vue` zeigt `+roundScore` und `score`.
+- **Pausen**: `warmupTime = 3000`, `warmdownTime = 5000` in `BaseGame`.
+
+### 8.2 Bausteine
 
 1. **Statistiken pro Runde**: `GameStats` bekommt je Spieler ein `round`-Objekt neben den Gesamtzählern, das in
-   `onRoundStart` zurückgesetzt wird (der offene Punkt aus `doc/todo.md`). Neue Zähler: Zeit nah an der Wand, Platz in
-   der Runde, überlebte Mali, Reihenfolge der Tode.
+   `onRoundStart` zurückgesetzt wird (der offene Punkt „Werte pro Runde" in `doc/todo.md`). Neue Zähler: Zeit nah an der
+   Wand, Platz in der Runde, überlebte Mali, Reihenfolge der Tode.
 2. **Wertung als Strategie**: Ein Interface `ScoringMode` (`classic`, `party`) mit den Hooks `onKill`, `onBonusCatch` und
-   `onRoundEnd`. `Game.resolveScores` und `isWon` geben dorthin ab. Der klassische Modus bleibt unverändert.
-3. **Missions-Modul**: Pool, Ziehung abhängig von der Spielerzahl (Squeezes sind mit 2 Spielern sinnlos) und
-   Auswertung am Rundenende. Dazu der laufende Stand: Das Modul berechnet für jede Mission die Werte aller Spieler,
-   den Führenden und den Status je Spieler.
-4. **Raum-Einstellung**: Modus (`classic` / `party`) und Siegbedingung (Punkte oder Runden, mit Wert) in
-   `BaseRoomConfig` und in den Raumparametern. Wertung und Siegbedingung sind getrennte Teile von `Game`.
-5. **Protokoll** (`src/shared/protocol.ts`): `round:missions` (Start), `mission:progress` (laufender Stand, nur wenn
-   sich ein Wert ändert; Strecke und Wandzeit höchstens einmal pro Sekunde, damit nicht jeder Frame etwas sendet) und
-   `round:summary` (Ende, mit Ergebnis der Missionen und Aufschlüsselung pro Spieler). Reconnect und Late Join müssen den Zustand mitführen: Wer mitten in der Runde zurückkommt, sieht die
-   aktuellen Missionen samt Stand, und `present` / `away` bleiben bei der Auswertung richtig.
-6. **Client**: Missionsanzeige im Spiel mit Live-Status (neue Komponente neben `PlayerList.vue`), Overlay zwischen den Runden, Sprite für den Stern (`npm run sprite`),
-   Ring-Timer um den Stern.
-7. **Tests**: Missionen mit Gleichstand, Spieler, die gehen oder kommen, Reconnect mitten in der Runde, ein e2e-Lauf
-   des Modus. Der laufende Stand wird gegen die Endauswertung geprüft (wer am Ende „führt", bekommt den Stern).
+   `onRoundEnd`. `Game.resolveScores` und `isWon` geben dorthin ab, die Siegbedingung ist davon getrennt. Der klassische
+   Modus bleibt unverändert.
+3. **Missions-Modul**: Pool, Ziehung abhängig von der Spielerzahl, laufender Stand (Werte aller Spieler, Führender und
+   Status je Spieler) und Auswertung am Rundenende.
+4. **Raum-Einstellung**: Modus (`classic` / `party`) und Siegbedingung (Punkte oder Runden, mit Wert) in `BaseRoomConfig`
+   und in den Raumparametern. Die Pause von 8 s wird im Modus gesetzt, nicht global.
+5. **Stern-Bonus**: eigener Radius pro Typ, eigene Platzierung, Begrenzung nach Spielerzahl, Lebensdauer mit
+   Entfernen durch den Server (`bonus:clear` gibt es bereits).
+6. **Protokoll** (`src/shared/protocol.ts`):
+   - `round:missions` (Rundenstart),
+   - `mission:progress` (laufender Stand, nur wenn sich ein Wert ändert; Strecke und Wandzeit höchstens einmal pro
+     Sekunde, damit nicht jeder Frame etwas sendet),
+   - `round:summary` (Ende, mit Ergebnis der Missionen und Aufschlüsselung pro Spieler),
+   - Lebensdauer im Event, mit dem der Stern erscheint.
 
-## Risiken
+   Reconnect und Late Join führen den Zustand mit: Wer mitten in der Runde zurückkommt, sieht die aktuellen Missionen
+   samt Stand und die Ringe der Sterne mit ihrer Restzeit. `present` / `away` bleiben bei der Auswertung richtig.
+7. **Client**: Missionsanzeige mit Live-Status (neue Komponente neben `PlayerList.vue`), Overlay zwischen den Runden,
+   Sprite und Ring-Timer des Sterns (`npm run sprite`), Einstellungen in den Raumparametern.
 
-- **Farming**: Near Misses lassen sich absichtlich provozieren. Gegenmittel: Deckel pro Runde, nur der Beste bekommt den
-  Stern, bei Unverwundbarkeit zählt nichts (ist schon so).
-- **Lesbarkeit**: Zu viele Quellen verwässern das Gefühl „wer war besser". Deshalb nur 2 Missionen und eine klare
-  Aufschlüsselung. Die Missionsanzeige darf nicht vom Spielfeld ablenken: klein am Rand, nur der Status ändert sich.
-- **Spielerzahl**: Mit 2 Spielern sind Missionen schwach. Dann ein kleinerer Pool oder nur 1 Mission.
+### 8.3 Tests
 
-## Entschieden
+- Missionen mit Gleichstand und mit Wert 0.
+- Spieler, die gehen oder kommen, und Reconnect mitten in der Runde (Missionsstand und Sterne mit Restzeit).
+- Der laufende Stand wird gegen die Endauswertung geprüft (wer am Ende führt, bekommt den Stern).
+- Finale (doppelte Punkte) und Stichrunde bei fester Rundenzahl.
+- Der klassische Modus liefert dieselben Punkte wie vorher.
+- Ein e2e-Lauf der Sternenjagd.
 
-- Name: **Sternenjagd**.
-- Missionen sind angesagt und während der Runde mit Live-Status sichtbar; in der ersten Version nur Wettbewerb mit
-  gleichem Wert, Ziel-Missionen später.
-- Stern-Item kommt, klein, begrenzt nach Spielerzahl, mit Ring-Timer, Lebensdauer mindestens 10 s.
-- Siegbedingung (Punkte oder Runden) ist eine Raum-Einstellung, getrennt vom Modus. Standard: 8 Runden, Punktelimit wie
-  bisher.
-- Pause zwischen den Runden: 8 s, nur in der Sternenjagd.
-
-## Offene Punkte
-
-- Lebensdauer des Sterns genau festlegen (mindestens 10 s), eventuell abhängig von der Kartengröße. Beim Testen klären.
-- Genaue Schwellen für „keine Chance mehr" in der Missionsanzeige.
-
-## Vorgeschlagene Reihenfolge
+### 8.4 Reihenfolge
 
 1. Statistiken pro Runde (auch ohne den neuen Modus nützlich).
 2. Interface `ScoringMode`, der klassische Modus dahinter, unverändert und getestet.
-3. Missionen + Raum-Einstellung + Protokoll.
-4. Overlay zwischen den Runden.
-5. Stern-Item.
-6. Weitere Ideen aus der Tabelle.
+3. Missionen mit Protokoll und Raum-Einstellung.
+4. Missionsanzeige und Overlay zwischen den Runden.
+5. Stern-Item mit Ring-Timer.
+6. Erweiterungen aus Abschnitt 7.
+
+## 9. Risiken
+
+- **Farming**: Near Misses lassen sich absichtlich provozieren. Gegenmittel: Deckel pro Mission und Runde, nur der Beste
+  bekommt den Stern, bei Unverwundbarkeit zählt nichts.
+- **Lesbarkeit**: Zu viele Punktequellen verwässern das Gefühl „wer war besser". Darum nur 2 Missionen, klare
+  Aufschlüsselung im Overlay und eine ruhige Anzeige am Rand.
+- **Spielerzahl**: Mit 2 Spielern sind Missionen schwach, darum dort nur 1 Mission und ein kleinerer Pool.
+- **Kalibrierung**: Lebensdauer und Anzahl der Sterne werden beim Testen mit echten Runden nachjustiert.
