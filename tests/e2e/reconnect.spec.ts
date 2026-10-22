@@ -1,27 +1,5 @@
-import { expect, test, type Browser, type Page } from '@playwright/test';
-import { createRoom, joinRoom, openPlayer, playerRows, readyAll, roomName } from './helpers';
-
-/** Alice and Bob play in two browsers, in a game that goes on for a while (victory score 9 by default). */
-async function startDuo(browser: Browser, name: string, maxScore = '9'): Promise<{ alice: Page; bob: Page }> {
-    const alice = await openPlayer(browser, 'Alice', { color: '#ff0000' });
-    const bob = await openPlayer(browser, 'Bob', { color: '#00ff00' });
-
-    await createRoom(alice, name);
-    await joinRoom(bob, name);
-    await expect(playerRows(alice)).toHaveCount(2);
-    await alice.locator('.icon-params').click();
-    await alice.locator('#max-score').fill(maxScore);
-    await alice.locator('.icon-params').click();
-    await readyAll(alice);
-    await readyAll(bob);
-
-    for (const page of [alice, bob]) {
-        await expect(page).toHaveURL(new RegExp(`#/game/${name}`));
-        await expect(page.locator('.game-players .player')).toHaveCount(2);
-    }
-
-    return { alice, bob };
-}
+import { expect, test } from '@playwright/test';
+import { openPlayer, playerRows, roomName, startDuo } from './helpers';
 
 test('a reload in the middle of a game brings the player back to the game', async ({ browser }) => {
     const name = roomName('reload');

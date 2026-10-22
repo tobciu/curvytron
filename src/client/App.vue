@@ -75,6 +75,7 @@ function reload(): void {
                         ><i class="icon-github"></i
                     ></a>
                     <RouterLink to="/rules" class="ml15 animated">Rules</RouterLink>
+                    <RouterLink to="/stats" class="ml15 animated">Stats</RouterLink>
                     <RouterLink to="/about" class="ml15 animated">About Us</RouterLink>
                 </div>
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 no-padding-bottom text-right">

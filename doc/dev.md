@@ -23,6 +23,23 @@
 `Game` keeps its result on the `end` event (before the avatars are released), through `room.storage`. The concept and the
 next steps are in [persistence.md](persistence.md). Never change a released step of `schema.ts`: add a new one.
 
+### Statistics interface
+
+`src/server/core/StatsApi.ts` is the read-only JSON interface of the kept games, `src/server/storage/queries.ts` what it asks
+of the database, `src/shared/model/StatsApi.ts` the types of the answers (the page `#/stats` uses them).
+
+| Path                              | Answer                                                                                    |
+| --------------------------------- | ----------------------------------------------------------------------------------------- |
+| `GET /api/games?limit&before&tag` | The latest games with the players by rank (`next` is the `before` of the next page)       |
+| `GET /api/games/:id`              | A game with its statistics as shown at its end (the player ids are slots)                 |
+| `GET /api/leaderboard?by&tag`     | `by`: `wins`, `winRate`, `roundsWon`, `kills`, `games`; players out of the lists left out |
+| `GET /api/records?tag`            | The best values (the texts are in `src/client/content/stats.ts`)                          |
+| `GET /api/tags`                   | The tags that were used, with their games                                                 |
+
+The answers are public: names of players who keep out of the lists are `Anonymous`, and the special feats are `?` (no
+id, no text) for everybody but their owner. A request with the header `X-Identity: <code>` is told its own name and its own
+feats and is not cached. 120 requests per minute and address (`apiLimit`), `503` when nothing is kept.
+
 ### Client
 
     src/client

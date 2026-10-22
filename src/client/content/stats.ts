@@ -133,6 +133,24 @@ export const awardInfo: Record<string, StatInfo & { field: keyof PlayerStats }> 
     }
 };
 
+/** The records of the statistics page: what they are, and how the value is shown */
+export const recordInfo: Record<string, { label: string; description: string; unit?: 'seconds' | 'points' }> = {
+    highestScore: { label: 'Highest score', description: 'The most points in a game.' },
+    longestStreak: { label: 'Longest win streak', description: 'The most rounds won in a row in a game.' },
+    mostKills: { label: 'Most kills', description: 'The most players who crashed on your trail in a game.' },
+    longestLife: { label: 'Longest life', description: 'The longest time alive in one round.', unit: 'seconds' },
+    mostGapRuns: { label: 'Most gap runs', description: 'The most gaps in the trails of others driven through.' },
+    mostBonuses: { label: 'Most bonuses', description: 'The most bonuses caught in a game.' },
+    longestDistance: { label: 'Longest distance', description: 'The longest way driven in a game.' },
+    mostFeats: { label: 'Most feats', description: 'The most special feats of one player in a game.' },
+    longestGame: {
+        label: 'Longest game',
+        description: 'The game that took the longest, credited to its winner.',
+        unit: 'seconds'
+    },
+    mostRounds: { label: 'Most rounds', description: 'The game with the most rounds, credited to its winner.' }
+};
+
 /** Rules that apply to all the awards and to the counting */
 export const countingRules: readonly string[] = [
     'Statistics are counted for the whole game, over all rounds, and shown with the final ranking.',

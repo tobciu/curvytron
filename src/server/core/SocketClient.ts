@@ -1,6 +1,6 @@
-import { createHash } from 'node:crypto';
 import { metrics } from '../service/Metrics.ts';
 import { isShape, rules } from './validate.ts';
+import { hashIdentityCode } from './identity.ts';
 import { PingLogger } from './PingLogger.ts';
 import { Collection } from '../../shared/Collection.ts';
 import type { ClientData, ServerEvents } from '../../shared/protocol.ts';
@@ -10,9 +10,6 @@ import { BaseTickrateLogger } from '../../shared/service/BaseTickrateLogger.ts';
 /**
  * Socket Client
  */
-/** What an identity code looks like: letters, digits, dashes (a UUID is one), long enough to be a secret */
-const identityCode = /^[\w-]{16,64}$/;
-
 /**
  * Events a client may send: `burst` at once, then `rate` per second.
  * The game itself sends a few per second (steering, chat, ready), this is far above it.
@@ -222,10 +219,8 @@ export class SocketClient extends BaseSocketClient<ServerEvents> {
      * The browser tells its identity code: keep what identifies it, not the code
      */
     onIdentity(data: unknown) {
-        if (isShape(data, { code: rules.string(64) }) && identityCode.test((data as { code: string }).code)) {
-            this.identityHash = createHash('sha256')
-                .update((data as { code: string }).code)
-                .digest('hex');
+        if (isShape(data, { code: rules.string(64) })) {
+            this.identityHash = hashIdentityCode((data as { code: string }).code) ?? this.identityHash;
         }
     }
 

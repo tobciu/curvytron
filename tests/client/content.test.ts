@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { bonusDefinitions, bonusTarget } from '../../src/shared/bonuses.ts';
 import { awardFields } from '../../src/server/service/GameStats.ts';
-import { awardInfo, statInfo } from '../../src/client/content/stats.ts';
+import { recordIds } from '../../src/server/storage/queries.ts';
+import { awardInfo, recordInfo, statInfo } from '../../src/client/content/stats.ts';
 import { featIds } from '../../src/server/service/Feats.ts';
 import { featInfo } from '../../src/client/content/feats.ts';
 import { gameModes } from '../../src/client/content/modes.ts';
@@ -38,6 +39,10 @@ describe('texts of the rules page', () => {
             expect(info.label).not.toBe('');
             expect(info.description).not.toBe('');
         }
+    });
+
+    it('has a text for every record the server has, and only those', () => {
+        expect(Object.keys(recordInfo).toSorted()).toEqual([...recordIds].toSorted());
     });
 
     it('has at least one game mode with rules', () => {

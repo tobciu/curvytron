@@ -10,6 +10,7 @@ import { Collection } from '../../shared/Collection.ts';
 import { metrics } from '../service/Metrics.ts';
 import type { Room } from '../model/Room.ts';
 import type { Storage } from '../storage/Storage.ts';
+import { createStatsApi } from './StatsApi.ts';
 
 /**
  * Seconds between two keep-alive pings sent to every connected socket.
@@ -87,6 +88,7 @@ export class Server extends EventEmitter {
         this.onHealthRequest = this.onHealthRequest.bind(this);
 
         this.app.get('/health', this.onHealthRequest);
+        this.app.use('/api', createStatsApi(config.storage ?? null));
 
         if (config.metrics?.enabled !== false) {
             metrics.addCollector(this.collectMetrics);

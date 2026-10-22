@@ -1,0 +1,200 @@
+#stats {
+    max-width: 1000px;
+    padding-bottom: 40px;
+
+    h1 {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .intro {
+        text-align: center;
+        font-size: 16px;
+    }
+
+    .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 24px;
+        margin: 20px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid $text-color;
+
+        a {
+            text-decoration: none;
+            opacity: 0.6;
+
+            &.active,
+            &:hover {
+                opacity: 1;
+                font-weight: $bold-font-weight;
+            }
+        }
+
+        .tag-filter {
+            margin-left: auto;
+            font-size: 14px;
+
+            select {
+                margin-left: 6px;
+                border: 0;
+                padding: 4px 8px;
+                background: #fff;
+                font: inherit;
+            }
+        }
+    }
+
+    .ways {
+        font-size: 16px;
+
+        a {
+            margin-left: 12px;
+            text-decoration: none;
+            opacity: 0.6;
+
+            &.active {
+                opacity: 1;
+                font-weight: $bold-font-weight;
+            }
+        }
+    }
+
+    .note,
+    .empty,
+    .problem {
+        font-size: 16px;
+        font-style: italic;
+    }
+
+    .stats-table {
+        width: 100%;
+        font-size: 16px;
+
+        th,
+        td {
+            padding: 6px 10px 6px 0;
+            text-align: right;
+        }
+
+        .name {
+            text-align: left;
+        }
+
+        .rank {
+            width: 40px;
+            text-align: left;
+            opacity: 0.6;
+        }
+
+        tr.mine td {
+            font-weight: $bold-font-weight;
+        }
+    }
+
+    .games {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        > li {
+            margin-bottom: 6px;
+            background: #fff;
+        }
+
+        .game-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 4px 14px;
+            width: 100%;
+            padding: 10px 14px;
+            border: 0;
+            background: none;
+            font: inherit;
+            font-size: 16px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .when {
+            font-size: 13px;
+            opacity: 0.6;
+        }
+
+        .tag {
+            font-size: 13px;
+            opacity: 0.6;
+        }
+
+        .players {
+            display: flex;
+            flex: 1;
+            flex-wrap: wrap;
+            gap: 4px 14px;
+        }
+
+        .player.winner {
+            font-weight: $bold-font-weight;
+        }
+
+        .player.mine {
+            text-decoration: underline;
+        }
+
+        .feats-count {
+            font-size: 13px;
+            opacity: 0.6;
+        }
+
+        .game-detail {
+            .rules-link a {
+                color: inherit;
+            }
+
+            overflow-x: auto;
+            padding: 10px 14px 20px;
+            background: #222;
+            color: #fff;
+        }
+    }
+
+    .records {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        li {
+            padding: 14px 16px;
+            background: #fff;
+        }
+
+        .label {
+            display: block;
+            font-size: 13px;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        .value {
+            display: block;
+            font-size: 32px;
+            font-weight: $bold-font-weight;
+        }
+
+        .holder {
+            font-size: 18px;
+        }
+
+        .where,
+        .description {
+            display: block;
+            font-size: 13px;
+            opacity: 0.6;
+        }
+    }
+}

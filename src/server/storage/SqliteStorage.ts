@@ -1,5 +1,6 @@
 import { DatabaseSync, type StatementSync } from 'node:sqlite';
 import type { GameResult } from '../../shared/model/GameResult.ts';
+import { StatsQueries } from './queries.ts';
 import { migrate } from './schema.ts';
 import { addGame, emptyTotals, totalsFromRow, totalsJson, type Totals } from './totals.ts';
 import type { Storage, StorageStatus } from './Storage.ts';
@@ -13,6 +14,7 @@ export class SqliteStorage implements Storage {
     file: string;
     version: string;
     db: DatabaseSync;
+    queries: StatsQueries;
     insertGame: StatementSync;
     insertPlayer: StatementSync;
     insertRound: StatementSync;
@@ -30,6 +32,7 @@ export class SqliteStorage implements Storage {
         this.file = file;
         this.version = version;
         this.db = new DatabaseSync(file);
+        this.queries = new StatsQueries(this.db);
 
         try {
             this.db.exec('PRAGMA journal_mode = WAL');
