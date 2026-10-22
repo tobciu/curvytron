@@ -39,6 +39,15 @@ export interface Award {
     value: number;
 }
 
+/** A special feat: something that happened in a round, shown when it happens */
+export interface Feat {
+    id: string;
+    player: number;
+    round: number;
+    /** The other player of the feat, when there is one (the one the revenge is on) */
+    other?: number;
+}
+
 /** How a round ended */
 export interface RoundResult {
     round: number;
@@ -52,4 +61,5 @@ export interface GameStatsData {
     players: PlayerStats[];
     awards: Award[];
     rounds: RoundResult[];
+    feats: Feat[];
 }

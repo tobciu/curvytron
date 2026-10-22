@@ -3,6 +3,7 @@
 import { computed } from 'vue';
 import { bonusDefinitions } from '../../../shared/bonuses';
 import type { GameStatsData, PlayerStats } from '../../../shared/model/GameStats';
+import FeatList from './FeatList.vue';
 import { awardInfo, statInfo } from '../../content/stats';
 import type { StatInfo } from '../../content/stats';
 
@@ -161,6 +162,7 @@ function bonusDetails(player: PlayerStats): string[] {
                 </tr>
             </tbody>
         </table>
+        <FeatList :feats="stats.feats" :players="stats.players" show-round />
         <ol v-if="rounds.length > 1" class="rounds">
             <li v-for="result in rounds" :key="result.round">
                 <span class="label">Round {{ result.round }}</span>

@@ -4,6 +4,7 @@ import type { Bonus } from '../model/Bonus/Bonus.ts';
 import { metrics } from './Metrics.ts';
 import { Body } from '../core/Body.ts';
 import { World } from '../core/World.ts';
+import { Feats } from './Feats.ts';
 import type { Award, GameStatsData, PlayerStats, RoundResult } from '../../shared/model/GameStats.ts';
 
 /**
@@ -57,6 +58,8 @@ export class GameStats {
     openGaps: Map<number, number> = new Map();
     /** Where the last body of the gap of an avatar is */
     lastGapPoint: Map<number, [number, number]> = new Map();
+    /** Special feats of the game, they are hidden until they happen */
+    feats: Feats = new Feats();
     /** Rounds in a row that an avatar has won right now */
     streaks: Map<number, number> = new Map();
     /** Last number given to a gap */
@@ -144,6 +147,7 @@ export class GameStats {
         this.near.clear();
         this.squeezing.clear();
         this.onClear();
+        this.feats.start(this.game.avatars.items.filter((avatar) => avatar.present).map((avatar) => avatar.id));
 
         for (const avatar of this.game.avatars.items) {
             this.positions.set(avatar.id, [avatar.x, avatar.y]);
@@ -334,7 +338,10 @@ export class GameStats {
             return;
         }
 
-        stats.longestLife = Math.max(stats.longestLife, Date.now() - this.roundStart);
+        const time = Date.now() - this.roundStart;
+
+        stats.longestLife = Math.max(stats.longestLife, time);
+        this.feats.die(data.avatar, data.killer, time);
 
         if (!data.killer) {
             metrics.deaths.inc({ cause: 'wall' });
@@ -363,6 +370,7 @@ export class GameStats {
             metrics.bonuses.inc({ type });
             stats.bonuses++;
             stats.bonusesByType[type] = (stats.bonusesByType[type] ?? 0) + 1;
+            this.feats.catchBonus(data.avatar, type, Date.now() - this.roundStart);
         }
     }
 
@@ -371,6 +379,8 @@ export class GameStats {
      */
     onRoundEnd(data: { winner: Avatar | null }) {
         const duration = Date.now() - this.roundStart;
+
+        this.feats.end(data.winner);
 
         for (const avatar of this.game.avatars.items) {
             const stats = this.players.get(avatar.id);
@@ -435,7 +445,8 @@ export class GameStats {
                 trailLength: Math.round(stats.trailLength)
             })),
             awards: this.getAwards(),
-            rounds: this.rounds
+            rounds: this.rounds,
+            feats: this.feats.feats
         };
     }
 }

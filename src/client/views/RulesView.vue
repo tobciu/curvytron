@@ -135,6 +135,11 @@ onMounted(async () => {
                 <li v-for="rule in countingRules" :key="rule">{{ rule }}</li>
             </ul>
 
+            <p class="secrets">
+                Some things that happen in a game are not listed here. Play, and you will see them at the end of a
+                round and at the end of a game. There are secrets.
+            </p>
+
             <h3>Statistics</h3>
             <table class="table rules-table">
                 <thead>
