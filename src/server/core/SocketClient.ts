@@ -28,6 +28,22 @@ export class SocketClient extends BaseSocketClient<ServerEvents> {
     pingLogger: PingLogger;
     tickrate: any;
 
+    /** Secret of the browser, to find this client again after a reload or a lost connection */
+    token: string | null = null;
+    /** Tab of the browser: two tabs of a browser are two clients, a reload of a tab is the same client */
+    tab: string | null = null;
+    /** Did the connection come back? The next `room:join` brings the client back to its room */
+    resuming: boolean = false;
+    /**
+     * The client does not take part in its game for now: its connection dropped, or its page is not the game yet.
+     * Its players stay in the game until it ends.
+     */
+    away: boolean = false;
+    /** Closed for good */
+    closed: boolean = false;
+    /** Asked when the connection drops: should the client wait for its return (the room sets it)? */
+    canSuspend: (() => boolean) | null = null;
+
     /**
      * Ping interval
      */
@@ -91,6 +107,80 @@ export class SocketClient extends BaseSocketClient<ServerEvents> {
      */
     onLatency(latency: number) {
         this.addEvent('latency', latency, null, true);
+    }
+
+    /**
+     * The connection dropped: wait for the return of the client, or close it
+     */
+    override onClose() {
+        if (this.token && this.canSuspend?.()) {
+            this.suspend();
+        } else {
+            super.onClose();
+        }
+    }
+
+    /**
+     * Keep the client without a connection: it holds its place in the game, as an absent player
+     */
+    suspend() {
+        this.connected = false;
+        this.stop();
+        this.detachEvents();
+        this.events.length = 0;
+        this.callbacks = {};
+        this.setAway(true);
+        this.emit('suspend', this);
+    }
+
+    /**
+     * Give a new connection to the client: it was suspended, or it reloaded the page before the server noticed
+     */
+    resume(socket: SocketClient['socket'], ip: SocketClient['ip']) {
+        if (this.connected) {
+            // The old connection is gone for the browser, even when the server does not know yet
+            this.detachEvents();
+            this.stop();
+            this.socket.terminate?.();
+        }
+
+        this.socket = socket;
+        this.ip = ip;
+        this.connected = true;
+        this.events.length = 0;
+        this.callbacks = {};
+        this.resuming = true;
+        this.tokens = eventLimit.burst;
+        this.tokensUpdated = Date.now();
+        this.violations = 0;
+
+        this.attachEvents();
+        this.pingLogger.setSocket(socket);
+        this.tickrate.start();
+        this.start();
+
+        // Back on the page of the game, the client says it is ready (see `GameController.onReady`)
+        this.setAway(!!this.canSuspend?.());
+    }
+
+    /**
+     * Close a suspended client for good
+     */
+    finalize() {
+        if (!this.connected && !this.closed) {
+            this.closed = true;
+            super.onClose();
+        }
+    }
+
+    /**
+     * Set away
+     */
+    setAway(away: boolean) {
+        if (this.away !== away) {
+            this.away = away;
+            this.emit('presence', this);
+        }
     }
 
     /**

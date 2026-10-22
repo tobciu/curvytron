@@ -21,9 +21,16 @@ export class Player extends BasePlayer {
     }
 
     /**
+     * Get avatar
+     */
+    override getAvatar(): Avatar {
+        return super.getAvatar() as Avatar;
+    }
+
+    /**
      * Serialize
      */
     override serialize(): PlayerData {
-        return { ...super.serialize(), active: this.client.active };
+        return { ...super.serialize(), active: this.client.active, online: !this.client.away };
     }
 }

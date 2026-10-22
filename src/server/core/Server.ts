@@ -20,6 +20,9 @@ const KEEP_ALIVE_INTERVAL = 30000;
  */
 const MAX_PAYLOAD = 64 * 1024;
 
+/** What a browser sends to be recognized: letters, digits, dashes */
+const SESSION_ID = /^[\w-]{8,64}$/;
+
 /** A socket that answers the pings (see `keepAlive`) */
 type LiveSocket = WebSocket & { isAlive?: boolean };
 
@@ -143,23 +146,66 @@ export class Server extends EventEmitter {
         }
 
         const ip = request.headers['x-real-ip'] || request.socket.remoteAddress;
+        const { searchParams } = new URL(request.url ?? '/', 'http://localhost');
+        const token = searchParams.get('token');
+        const tab = searchParams.get('tab');
 
         this.sockets.handleUpgrade(request, socket, head, (websocket: WebSocket) => {
-            this.onSocketConnection(websocket, ip);
+            this.onSocketConnection(
+                websocket,
+                ip,
+                token && SESSION_ID.test(token) ? token : null,
+                tab && SESSION_ID.test(tab) ? tab : null
+            );
         });
+    }
+
+    /**
+     * Find the client that comes back with this token: the one of the same tab, else the one that lost its connection
+     */
+    findSession(token: string, tab: string | null): SocketClient | null {
+        let found: SocketClient | null = null;
+
+        for (const client of this.clients.items) {
+            if (client.token !== token) {
+                continue;
+            }
+
+            if (tab !== null && client.tab === tab) {
+                return client;
+            }
+
+            if (!client.connected) {
+                found = client;
+            }
+        }
+
+        return found;
     }
 
     /**
      * On socket connection
      */
-    onSocketConnection(socket: LiveSocket, ip: string) {
+    onSocketConnection(socket: LiveSocket, ip: string, token: string | null = null, tab: string | null = null) {
         socket.isAlive = true;
         socket.on('pong', () => {
             socket.isAlive = true;
         });
         socket.on('error', this.onError);
 
+        const session = token ? this.findSession(token, tab) : null;
+
+        if (session) {
+            session.tab = tab;
+            session.resume(socket, ip);
+            console.info('Client %s is back.', session.id);
+
+            return;
+        }
+
         const client = new SocketClient(socket, 1, ip);
+        client.token = token;
+        client.tab = tab;
         this.clients.add(client);
 
         client.on('close', this.onSocketDisconnection);

@@ -56,6 +56,7 @@ export class RoomController extends EventEmitter {
         this.checkForClose = this.checkForClose.bind(this);
         this.removeRoomMaster = this.removeRoomMaster.bind(this);
         this.onPlayersClear = this.onPlayersClear.bind(this);
+        this.onGameEnd = this.onGameEnd.bind(this);
         this.launch = this.launch.bind(this);
 
         this.callbacks = this.createCallbacks(this);
@@ -96,6 +97,9 @@ export class RoomController extends EventEmitter {
             onActivity: function () {
                 controller.onActivity(this);
             },
+            onPresence: function () {
+                controller.onPresence(this);
+            },
 
             onConfigOpen: function (this: SocketClient, data: any) {
                 controller.onConfigOpen(this, data[0], data[1]);
@@ -123,6 +127,7 @@ export class RoomController extends EventEmitter {
         this.room.on('player:join', this.onPlayerJoin);
         this.room.on('player:leave', this.onPlayerLeave);
         this.room.on('game:new', this.onGame);
+        this.room.on('game:end', this.onGameEnd);
         this.kickManager.on('kick', this.onKick);
         this.kickManager.on('vote:new', this.onVoteNew);
         this.kickManager.on('vote:close', this.onVoteClose);
@@ -136,6 +141,7 @@ export class RoomController extends EventEmitter {
         this.room.removeListener('player:join', this.onPlayerJoin);
         this.room.removeListener('player:leave', this.onPlayerLeave);
         this.room.removeListener('game:new', this.onGame);
+        this.room.removeListener('game:end', this.onGameEnd);
         this.kickManager.removeListener('kick', this.onKick);
         this.kickManager.removeListener('vote:new', this.onVoteNew);
         this.kickManager.removeListener('vote:close', this.onVoteClose);
@@ -143,30 +149,65 @@ export class RoomController extends EventEmitter {
     }
 
     /**
+     * What a client needs to know about the room it joins
+     */
+    getJoinData(): Extract<ClientEvents['room:join']['reply'], { success: true }> {
+        return {
+            success: true,
+            room: this.room.serialize(),
+            master: this.roomMaster ? this.roomMaster.id : null,
+            clients: this.clients.map(function () {
+                return this.serialize();
+            }).items,
+            messages: this.chat.serialize(100),
+            votes: this.kickManager.votes.map(function () {
+                return this.serialize();
+            }).items
+        };
+    }
+
+    /**
      * Attach events
      */
     attach(client: SocketClient, callback?: Reply<'room:join'>) {
+        const resuming = client.resuming;
+
+        client.resuming = false;
+
+        if (resuming && this.clients.exists(client)) {
+            this.resume(client, callback);
+
+            return;
+        }
+
         if (this.clients.add(client)) {
             this.attachEvents(client);
             this.onClientAdd(client);
-            callback?.({
-                success: true,
-                room: this.room.serialize(),
-                master: this.roomMaster ? this.roomMaster.id : null,
-                clients: this.clients.map(function () {
-                    return this.serialize();
-                }).items,
-                messages: this.chat.serialize(100),
-                votes: this.kickManager.votes.map(function () {
-                    return this.serialize();
-                }).items
-            });
+            callback?.(this.getJoinData());
             this.socketGroup.addEvent('client:add', client.id);
             this.emit('client:add', { room: this.room, client });
         } else {
             callback?.({ success: false, error: `Client ${client.id} already in the room.` });
         }
         this.checkIntegrity();
+    }
+
+    /**
+     * A client comes back to the room it never left: its connection dropped, or its page was reloaded
+     */
+    resume(client: SocketClient, callback?: Reply<'room:join'>) {
+        callback?.(this.getJoinData());
+
+        if (this.room.game) {
+            client.addEvent('room:game:start');
+        }
+    }
+
+    /**
+     * Can the client wait for its return when its connection drops? Yes while it plays a game
+     */
+    canSuspend(client: SocketClient): boolean {
+        return !!this.room.game && client.isPlaying() && this.clients.exists(client);
     }
 
     /**
@@ -193,6 +234,7 @@ export class RoomController extends EventEmitter {
     attachEvents(client: SocketClient) {
         client.on('close', this.callbacks.onLeave);
         client.on('activity', this.callbacks.onActivity);
+        client.on('presence', this.callbacks.onPresence);
         client.on('room:leave', this.callbacks.onLeave);
         client.on('room:talk', this.callbacks.onTalk);
         client.on('player:add', this.callbacks.onPlayerAdd);
@@ -202,6 +244,7 @@ export class RoomController extends EventEmitter {
         client.on('room:color', this.callbacks.onColor);
         client.on('room:name', this.callbacks.onName);
         client.on('players:clear', this.onPlayersClear);
+        client.canSuspend = () => this.canSuspend(client);
     }
 
     /**
@@ -210,6 +253,7 @@ export class RoomController extends EventEmitter {
     detachEvents(client: SocketClient) {
         client.removeListener('close', this.callbacks.onLeave);
         client.removeListener('activity', this.callbacks.onActivity);
+        client.removeListener('presence', this.callbacks.onPresence);
         client.removeListener('room:leave', this.callbacks.onLeave);
         client.removeListener('room:talk', this.callbacks.onTalk);
         client.removeListener('player:add', this.callbacks.onPlayerAdd);
@@ -219,6 +263,7 @@ export class RoomController extends EventEmitter {
         client.removeListener('room:color', this.callbacks.onColor);
         client.removeListener('room:name', this.callbacks.onName);
         client.removeListener('players:clear', this.onPlayersClear);
+        client.canSuspend = null;
     }
 
     /**
@@ -236,6 +281,9 @@ export class RoomController extends EventEmitter {
                 if (this.roomMaster && this.roomMaster.id === client.id) {
                     this.removeRoomMaster();
                 }
+
+                // Nothing left to wait for
+                client.finalize();
             }
         }
     }
@@ -394,6 +442,34 @@ export class RoomController extends EventEmitter {
     }
 
     /**
+     * A client lost its connection, or is back: its players are away or back
+     */
+    onPresence(client: SocketClient) {
+        for (const player of client.players.items) {
+            this.socketGroup.addEvent('player:connection', { player: player.id as number, online: !client.away });
+        }
+
+        this.kickManager.updateVotes();
+    }
+
+    /**
+     * The game is over: the players that did not come back are done
+     */
+    onGameEnd() {
+        for (let i = this.clients.items.length - 1; i >= 0; i--) {
+            const client = this.clients.items[i];
+
+            if (client.away) {
+                if (client.connected) {
+                    this.detach(client);
+                } else {
+                    client.finalize();
+                }
+            }
+        }
+    }
+
+    /**
      * On client activity change
      */
     onActivity(client: SocketClient) {
@@ -418,10 +494,6 @@ export class RoomController extends EventEmitter {
             return callback?.({ success: false, error: 'Invalid name.' });
         }
 
-        if (this.room.game) {
-            return callback?.({ success: false, error: 'Game already started.' });
-        }
-
         if (
             client.players.count() >= RoomController.maxPlayersPerClient ||
             this.room.players.count() >= RoomController.maxPlayers
@@ -442,6 +514,8 @@ export class RoomController extends EventEmitter {
 
         if (this.room.addPlayer(player)) {
             client.players.add(player);
+            // A game that already started takes the player in at the next round
+            this.room.game?.addPlayer(player);
             this.emit('player:add', { room: this.room, player });
             callback?.({ success: true });
             this.nominateRoomMaster();

@@ -58,32 +58,39 @@ export class GameStats {
         this.onBonusCatch = this.onBonusCatch.bind(this);
 
         for (const avatar of game.avatars.items) {
-            this.players.set(avatar.id, {
-                id: avatar.id,
-                name: avatar.name,
-                color: avatar.color,
-                score: 0,
-                roundsWon: 0,
-                bonuses: 0,
-                bonusesByType: {},
-                wallDeaths: 0,
-                selfDeaths: 0,
-                trailDeaths: 0,
-                kills: 0,
-                nearMisses: 0,
-                squeezes: 0,
-                distance: 0,
-                trailLength: 0,
-                longestLife: 0
-            });
-
-            avatar.on('die', this.onDie);
-            avatar.on('position', this.onPosition);
+            this.addAvatar(avatar);
         }
 
         game.on('game:start', this.onRoundStart);
         game.on('round:end', this.onRoundEnd);
         game.bonusManager.on('bonus:catch', this.onBonusCatch);
+    }
+
+    /**
+     * Count the statistics of an avatar
+     */
+    addAvatar(avatar: Avatar) {
+        this.players.set(avatar.id, {
+            id: avatar.id,
+            name: avatar.name,
+            color: avatar.color,
+            score: 0,
+            roundsWon: 0,
+            bonuses: 0,
+            bonusesByType: {},
+            wallDeaths: 0,
+            selfDeaths: 0,
+            trailDeaths: 0,
+            kills: 0,
+            nearMisses: 0,
+            squeezes: 0,
+            distance: 0,
+            trailLength: 0,
+            longestLife: 0
+        });
+
+        avatar.on('die', this.onDie);
+        avatar.on('position', this.onPosition);
     }
 
     /**

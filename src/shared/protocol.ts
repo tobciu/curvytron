@@ -35,6 +35,8 @@ export interface PlayerData {
     ready: boolean;
     /** Is the client of the player active (its window has the focus)? */
     active?: boolean;
+    /** Is the player connected? A player whose connection dropped stays in the game until it ends */
+    online?: boolean;
 }
 
 export interface ClientData {
@@ -142,12 +144,17 @@ export interface ServerEvents {
     'player:ready': { player: number; ready: boolean };
     'player:name': { player: number; name: string };
     'player:color': { player: number; color: string };
+    /** A player lost the connection (`online: false`) or came back */
+    'player:connection': { player: number; online: boolean };
     'vote:new': VoteData;
     'vote:close': VoteData;
     // In the game
     'game:start': void;
     'game:stop': void;
+    /** The avatar sits out from now on: its player left or is away */
     'game:leave': number;
+    /** The avatar takes part again: its player is back, or came in the middle of the game */
+    'game:join': number;
     'game:spectators': number;
     'game:stats': GameStatsData;
     /** Statistics are sent at the end of every round */
@@ -176,7 +183,15 @@ export interface ServerEvents {
     /** `[avatar id, method, bonus id, type, duration]` */
     'bonus:stack': [number, string, number, string, number];
     /** What a client that comes in the middle of a game needs to know */
-    spectate: { inRound: boolean; rendered: boolean; maxScore: number };
+    spectate: {
+        inRound: boolean;
+        rendered: boolean;
+        maxScore: number;
+        /** Size of the map, which depends on the number of avatars that take part */
+        size: number;
+        /** Avatars that do not take part for now */
+        away: number[];
+    };
 }
 
 /** The callback of a handler: answers an event of the client */
