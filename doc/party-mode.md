@@ -1,114 +1,116 @@
-# Party mode (draft)
+# Party-Modus (Entwurf)
 
-Status: idea and plan, nothing is implemented. Open questions are at the end.
+Stand: Idee und Plan, nichts ist umgesetzt. Die offenen Fragen stehen am Ende.
 
-## Idea
+## Idee
 
-An alternative way to score a game, like the stars of Mario Party: driving well stays the base, but it is not enough
-any more. A player also has to take care of other things: collect bonuses even when they do not want to, drive riskier,
-chase the leader.
+Eine alternative Art, ein Spiel zu werten, ähnlich den Sternen bei Mario Party: Gut fahren bleibt die Grundlage, reicht
+aber nicht mehr aus. Man muss sich auch um andere Dinge kümmern: Bonis einsammeln, auch wenn man nicht will, riskanter
+fahren, den Führenden jagen.
 
-There is **one score** only (no second currency). That keeps `PlayerList`, the ranking and the end of the game as they
-are. The stars are only a special source of points with a high value.
+Es gibt **nur eine Punktzahl** (keine zweite Währung). So bleiben `PlayerList`, die Rangliste und das Spielende
+unverändert. Die Sterne sind nur eine besondere Punktequelle mit hohem Wert.
 
-## Where we start
+## Ausgangslage
 
-- **Points today**: every death gives points by order (`Game.kill`, number of avatars already dead), the winner of the
-  round gets n-1 more (`resolveScores`). The first to reach `maxScore` wins the game (`isWon`).
-- **Bonuses**: `BonusManager.testCatch` emits `bonus:catch`, `GameStats` already listens to it.
-- **Statistics**: `GameStats` counts over the whole game. Per round there is only the winner and the duration
-  (`rounds[]`). Values per round are already in `doc/todo.md` and are the first step for this mode.
-- **Skill measures**: near misses and squeezes exist (`testSurroundings`), nothing counts while an avatar is invincible.
-- **Pause between rounds**: `warmdownTime = 5000`, `warmupTime = 3000` (`BaseGame`). The awards are shown at the end of
-  the game only, because 5 s are too short to read them.
-- **Display**: `PlayerList.vue` shows `+roundScore` and `score`.
+- **Punkte heute**: Jeder Tod gibt Punkte nach Reihenfolge (`Game.kill`, Anzahl der bereits toten Avatare), der
+  Rundensieger bekommt zusätzlich n-1 (`resolveScores`). Wer zuerst `maxScore` erreicht, gewinnt das Spiel (`isWon`).
+- **Bonis**: `BonusManager.testCatch` löst `bonus:catch` aus, `GameStats` hört schon darauf.
+- **Statistiken**: `GameStats` zählt über das ganze Spiel. Pro Runde gibt es nur Sieger und Dauer (`rounds[]`). Die Werte
+  pro Runde stehen schon in `doc/todo.md` und sind der erste Schritt für diesen Modus.
+- **Fahrstil-Messwerte**: Near Misses und Squeezes gibt es (`testSurroundings`), bei Unverwundbarkeit zählt nichts.
+- **Pause zwischen den Runden**: `warmdownTime = 5000`, `warmupTime = 3000` (`BaseGame`). Die Auszeichnungen werden nur am
+  Spielende gezeigt, weil 5 s zum Lesen zu kurz sind.
+- **Anzeige**: `PlayerList.vue` zeigt `+roundScore` und `score`.
 
-## Sources of points in party mode
+## Punktequellen im Party-Modus
 
-### 1. Round missions ("bonus stars" after the round)
+### 1. Rundenmissionen („Bonus-Sterne" nach der Runde)
 
-- At the start of a round 2 missions are drawn from a pool and shown to everybody.
-- After the round the best player of a mission gets a star, worth about 3 points.
-- The missions are **announced** before the round (Mario Party reveals them at the end). That changes the behavior:
-  people drive close to trails or hunt bonuses although they would play safe otherwise.
-- Tie: all the tied players get the star. Value 0: nobody gets it.
+- Zu Rundenbeginn werden 2 Missionen aus einem Pool gezogen und allen angezeigt.
+- Nach der Runde bekommt der Beste jeder Mission einen Stern, etwa 3 Punkte wert.
+- Die Missionen werden **vorher angesagt** (Mario Party deckt sie erst am Ende auf). Das ändert das Verhalten: Man fährt
+  nah an Trails oder jagt Bonis, obwohl man sonst sicher fahren würde.
+- Gleichstand: Alle Gleichplatzierten bekommen den Stern. Bei Wert 0 bekommt niemand einen.
 
 Pool:
 
-| Mission | Measure |
+| Mission | Messwert |
 |---|---|
-| Close combat | most near misses |
-| Needle's eye | most squeezes |
-| Collector | most bonuses caught |
-| Hunter | most kills on one's own trail |
-| Wall rider | longest time close to the wall without dying |
-| Marathon | longest distance |
-| Kamikaze | first to die, but takes somebody with them |
-| Comeback | wins a round after being last in the one before |
-| Tough | survives with at least 2 malus bonuses of enemies |
+| Nahkampf | meiste Near Misses |
+| Nadelöhr | meiste Squeezes |
+| Sammler | meiste Bonis eingesammelt |
+| Jäger | meiste Kills auf den eigenen Trail |
+| Wandläufer | längste Zeit nah an der Wand, ohne zu sterben |
+| Marathon | längste Strecke |
+| Kamikaze | als Erster gestorben, aber dabei jemanden mitgenommen |
+| Comeback | gewinnt eine Runde nach letztem Platz in der Runde davor |
+| Hartnäckig | überlebt mit mindestens 2 Mali von Gegnern |
 
-### 2. Star item in the field
+### 2. Stern als Item im Spielfeld
 
-- A new bonus type "Star" (through the bonus registry, see `doc/bonuses.md`), no effect, +2 points when caught.
-- Rare: at most 1 or 2 per round, and placed on purpose at risky places (close to the wall or to trails) instead of
-  equally spread like the normal bonuses. That needs its own placement next to `BonusManager.getRandomPosition`.
-- It forces people to join in. Open: does it disappear after some time (more pressure)?
+- Neuer Bonus-Typ „Stern" (über das Bonus-Registry, siehe `doc/bonuses.md`), ohne Effekt, +2 Punkte beim Einsammeln.
+- Selten: höchstens 1 bis 2 pro Runde, bewusst an riskanten Orten (nah an Wand oder Trails) statt gleichverteilt wie die
+  normalen Bonis. Dafür braucht es eine eigene Platzierung neben `BonusManager.getRandomPosition`.
+- Er zwingt zum Mitmachen. Offen: Verschwindet er nach einer Zeit wieder (mehr Druck)?
 
-### 3. How the game is won
+### 3. Wie das Spiel gewonnen wird
 
-- A fixed number of rounds (for example 8) instead of `maxScore`: the length can be planned and the suspense stays
-  until the end, because stars can change everything.
-- Finale: in the last 2 rounds everything counts double.
+- Feste Rundenzahl (zum Beispiel 8) statt `maxScore`: Die Dauer ist planbar, und die Spannung bleibt bis zum Schluss,
+  weil Sterne alles drehen können.
+- Finale: In den letzten 2 Runden zählt alles doppelt.
 
-## More ideas, ordered by effort
+## Weitere Ideen, nach Aufwand sortiert
 
-| Idea | Effect | Effort |
+| Idee | Wirkung | Aufwand |
 |---|---|---|
-| Overlay between rounds with the breakdown of the points (place, missions, star) and a longer pause (8-10 s), in this mode only | visibility, drama | low |
-| Help for the last ones: better bonus chances through `getProbability` | no frustration, close races | low |
-| The leader wears the crown (the golden border exists already) | everybody hunts the leader | exists |
-| Thief bonus: takes 1 point from the leader | drama | medium |
-| Chaos round (a random bonus effect every few seconds) | variety | medium |
-| Hidden mission (visible for one player only) | Mario Party feeling | higher |
-| Bets: before the round, put 1 point on the winner | the dead stay involved | higher |
+| Overlay zwischen den Runden mit Aufschlüsselung der Punkte (Platz, Missionen, Stern) und längere Pause (8–10 s), nur in diesem Modus | Sichtbarkeit, Dramatik | gering |
+| Hilfe für die Letzten: bessere Bonus-Chancen über `getProbability` | kein Frust, enge Rennen | gering |
+| Der Führende trägt die Krone (der goldene Rand existiert schon) | alle jagen den Führenden | vorhanden |
+| Dieb-Bonus: nimmt dem Führenden 1 Punkt | Dramatik | mittel |
+| Chaos-Runde (alle paar Sekunden ein zufälliger Bonus-Effekt) | Abwechslung | mittel |
+| Versteckte Mission (nur für einen Spieler sichtbar) | Mario-Party-Gefühl | höher |
+| Wetten: vor der Runde 1 Punkt auf den Sieger setzen | auch Tote bleiben beteiligt | höher |
 
-Proposal for the start: missions, star item and overlay.
+Vorschlag für den Start: Missionen, Stern-Item und Overlay.
 
-## Implementation (rough)
+## Umsetzung (grob)
 
-1. **Statistics per round**: `GameStats` gets a `round` object per player next to the totals, reset in `onRoundStart`
-   (this is the open item of `doc/todo.md`). New counters: time close to the wall, place in the round, malus bonuses
-   survived, order of the deaths.
-2. **Scoring as a strategy**: an interface `ScoringMode` (`classic`, `party`) with the hooks `onKill`,
-   `onBonusCatch` and `onRoundEnd`. `Game.resolveScores` and `isWon` hand over to it. The classic mode does not change.
-3. **Missions module**: the pool, the draw depending on the number of players (squeezes make no sense with 2 players)
-   and the evaluation at the end of the round.
-4. **Room setting**: mode `classic` / `party` and the number of rounds in `BaseRoomConfig` and in the room parameters.
-5. **Protocol** (`src/shared/protocol.ts`): `round:missions` (start) and `round:summary` (end, with the breakdown per
-   player). Reconnect and late join must carry the state: a player that comes back in the middle of a round sees the
-   current missions, and `present` / `away` stay right in the evaluation.
-6. **Client**: display of the missions in the game, overlay between the rounds, sprite of the star (`npm run sprite`).
-7. **Tests**: missions with a tie, players that leave or join, reconnect in the middle of a round, an e2e run of the mode.
+1. **Statistiken pro Runde**: `GameStats` bekommt je Spieler ein `round`-Objekt neben den Gesamtzählern, das in
+   `onRoundStart` zurückgesetzt wird (der offene Punkt aus `doc/todo.md`). Neue Zähler: Zeit nah an der Wand, Platz in
+   der Runde, überlebte Mali, Reihenfolge der Tode.
+2. **Wertung als Strategie**: Ein Interface `ScoringMode` (`classic`, `party`) mit den Hooks `onKill`, `onBonusCatch` und
+   `onRoundEnd`. `Game.resolveScores` und `isWon` geben dorthin ab. Der klassische Modus bleibt unverändert.
+3. **Missions-Modul**: Pool, Ziehung abhängig von der Spielerzahl (Squeezes sind mit 2 Spielern sinnlos) und
+   Auswertung am Rundenende.
+4. **Raum-Einstellung**: Modus `classic` / `party` und Rundenzahl in `BaseRoomConfig` und in den Raumparametern.
+5. **Protokoll** (`src/shared/protocol.ts`): `round:missions` (Start) und `round:summary` (Ende, mit Aufschlüsselung
+   pro Spieler). Reconnect und Late Join müssen den Zustand mitführen: Wer mitten in der Runde zurückkommt, sieht die
+   aktuellen Missionen, und `present` / `away` bleiben bei der Auswertung richtig.
+6. **Client**: Anzeige der Missionen im Spiel, Overlay zwischen den Runden, Sprite für den Stern (`npm run sprite`).
+7. **Tests**: Missionen mit Gleichstand, Spieler, die gehen oder kommen, Reconnect mitten in der Runde, ein e2e-Lauf
+   des Modus.
 
-## Risks
+## Risiken
 
-- **Farming**: near misses can be provoked on purpose. Counter: a cap per round, only the best gets the star, nothing
-  counts while invincible (already so).
-- **Readability**: too many sources dilute the feeling "who was better". Hence only 2 missions and a clear breakdown.
-- **Number of players**: with 2 players the missions are weak. A smaller pool or 1 mission only.
+- **Farming**: Near Misses lassen sich absichtlich provozieren. Gegenmittel: Deckel pro Runde, nur der Beste bekommt den
+  Stern, bei Unverwundbarkeit zählt nichts (ist schon so).
+- **Lesbarkeit**: Zu viele Quellen verwässern das Gefühl „wer war besser". Deshalb nur 2 Missionen und eine klare
+  Aufschlüsselung.
+- **Spielerzahl**: Mit 2 Spielern sind Missionen schwach. Dann ein kleinerer Pool oder nur 1 Mission.
 
-## Open questions
+## Offene Fragen
 
-1. **Win**: fixed number of rounds (can be planned) or still the first to reach a score?
-2. **Missions**: announced before the round (changes the behavior) or revealed at the end (surprise)? Proposal: announce.
-3. **Star item**: in addition to the missions, or left out for the first version?
-4. **Pause**: 8-10 s in party mode only, or a longer pause for all the modes?
+1. **Sieg**: Feste Rundenzahl (planbar) oder weiter wer zuerst eine Punktzahl erreicht?
+2. **Missionen**: Vorher angesagt (ändert das Verhalten) oder erst am Ende enthüllt (Überraschung)? Vorschlag: ansagen.
+3. **Stern-Item**: Zusätzlich zu den Missionen oder für die erste Version weglassen?
+4. **Pause**: 8–10 s nur im Party-Modus oder eine längere Pause für alle Modi?
 
-## Suggested order
+## Vorgeschlagene Reihenfolge
 
-1. Statistics per round (useful without the new mode).
-2. `ScoringMode` interface, the classic mode behind it, unchanged and tested.
-3. Missions + room setting + protocol.
-4. Overlay between the rounds.
-5. Star item.
-6. Further ideas from the table.
+1. Statistiken pro Runde (auch ohne den neuen Modus nützlich).
+2. Interface `ScoringMode`, der klassische Modus dahinter, unverändert und getestet.
+3. Missionen + Raum-Einstellung + Protokoll.
+4. Overlay zwischen den Runden.
+5. Stern-Item.
+6. Weitere Ideen aus der Tabelle.
