@@ -3,64 +3,22 @@
 import { computed } from 'vue';
 import { bonusDefinitions } from '../../../shared/bonuses';
 import type { GameStatsData, PlayerStats } from '../../../shared/model/GameStats';
+import { awardInfo, statInfo } from '../../content/stats';
+import type { StatInfo } from '../../content/stats';
 
 const props = defineProps<{ stats: GameStatsData }>();
 
-/** What the awards are given for */
-const awardInfo: Record<string, { label: string; description: string }> = {
-    bonusHunter: { label: 'Bonus hunter', description: 'Caught the most bonuses.' },
-    wallLover: { label: 'Wall lover', description: 'Crashed the most often on a border.' },
-    clumsy: { label: 'Own worst enemy', description: 'Died the most often on their own trail.' },
-    closeCall: {
-        label: 'Close call',
-        description: 'Passed the most often very close to the trail of another player, without touching it.'
-    },
-    needle: {
-        label: "Needle's eye",
-        description: 'Squeezed the most often between trails of other players that are close to each other.'
-    },
-    hunter: { label: 'Hunter', description: 'Killed the most players on their trail.' },
-    marathon: { label: 'Marathon driver', description: 'Drove the longest distance.' },
-    survivor: { label: 'Survivor', description: 'Stayed alive the longest in a round.' }
-};
-
-/** The columns of the table: what they count */
-const columns = [
-    { label: 'Rounds', description: 'Rounds won.', value: (player: PlayerStats) => player.roundsWon },
+/** The columns of the table: what they count, see `content/stats.ts` */
+const columns: Array<StatInfo & { value: (player: PlayerStats) => number; format?: (value: number) => string }> = [
+    { ...statInfo.roundsWon, value: (player: PlayerStats) => player.roundsWon },
+    { ...statInfo.bonuses, value: (player: PlayerStats) => player.bonuses },
+    { ...statInfo.deaths, value: (player: PlayerStats) => deaths(player) },
+    { ...statInfo.kills, value: (player: PlayerStats) => player.kills },
+    { ...statInfo.nearMisses, value: (player: PlayerStats) => player.nearMisses },
+    { ...statInfo.squeezes, value: (player: PlayerStats) => player.squeezes },
+    { ...statInfo.distance, value: (player: PlayerStats) => player.distance },
     {
-        label: 'Bonuses',
-        description: 'Bonuses caught. Hover a number to see which ones.',
-        value: (player: PlayerStats) => player.bonuses
-    },
-    {
-        label: 'Deaths',
-        description: 'Times the player died. Hover a number to see what killed them.',
-        value: (player: PlayerStats) => deaths(player)
-    },
-    {
-        label: 'Kills',
-        description: 'Players that crashed on the trail of this player.',
-        value: (player: PlayerStats) => player.kills
-    },
-    {
-        label: 'Close calls',
-        description: 'Times the player passed very close to the trail of another player, without touching it.',
-        value: (player: PlayerStats) => player.nearMisses
-    },
-    {
-        label: 'Squeezes',
-        description:
-            'Times the player passed between trails of other players that are close to each other, like a gap.',
-        value: (player: PlayerStats) => player.squeezes
-    },
-    {
-        label: 'Distance',
-        description: 'Distance driven, in the units of the map.',
-        value: (player: PlayerStats) => player.distance
-    },
-    {
-        label: 'Longest life',
-        description: 'Longest time the player stayed alive in a round.',
+        ...statInfo.longestLife,
         value: (player: PlayerStats) => player.longestLife,
         format: (value: number) => `${seconds(value)} s`
     }
@@ -211,5 +169,8 @@ function bonusDetails(player: PlayerStats): string[] {
                 <span class="value">{{ seconds(result.duration) }} s</span>
             </li>
         </ol>
+        <p class="rules-link">
+            <a href="#/rules/statistics" target="_blank" class="animated">How is this counted?</a>
+        </p>
     </div>
 </template>

@@ -1,0 +1,113 @@
+#rules {
+    max-width: 900px;
+    padding-bottom: 40px;
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    h2 {
+        margin-top: 50px;
+        padding-top: 10px;
+        border-top: 2px solid $text-color;
+    }
+
+    h3 {
+        margin: 30px 0 10px;
+        font-weight: $bold-font-weight;
+    }
+
+    a {
+        text-decoration: underline;
+    }
+
+    ul {
+        padding-left: 20px;
+        list-style: disc;
+
+        li {
+            margin-bottom: 6px;
+        }
+    }
+
+    .rules-nav {
+        text-align: center;
+
+        a {
+            display: inline-block;
+            margin: 0 12px 8px;
+            text-decoration: none;
+        }
+    }
+
+    .bonus-table {
+        list-style: none;
+        padding: 0;
+
+        li {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+
+        .text {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .off {
+            margin-left: 8px;
+            padding: 1px 8px;
+            border-radius: 10px;
+            background: $footer-background;
+            font-size: 13px;
+        }
+    }
+
+    .rules-bonus {
+        flex: none;
+        width: $bonus-size;
+        height: $bonus-size;
+        background: url(/images/bonus.png) no-repeat transparent;
+        background-size: $bonus-size * 3 auto;
+        @include bonus-sprite(var(--sprite-column, 0), var(--sprite-line, 0));
+    }
+
+    .mode {
+        margin-bottom: 20px;
+
+        .summary {
+            font-style: italic;
+        }
+    }
+
+    .rules-table {
+        width: 100%;
+        font-size: 16px;
+
+        th {
+            text-align: left;
+        }
+
+        td,
+        th {
+            vertical-align: top;
+            padding: 8px 12px 8px 0;
+        }
+    }
+}
+
+.rules-hint {
+    clear: both;
+    text-align: center;
+    padding-top: 20px;
+    font-size: 16px;
+}
+
+.game-stats .rules-link {
+    text-align: center;
+    font-size: 14px;
+    opacity: 0.7;
+}

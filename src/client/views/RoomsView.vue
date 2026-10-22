@@ -81,16 +81,22 @@ function createRoom(): void {
             </div>
 
             <div class="tuto">
-                <img :src="asset('images/tuto/death.gif')" class="circle" alt="Turning" width="150" height="150" />
+                <img :src="asset('images/tuto/death.gif')" class="circle" alt="Death" width="150" height="150" />
                 <p class="content">If you hit another player's line or your own: you're dead!</p>
             </div>
 
             <div class="tuto">
-                <img :src="asset('images/tuto/bonus.gif')" class="circle" alt="Turning" width="150" height="150" />
+                <img :src="asset('images/tuto/bonus.gif')" class="circle" alt="Bonus" width="150" height="150" />
                 <p class="content">There are bonuses on the map that can help you.</p>
             </div>
 
             <div class="clearfix"></div>
+
+            <p class="rules-hint">
+                New here, or want to get better?
+                <RouterLink to="/rules" class="animated">Read the rules</RouterLink>: controls, bonuses, game modes
+                and what the statistics count.
+            </p>
         </div>
 
         <div class="container room-list">

@@ -66,21 +66,24 @@ function reload(): void {
         <div class="container">
             <div class="row">
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 no-padding-bottom">
-                    <a href="https://github.com/Elao/curvytron" target="_blank" class="ml10 animated"
+                    <a
+                        href="https://github.com/tobciu/curvytron"
+                        target="_blank"
+                        rel="noopener"
+                        class="ml10 animated"
+                        title="Source code on GitHub"
                         ><i class="icon-github"></i
                     ></a>
-                    <a href="http://twitter.com/curvytron" target="_blank" class="ml10 animated"
-                        ><i class="icon-twitter"></i
-                    ></a>
-                    <a href="http://www.reddit.com/r/curvytron" target="_blank" class="ml10 animated"
-                        ><i class="icon-reddit"></i
-                    ></a>
+                    <RouterLink to="/rules" class="ml15 animated">Rules</RouterLink>
                     <RouterLink to="/about" class="ml15 animated">About Us</RouterLink>
                 </div>
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 no-padding-bottom text-right">
-                    <a href="http://www.elao.com" class="game-copy animated" target="_blank">
-                        Handmade at Elao with <i class="icon-love"></i>
-                    </a>
+                    <span class="game-copy">
+                        A fork of
+                        <a href="https://github.com/Elao/curvytron" target="_blank" rel="noopener" class="animated"
+                            >Curvytron</a
+                        >
+                    </span>
                 </div>
             </div>
         </div>

@@ -13,7 +13,7 @@ const maxStep = 5;
 /**
  * Awards: the player with the highest value of the field gets it, if it is not a tie and not zero
  */
-const awardFields: Record<string, keyof PlayerStats> = {
+export const awardFields: Record<string, keyof PlayerStats> = {
     bonusHunter: 'bonuses',
     wallLover: 'wallDeaths',
     clumsy: 'selfDeaths',
