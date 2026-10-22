@@ -55,7 +55,7 @@ export const statInfo = {
     distance: {
         label: 'Distance',
         description: 'Distance driven, in the units of the map.',
-        how: 'Stay alive and move: the longer you live, the further you go. Faster speed helps, a teleport through the border does not count.'
+        how: 'Stay alive and keep moving: the longer you live, the further you go. Every bit counts, also while you are invincible (Master bonus) and without a trail. Faster speed helps, a jump over the border does not count.'
     },
     longestLife: {
         label: 'Longest life',
@@ -126,6 +126,6 @@ export const awardInfo: Record<string, StatInfo & { field: keyof PlayerStats }> 
 export const countingRules: readonly string[] = [
     'Statistics are counted for the whole game, over all rounds, and shown with the final ranking.',
     'An award goes to the player with the highest value. Nobody gets it for a value of zero or for a tie.',
-    'Close calls, squeezes and gap runs are not counted while you are invincible, it would be too easy and takes no courage.',
+    'Close calls, squeezes and gap runs are not counted while you are invincible, it would be too easy and takes no courage. The other statistics (distance, bonuses, kills) count as usual.',
     'Players who join a running game start counting when they join.'
 ];
