@@ -7,7 +7,7 @@ import type { Avatar, Game } from '../../types';
 
 const props = defineProps<{ game: Game }>();
 
-const { client, gameRepository } = useServices();
+const { client, gameRepository, roomRepository } = useServices();
 
 const game = shallowRef(props.game);
 const bump = () => triggerRef(game);
@@ -39,7 +39,10 @@ useEvents(client, ['score:round'], ({ detail }) => {
     }
 });
 
-useEvents(client, ['game:leave', 'game:join', 'player:connection'], bump);
+useEvents(client, ['game:leave', 'game:join'], bump);
+
+// The repository tells it once the player is updated: the same event of the socket may come before that
+useEvents(roomRepository, ['player:connection'], bump);
 
 // A player came in the middle of the game
 useEvents(gameRepository, ['game:player'], () => {
