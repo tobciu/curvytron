@@ -187,14 +187,16 @@ Die Statistik wächst. Wer vor der Einführung von "Gap runs" gespielt hat, hat 
 ### 4.5 Tags
 
 Ein Tag gruppiert Spiele nach einem Anlass: `daily` für die Runden nach dem Daily, `launch` nach der
-Produktvorstellung und so weiter. Er hat zwei Orte:
+Produktvorstellung und so weiter.
 
-- **Raumeinstellungen**: Ein Textfeld "Tag (optional)" in den Raumparametern, nur der Spielleiter des Raums ändert es,
-  wie die übrigen Einstellungen. Es ist Teil von `RoomConfig` (Server und Client) und damit für alle im Raum sichtbar.
-- **Gespeichert** wird der Tag zum Zeitpunkt des Spielendes in `games.tag`.
+- **Gesetzt** wird er **beim Erstellen des Raums** (Feld "Tag" unter der Raumliste), also vom Spielleiter, der den Raum
+  anlegt. Er ist eine Eigenschaft des Raums (`Room.tag`), nicht der Raumeinstellungen, und lässt sich **später nicht
+  mehr ändern**, auch nicht an abgeschlossenen Spielen. Alle Spiele eines Raums tragen denselben Tag. Er steht in der
+  Raumliste und in der Raumansicht, damit alle wissen, wofür gespielt wird.
+- **Gespeichert** wird er zum Zeitpunkt des Spielendes in `games.tag`.
 
 Regeln: höchstens 24 Zeichen, nach dem Bereinigen nur `a-z`, `0-9` und `-` (aus "Daily Runde" wird `daily-runde`),
-leer bedeutet "kein Tag". Das Feld schlägt die zuletzt benutzten Tags vor (`GET /api/tags`), damit nicht jeder eine
+leer bedeutet "kein Tag". Das Feld soll ab Stufe 3 die zuletzt benutzten Tags vorschlagen (`GET /api/tags`), damit nicht jeder eine
 eigene Schreibweise erfindet. Die Seite `#/stats` filtert nach Tag (Bestenliste, Spiele, Rekorde), damit "die Daily-Runde"
 eine eigene Rangliste hat.
 
@@ -261,11 +263,12 @@ Spiels nicht erreichbar ist.
 
 Name und Identitäts-Hash gelten schon in einem Freundeskreis als personenbezogene Daten. Deshalb:
 
-- **Schalter "Show me in public lists"** im Profil (Standard: an). Aus bedeutet: Der Name erscheint in der Bestenliste,
-  den Rekorden und der Spieleliste als **"Anonymous"**, und die Bestenliste führt den Spieler nicht mehr. Die Spiele
-  selbst bleiben gespeichert (sonst fehlen den anderen Ergebnisse), die Zuordnung läuft im Server über `players.public`
-  und gilt **rückwirkend**: Wer den Schalter später ausschaltet, verschwindet auch aus alten Spielen. Gäste
-  (weitere lokale Spieler) können sich nicht herausnehmen.
+- **Schalter "Show me in public lists"** im Profil (Standard: an). Aus bedeutet: **Im Spiel und in der Lobby bleibt der
+  echte Name** (dort sitzen die Mitspielenden ohnehin mit am Tisch). In allem, was **später** nachgeschlagen wird, steht
+  der Spieler als **"Anonymous"**: in der Bestenliste, in den Rekorden und im Verlauf der Spiele, und die Bestenliste
+  führt ihn nicht mehr. Die Spiele selbst bleiben gespeichert (sonst fehlen den anderen Ergebnisse), die Zuordnung
+  läuft im Server über `players.public` und gilt **rückwirkend**: Wer den Schalter später ausschaltet, verschwindet auch
+  aus alten Spielen. Gäste (weitere lokale Spieler) können sich nicht herausnehmen.
 - **"Delete my data"** (Stufe 4): löscht den `players`-Eintrag; die Spiele bleiben, der Spieler darin wird zum Gast
   (`ON DELETE SET NULL`) und sein Name im Spiel wird durch "Anonymous" ersetzt.
 - Die Seite `#/stats` sagt klar, **was** gespeichert wird und **für wen** es sichtbar ist (alle, die den Server
@@ -287,8 +290,8 @@ src/shared/model/GameResult.ts   # das serialisierbare Ergebnis eines Spiels, au
 - **`GameResult`** ist ein reines Datenobjekt: Spiel (Zeiten, Raum, Runden, Maximalpunkte, Konfiguration), Spieler
   (Name, Farbe, Rang, Punkte, Zähler, Token-Hash oder nichts) und Feats. Es wird aus `GameStats.serialize()` und den
   Avataren gebaut. `GameStats.serialize()` liefert das schon als reines Datenobjekt (der Todo-Punkt "serializable" ist damit der Sache nach erledigt).
-- **Tag**: `RoomConfig` bekommt das Feld `tag` (Server und Client, validiert wie die übrigen Felder), `result.ts` nimmt
-  es beim Spielende aus der Konfiguration.
+- **Tag**: `Room.tag` (Server und Client), gesetzt beim Erstellen (`room:create`, bereinigt mit `normalizeTag`), `result.ts` nimmt
+  es beim Spielende aus dem Raum.
 - **Einhängen**: `Server` erzeugt den Speicher (je nach Konfiguration) und gibt ihn dem `RoomRepository`. Wenn ein Spiel
   entsteht (`Room.createGame`), hört der Speicher auf dessen `end`-Ereignis und ruft `saveGame(result)`.
 - **Identität**: Der Client schickt den Identitätscode nach dem Verbinden als Nachricht (nicht in der Adresse, 5.1), der
@@ -348,12 +351,12 @@ Die Feats sollen in den Listen **nicht** verraten, was sie sind. Das gilt für d
 - Die Feats **im Spiel** (am Rundenende und Spielende) ändern sich nicht: Dort sehen die Mitspielenden Namen und
   Beschreibung, das ist der Moment, in dem man sie entdecken soll.
 
-### 7.4 Die eigenen Feats (offen)
+### 7.4 Die eigenen Feats
 
 Soll ich mir meine **eigenen** erhaltenen Feats später mit Namen ansehen können (`GET /api/me`)? Dafür spricht: Man
 hat sie im Spiel schon gesehen, und es wäre schade, sie nur noch als "?" zu haben. Dagegen spricht: Wer ein Feat nie
 bemerkt hat, würde es hier erfahren. Mein Vorschlag: In `GET /api/me` stehen die eigenen Feats **mit** Namen, und alle
-anderen sehen "?". Das ist eine Entscheidung (Abschnitt 11, Frage 8).
+anderen sehen "?". Entschieden: so.
 
 ### 7.5 Fairness der Bestenliste
 
@@ -423,18 +426,13 @@ Jede Stufe ist ein eigener PR und für sich nützlich:
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Identität         | Browser-Code, mit Möglichkeit zum Drehen und Setzen (für einen anderen Browser); als **eigener** Code, nicht das Sitzungs-Token (5.1) |
 | Standard          | Direkt an                                                                                                                             |
-| Sichtbarkeit      | Mit Schalter, der Name wird zu "Anonymous" (5.4)                                                                                      |
+| Sichtbarkeit      | Mit Schalter: im Spiel und in der Lobby der echte Name, in den gespeicherten Listen "Anonymous" (5.4)                                 |
 | Welche Spiele     | Alle, auch zu zweit und ohne Sieger; dazu ein **Tag** zum Gruppieren (4.5)                                                            |
 | Aufbewahrung      | Alles behalten                                                                                                                        |
 | Datenbank         | `node:sqlite`                                                                                                                         |
 | Sprache der Seite | Englisch                                                                                                                              |
 | Versteckte Feats  | Auf `#/stats` und in der Schnittstelle nur als "?" (7.3)                                                                              |
+| Eigene Feats      | In `GET /api/me` mit Namen, alle anderen sehen "?" (7.4)                                                                              |
+| Tag               | Wird beim Erstellen des Raums vom Spielleiter gesetzt, später **nicht** änderbar (auch nicht an abgeschlossenen Spielen) (4.5)        |
 
-### Noch offen
-
-8. **Eigene Feats mit Namen?** In `GET /api/me` mit Namen (Vorschlag) oder auch für mich nur als "?" (7.4)?
-9. **"Anonymous"**: Ein Spieler, der sich aus den Listen nimmt, steht überall als "Anonymous" (Vorschlag). Alternative:
-   Er erscheint mit seinem Namen im Verlauf der Spiele, aber nicht in Bestenliste und Rekorden. Welche?
-10. **Tag nachträglich ändern**: Soll man den Tag eines abgeschlossenen Spiels später ändern können (zum Beispiel, wenn
-    man ihn vergessen hat)? Mein Vorschlag: nein in Stufe 1, vielleicht später für den Spielleiter eines Raums.
-11. **Wer darf den Tag setzen**: nur der Spielleiter des Raums (Vorschlag), oder jeder Spieler?
+Es gibt keine offenen Fragen mehr.
