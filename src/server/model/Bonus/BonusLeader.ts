@@ -72,6 +72,7 @@ export class BonusLeader extends Bonus {
         if (leader === null || leader.score === 0) {
             return 0;
         }
-        return BonusLeader.probability;
+        // A mode can make the bonuses against the leader come more often when the game is one-sided
+        return BonusLeader.probability * (game.scoring?.leaderBonusFactor?.(game) ?? 1);
     }
 }

@@ -10,6 +10,9 @@ import type { ScoringMode } from './ScoringMode.ts';
 /** How often the standing of the missions is looked at during a round (ms) */
 const checkInterval = 250;
 
+/** The most the bonuses against the leader get more likely: 1 + this */
+const maxLeaderBonusHelp = 1.5;
+
 /**
  * Star Chase: the points of the classic scoring, and on top of it the missions of the round. Every round has some
  * missions that everybody sees; the best of each one gets points. (The stars come with their own bonus.)
@@ -57,6 +60,15 @@ export const starChaseMode: ScoringMode = {
         if (changes.length > 0) {
             game.emit('mission:progress', changes);
         }
+    },
+
+    leaderBonusFactor(game) {
+        const scores = game.getPresentAvatars().items.map(({ score }) => score);
+        const roundWin = Math.max(scores.length - 1, 1);
+        const lead = (Math.max(0, ...scores) - Math.min(...scores)) / roundWin;
+
+        // Every round win of difference makes the bonuses against the leader half as likely again, up to 2.5 times
+        return 1 + Math.min(lead / 2, maxLeaderBonusHelp);
     },
 
     onKill: classicMode.onKill,

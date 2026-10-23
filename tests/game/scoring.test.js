@@ -168,3 +168,38 @@ describe('the end of a game played for some time', () => {
         expect(game.isWon()).toBe(bob);
     });
 });
+
+describe('help for the players behind', () => {
+    const leaderFast = async () => (await import('../../src/server/model/Bonus/BonusLeaderFast.ts')).BonusLeaderFast;
+
+    it('makes the bonuses against the leader likelier the more one-sided the game is, in Star Chase only', async () => {
+        const BonusLeaderFast = await leaderFast();
+
+        setup((config) => config.setMode('starchase'));
+
+        // Nobody is ahead: the usual chance (0 without a leader)
+        expect(BonusLeaderFast.getProbability(game)).toBe(0);
+
+        alice.setScore(2);
+        // A lead of one round win (two points for three players): half as likely again
+        expect(game.scoring.leaderBonusFactor(game)).toBeCloseTo(1.5);
+        expect(BonusLeaderFast.getProbability(game)).toBeCloseTo(0.75);
+
+        alice.setScore(12);
+        // Six round wins ahead: the most, 2.5 times (from three on)
+        expect(BonusLeaderFast.getProbability(game)).toBeCloseTo(1.25);
+
+        alice.setScore(40);
+        expect(BonusLeaderFast.getProbability(game)).toBeCloseTo(1.25);
+    });
+
+    it('leaves the classic mode as it is', async () => {
+        const BonusLeaderFast = await leaderFast();
+
+        setup();
+        alice.setScore(12);
+
+        expect(game.scoring.leaderBonusFactor).toBeUndefined();
+        expect(BonusLeaderFast.getProbability(game)).toBe(0.5);
+    });
+});

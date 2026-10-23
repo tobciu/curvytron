@@ -16,6 +16,11 @@ export interface ScoringMode {
     onRoundStart?(game: Game): void;
     /** Every frame of a running round: the mode must be quick */
     onFrame?(game: Game, now: number): void;
+    /**
+     * How much more often the bonuses against the leader come, 1 for the usual chance: the players behind get help when the
+     * game gets one-sided
+     */
+    leaderBonusFactor?(game: Game): number;
     /** An avatar died: `place` is the number of avatars that died before it, the points of its place in the round */
     onKill(game: Game, avatar: Avatar, place: number): void;
     /** An avatar caught a bonus */

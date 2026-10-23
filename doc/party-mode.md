@@ -177,11 +177,16 @@ Runde dauert, in Verbindung mit Spielerzahl und Kartengröße (siehe 8.2), und d
 | Idee | Wirkung | Aufwand |
 |---|---|---|
 | Ziel-Missionen („schaffe mindestens …"), gestaffelt in Bronze / Silber / Gold (1 / 2 / 3 Punkte) | leichte Ziele geben weniger, schwere mehr | mittel (feste Schwellen aus Spieldaten) |
-| Hilfe für die Letzten: bessere Bonus-Chancen über `getProbability` | kein Frust, enge Rennen | gering |
+| Hilfe für die Letzten: bessere Bonus-Chancen über `getProbability` | kein Frust, enge Rennen | gering. **Umgesetzt** (siehe unten) |
 | Dieb-Bonus: nimmt dem Führenden 1 Punkt | Dramatik | mittel |
 | Chaos-Runde (alle paar Sekunden ein zufälliger Bonus-Effekt) | Abwechslung | mittel |
 | Versteckte Mission (nur für einen Spieler sichtbar) | Mario-Party-Gefühl | höher |
 | Wetten: vor der Runde 1 Punkt auf den Rundensieger setzen | auch Tote bleiben beteiligt | höher |
+
+**Hilfe für die Letzten (umgesetzt)**: In der Sternenjagd kommen die Bonis gegen den Führenden (`BonusLeader*`) häufiger, je
+einseitiger das Spiel ist. Der Abstand zwischen dem Ersten und dem Letzten wird in Rundensiegen gemessen (`n-1` Punkte): jeder
+Rundensieg Abstand erhöht die Chance um die Hälfte des Grundwerts, höchstens auf das 2,5-fache (ab drei Rundensiegen Abstand)
+(`ScoringMode.leaderBonusFactor`, `BonusLeader.getProbability`). Im klassischen Modus bleibt alles beim Alten.
 
 Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das bleibt in beiden Modi.
 
