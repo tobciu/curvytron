@@ -51,7 +51,8 @@ function valueOf(id: MissionId, counters: RoundCounters): number {
         collector: counters.bonuses,
         hunter: counters.kills,
         wallRunner: counters.wallTime,
-        marathon: counters.distance
+        marathon: counters.distance,
+        saboteur: counters.sabotages
     }[id as 'closeCombat'];
 
     return Math.min(Math.round(raw ?? 0), cap);
@@ -135,12 +136,7 @@ export class MissionRound {
             return alive ? 'open' : 'missed';
         }
 
-        // stubborn
-        if (counters.malusesSurvived >= 2) {
-            return 'done';
-        }
-
-        return alive && !ended ? 'open' : 'missed';
+        return 'missed';
     }
 
     /** How a mission stands right now */

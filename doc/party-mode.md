@@ -76,16 +76,16 @@ Beim **Finale** (siehe Abschnitt 6) zählt jede Quelle doppelt.
   Spielern vergleicht.
 - Jede Mission zählt pro Runde für einen Spieler nur einmal. Dieselbe Mission kann in späteren Runden wieder gezogen
   werden, aber nicht in der direkt folgenden.
-- Die Ziehung richtet sich auch nach den Bonis des Raums: „Sammler" braucht mindestens einen aktiven Bonus, „Hartnäckig"
+- Die Ziehung richtet sich auch nach den Bonis des Raums: „Sammler" braucht mindestens einen aktiven Bonus, „Saboteur"
   mindestens zwei aktive schädliche Bonis (`harmfulBonuses` in `src/shared/missions.ts`: die Bonis der anderen, die
   schneller, dicker, invertiert oder eckig machen; die langsamen helfen dem Getroffenen und zählen nicht, die Leader-Bonis
   auch nicht: sie treffen nur den Führenden, der dafür auch noch eine Mission bekäme).
 - Die Ziehung richtet sich nach der Spielerzahl: Missionen, die mit wenigen Spielern sinnlos sind (zum Beispiel
   Nadelöhr), werden dann nicht gezogen. Bei 2 Spielern wird nur 1 Mission gezogen.
 - Nichts zählt, solange ein Avatar unverwundbar ist (wie bei den Statistiken); gemeint sind Beinahe-Treffer, Engstellen,
-  Wandzeit, Strecke, Bonis und Mali (Kills zählen, sie stammen aus dem Trail). Pro Mission und Runde gibt es einen Deckel für
+  Wandzeit, Strecke und Bonis (Kills zählen, sie stammen aus dem Trail). Pro Mission und Runde gibt es einen Deckel für
   den Zähler, damit sich Werte nicht absichtlich hochtreiben lassen (Startwerte in `src/shared/missions.ts`: Nahkampf 15,
-  Nadelöhr 10, Sammler 8, Jäger 10, Wandläufer 60 s).
+  Nadelöhr 10, Sammler 8, Jäger 10, Wandläufer 60 s, Saboteur 6).
 
 ### 4.2 Pool
 
@@ -99,7 +99,7 @@ Beim **Finale** (siehe Abschnitt 6) zählt jede Quelle doppelt.
 | Marathon | die längste Strecke fährt |
 | Kamikaze | als Erster stirbt, dabei aber jemanden mitnimmt |
 | Comeback | die Runde gewinnt, nachdem er in der Runde davor Letzter war |
-| Hartnäckig | mindestens 2 Mali von Gegnern bis zum Ablaufen überlebt (ein Malus zählt, wenn der Avatar beim Ende seiner Wirkung noch lebt) |
+| Saboteur | die meisten schädlichen Bonis einsammelt (die alle anderen treffen, siehe 4.1) |
 
 ### 4.3 Anzeige während der Runde
 
@@ -109,7 +109,7 @@ Spielfeld ab: Nur der Stand ändert sich.
 - Je Mission: Name, kurze Beschreibung, der eigene Wert und der Wert des Führenden, zum Beispiel „du: 3 · Anna führt mit 5".
 - Status je Mission: **führt** (der Stern wäre jetzt deiner), **gleichauf** oder **hinten** (mit Abstand zum Führenden).
   Es wird bewusst nie angezeigt, dass jemand „keine Chance mehr" hat: Das würde nur demotivieren.
-- Ja/Nein-Missionen (Kamikaze, Comeback, Hartnäckig) zeigen „offen", „geschafft" oder „verpasst".
+- Ja/Nein-Missionen (Kamikaze, Comeback) zeigen „offen", „geschafft" oder „verpasst".
 - Wer gerade einen Stern halten würde, trägt einen kleinen Stern neben dem Namen in der Spielerliste.
 - Am Rundenende zeigt das Overlay das Ergebnis jeder Mission und wer den Stern bekommen hat.
 
@@ -194,7 +194,7 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
    offene Punkt „Werte pro Runde" in `doc/todo.md`). Es ist reiner Laufzeitzustand und wird nicht in `stats_json`
    geschrieben, `statsVersion` bleibt unverändert. Es wird an derselben Stelle gefüllt wie die Gesamtzähler (in `onDie`
    vor `feats.die`). Zähler: Nahbeinahe, Engstellen, Bonis, Kills, Strecke, Zeit nah an der Wand, Platz in der Runde,
-   Reihenfolge der Tode, überlebte Mali (Herkunft des Malus nötig). Feat und Mission nutzen denselben Wandabstand
+   Reihenfolge der Tode, eingesammelte schädliche Bonis. Feat und Mission nutzen denselben Wandabstand
    (`wallRiderRadii`), aber nicht dieselbe Dauer: Die Mission zählt die Gesamtzeit.
 2. **Wertung als Strategie**: Ein Interface `ScoringMode` (`classic`, `starchase`) mit den Hooks `onKill`, `onBonusCatch`
    und `onRoundEnd`. `Game.resolveScores` und `isWon` geben dorthin ab, die Siegbedingung ist davon getrennt. Der

@@ -51,8 +51,8 @@ export interface RoundCounters {
     /** Deaths of others on this player's trail */
     kills: number;
     distance: number;
-    /** Maluses of other players that the player lived through until they ran out */
-    malusesSurvived: number;
+    /** Bonuses that harm all the others (see `harmfulBonuses`) that the player caught */
+    sabotages: number;
     /** Time (ms) close to a border, not counted while the borders are no danger */
     wallTime: number;
     /** Place in the round (1 is the winner), null while the player is alive and in the round */

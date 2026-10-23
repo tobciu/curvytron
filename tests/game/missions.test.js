@@ -101,14 +101,14 @@ describe('drawing the missions', () => {
             new Set(Array.from({ length: 200 }, () => drawMissions(10, [], Math.random, bonuses)).flat());
 
         expect(drawn([])).not.toContain('collector');
-        expect(drawn([])).not.toContain('stubborn');
+        expect(drawn([])).not.toContain('saboteur');
         expect(drawn(['BonusSelfFast'])).toContain('collector');
-        expect(drawn(['BonusSelfFast', 'BonusEnemyBig'])).not.toContain('stubborn');
+        expect(drawn(['BonusSelfFast', 'BonusEnemyBig'])).not.toContain('saboteur');
         // The slow ones help whoever they hit
-        expect(drawn(['BonusEnemySlow', 'BonusLeaderSlow', 'BonusEnemyBig'])).not.toContain('stubborn');
+        expect(drawn(['BonusEnemySlow', 'BonusLeaderSlow', 'BonusEnemyBig'])).not.toContain('saboteur');
         // The leader bonuses hit only the one in front
-        expect(drawn(['BonusEnemyBig', 'BonusLeaderFast', 'BonusLeaderInverse'])).not.toContain('stubborn');
-        expect(drawn(['BonusEnemyFast', 'BonusEnemyBig'])).toContain('stubborn');
+        expect(drawn(['BonusEnemyBig', 'BonusLeaderFast', 'BonusLeaderInverse'])).not.toContain('saboteur');
+        expect(drawn(['BonusEnemyFast', 'BonusEnemyBig'])).toContain('saboteur');
     });
 
     it('takes back missions of the round before when the pool is too small', () => {
@@ -264,51 +264,51 @@ describe('the missions with a yes or no', () => {
 
         expect(game.summary.missions.find(({ id }) => id === 'comeback').winners).toEqual([carl.id]);
     });
+});
 
-    it('stubborn: lives through two maluses of the others until they run out', () => {
-        startRound(['stubborn', 'comeback']);
+describe('the saboteur', () => {
+    const catchBonus = (Bonus, avatar) => {
+        game.bonusManager.add(new Bonus(50, 50));
+        place(avatar, 50, 50, 0);
+        game.bonusManager.testCatch(avatar);
+    };
 
-        for (let i = 0; i < 2; i++) {
-            const bonus = new BonusEnemyBig(50, 50);
+    it('counts the bonuses that harm the others, and goes to whoever caught the most', () => {
+        startRound(['saboteur', 'comeback']);
+        catchBonus(BonusEnemyBig, carl);
+        catchBonus(BonusEnemyBig, carl);
+        catchBonus(BonusEnemyBig, alice);
 
-            game.bonusManager.add(bonus);
-            place(carl, 50, 50, 0);
-            game.bonusManager.testCatch(carl);
-        }
-
-        expect(game.stats.round.get(alice.id).malusesSurvived).toBe(0);
-
-        vi.advanceTimersByTime(7500);
-
-        expect(game.stats.round.get(alice.id).malusesSurvived).toBe(2);
-        expect(game.stats.round.get(carl.id).malusesSurvived).toBe(0);
-        expect(game.missions.standing('stubborn').leaders.toSorted()).toEqual([alice.id, bob.id].toSorted());
+        expect(game.stats.round.get(carl.id).sabotages).toBe(2);
+        expect(game.missions.standing('saboteur').leaders).toEqual([carl.id]);
     });
 
-    it('stubborn: a bonus that slows the others down is no malus', () => {
-        startRound(['stubborn', 'comeback']);
+    it('does not count what helps the others, or what is only for oneself', () => {
+        startRound(['saboteur', 'comeback']);
+        catchBonus(BonusEnemySlow, carl);
+        catchBonus(BonusSelfFast, carl);
 
-        game.bonusManager.add(new BonusEnemySlow(50, 50));
-        place(carl, 50, 50, 0);
-        game.bonusManager.testCatch(carl);
-        vi.advanceTimersByTime(10000);
-
-        expect(game.stats.round.get(alice.id).malusesSurvived).toBe(0);
+        expect(game.stats.round.get(carl.id).sabotages).toBe(0);
+        expect(game.stats.round.get(carl.id).bonuses).toBe(2);
     });
 
-    it('stubborn: a malus that is not survived does not count', () => {
-        startRound(['stubborn', 'comeback']);
+    it('does not count while the avatar is invincible', () => {
+        startRound(['saboteur', 'comeback']);
+        carl.setInvincible(true);
+        catchBonus(BonusEnemyBig, carl);
 
-        const bonus = new BonusEnemyBig(50, 50);
+        expect(game.stats.round.get(carl.id).sabotages).toBe(0);
+    });
 
-        game.bonusManager.add(bonus);
-        place(carl, 50, 50, 0);
-        game.bonusManager.testCatch(carl);
-        alice.die();
-        vi.advanceTimersByTime(7500);
+    it('gives the mission to all of them when tied, to nobody for 0', () => {
+        startRound(['saboteur', 'comeback']);
 
-        expect(game.stats.round.get(alice.id).malusesSurvived).toBe(0);
-        expect(game.stats.round.get(bob.id).malusesSurvived).toBe(1);
+        expect(game.missions.results(null)[0].winners).toEqual([]);
+
+        catchBonus(BonusEnemyBig, alice);
+        catchBonus(BonusEnemyBig, bob);
+
+        expect(game.missions.results(null)[0].winners.toSorted()).toEqual([alice.id, bob.id].toSorted());
     });
 });
 

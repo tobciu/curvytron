@@ -456,7 +456,7 @@ describe('counters of the round', () => {
             kills: 0,
             distance: 0,
             wallTime: 0,
-            malusesSurvived: 0,
+            sabotages: 0,
             place: null
         });
         expect(stats(alice).bonuses).toBe(1);

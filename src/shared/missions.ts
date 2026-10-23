@@ -9,7 +9,7 @@ export const missionIds = [
     'marathon',
     'kamikaze',
     'comeback',
-    'stubborn'
+    'saboteur'
 ] as const;
 export type MissionId = (typeof missionIds)[number];
 
@@ -33,9 +33,9 @@ export const missions: Record<MissionId, MissionDefinition> = {
     // Time close to a border (ms)
     wallRunner: { id: 'wallRunner', kind: 'count', minPlayers: 2, cap: 60000 },
     marathon: { id: 'marathon', kind: 'count', minPlayers: 2 },
+    saboteur: { id: 'saboteur', kind: 'count', minPlayers: 2, cap: 6 },
     kamikaze: { id: 'kamikaze', kind: 'flag', minPlayers: 3 },
-    comeback: { id: 'comeback', kind: 'flag', minPlayers: 3 },
-    stubborn: { id: 'stubborn', kind: 'flag', minPlayers: 3 }
+    comeback: { id: 'comeback', kind: 'flag', minPlayers: 3 }
 };
 
 /**
@@ -56,7 +56,7 @@ export function isMissionAvailable(id: MissionId, enabledBonuses: readonly strin
         return enabledBonuses.length > 0;
     }
 
-    if (id === 'stubborn') {
+    if (id === 'saboteur') {
         // With one harmful bonus it is too rare to be a goal
         return enabledBonuses.filter((name) => harmfulBonuses.includes(name)).length >= 2;
     }
