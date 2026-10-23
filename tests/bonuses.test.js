@@ -81,12 +81,18 @@ describe('bonus registry', () => {
         expect(bonusRadius('BonusNothing')).toBe(3);
     });
 
-    it('has the star at the end, special and off, and no preset has it', () => {
-        const star = bonusDefinitions.at(-1);
+    it('has the star and the coins at the end, special and off, and no preset has them', () => {
+        const special = bonusDefinitions.slice(-4);
 
-        expect(star).toMatchObject({ name: 'BonusStar', special: true, enabled: false });
-        expect(bonusDefinitions.filter(({ special }) => special)).toEqual([star]);
-        expect(bonusDefinitions.filter(({ presets }) => presets?.includes('speed'))).not.toContain(star);
+        expect(special.map(({ name }) => name)).toEqual([
+            'BonusStar',
+            'BonusCoinBronze',
+            'BonusCoinSilver',
+            'BonusCoinGold'
+        ]);
+        expect(bonusDefinitions.filter(({ special }) => special)).toEqual(special);
+        expect(special.every(({ enabled, presets }) => !enabled && !presets)).toBe(true);
+        expect(special.slice(1).map(({ value }) => value)).toEqual([1, 2, 3]);
     });
 
     it('loads the class of every bonus, with the name of the bonus', () => {

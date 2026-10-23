@@ -87,7 +87,7 @@ Beim **Finale** (siehe Abschnitt 6) zählt jede Quelle doppelt.
 - Nichts zählt, solange ein Avatar unverwundbar ist (wie bei den Statistiken); gemeint sind Beinahe-Treffer, Engstellen,
   Wandzeit, Strecke und Bonis (Kills zählen, sie stammen aus dem Trail). Pro Mission und Runde gibt es einen Deckel für
   den Zähler, damit sich Werte nicht absichtlich hochtreiben lassen (Startwerte in `src/shared/missions.ts`: Nahkampf 15,
-  Nadelöhr 10, Sammler 8, Jäger 10, Wandläufer 60 s, Saboteur 6, Raser 40 s, Lückenspringer 8).
+  Nadelöhr 10, Sammler 8, Jäger 10, Wandläufer 60 s, Saboteur 6, Raser 40 s, Lückenspringer 8, Münzjäger 40).
 
 ### 4.2 Pool
 
@@ -104,6 +104,7 @@ Beim **Finale** (siehe Abschnitt 6) zählt jede Quelle doppelt.
 | Saboteur | die meisten schädlichen Bonis einsammelt (die alle anderen treffen, siehe 4.1) |
 | Raser | die meiste Zeit mit eigenen Speed-Bonis fährt; zwei gleichzeitig zählen doppelt |
 | Lückenspringer | die meisten Lücken in den Trails der anderen durchfährt (jede einmal) |
+| Münzjäger | den höchsten Münzwert einsammelt (Bronze 1, Silber 2, Gold 3, siehe 4.4) |
 
 ### 4.3 Anzeige während der Runde
 
@@ -116,6 +117,18 @@ Spielfeld ab: Nur der Stand ändert sich.
 - Ja/Nein-Missionen (Kamikaze, Comeback) zeigen „offen", „geschafft" oder „verpasst".
 - Wer gerade einen Stern halten würde, trägt einen kleinen Stern neben dem Namen in der Spielerliste.
 - Am Rundenende zeigt das Overlay das Ergebnis jeder Mission und wer den Stern bekommen hat.
+
+### 4.4 Münzen der Mission „Münzjäger"
+
+Die Münzen sind Sammel-Bonis ohne eigene Punkte (wie der Stern ein besonderer Eintrag des Bonus-Registers, nicht wählbar im
+Raum) und liegen nur in einer Runde, in der die Mission gezogen wurde. Sie tauchen auf, sobald die Runde läuft, und bleiben
+liegen, bis sie jemand einsammelt oder die Runde endet.
+
+- **Werte und Aussehen**: Bronze (1), Silber (2) und Gold (3), jeweils als Münze mit der Zahl.
+- **Anzahl** nach Spielerzahl: Bronze `⌈1,5 · n⌉` (höchstens 8), Silber `n` (höchstens 6), Gold `⌈n/2⌉` (höchstens 4).
+- **Platzierung**: Je mehr eine Münze wert ist, desto riskanter der Ort. Gold liegt immer nah an der Wand oder an Trails, Silber
+  zur Hälfte, Bronze irgendwo auf freier Fläche.
+- Eine Münze zählt nicht als Bonus der Statistik, nicht für „Sammler" und nicht, solange der Avatar unverwundbar ist.
 
 ## 5. Stern-Item
 
@@ -251,7 +264,8 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
 6. Stern-Item mit Ring-Timer (`BonusStar` als spezieller Eintrag des Bonus-Registers: kein Raumwahl-Bonus, kleinerer Radius pro
    Typ, `StarSpawner`, Lebensdauer im `bonus:pop`). **Erledigt.**
 7. Weitere Missionen: Raser und Lückenspringer. **Erledigt.**
-8. Erweiterungen aus Abschnitt 7 und die Sammel-Mission mit eigenem Icon (baut auf dem Stern auf).
+8. Sammel-Mission „Münzjäger" mit Münzen (Bronze, Silber, Gold). **Erledigt.**
+9. Erweiterungen aus Abschnitt 7.
 
 ## 9. Risiken
 

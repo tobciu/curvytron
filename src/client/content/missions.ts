@@ -28,7 +28,8 @@ export const missionInfo: Record<MissionId, MissionInfo> = {
         description: 'Most time with your own speed-ups, two at once count twice',
         format: (value) => `${(value / 1000).toFixed(1)} s`
     },
-    gapRunner: { name: 'Gap runner', description: 'Most gaps in the trails of others driven through' }
+    gapRunner: { name: 'Gap runner', description: 'Most gaps in the trails of others driven through' },
+    coinHunter: { name: 'Coin hunter', description: 'Most coins collected: bronze is worth 1, silver 2, gold 3' }
 };
 
 /** How a state of a yes / no mission is written */

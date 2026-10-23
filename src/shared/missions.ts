@@ -11,7 +11,8 @@ export const missionIds = [
     'comeback',
     'saboteur',
     'speedDemon',
-    'gapRunner'
+    'gapRunner',
+    'coinHunter'
 ] as const;
 export type MissionId = (typeof missionIds)[number];
 
@@ -39,6 +40,8 @@ export const missions: Record<MissionId, MissionDefinition> = {
     // Time (ms) with the speed-ups of the player, a second speed-up on top of the first counts twice
     speedDemon: { id: 'speedDemon', kind: 'count', minPlayers: 2, cap: 40000 },
     gapRunner: { id: 'gapRunner', kind: 'count', minPlayers: 2, cap: 8 },
+    // The value of the coins caught: the coins are only there in a round that has this mission
+    coinHunter: { id: 'coinHunter', kind: 'count', minPlayers: 2, cap: 40 },
     kamikaze: { id: 'kamikaze', kind: 'flag', minPlayers: 3 },
     comeback: { id: 'comeback', kind: 'flag', minPlayers: 3 }
 };

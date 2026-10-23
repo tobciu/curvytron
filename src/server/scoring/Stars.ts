@@ -1,16 +1,10 @@
-import { Body } from '../core/Body.ts';
 import { BonusStar } from '../model/Bonus/BonusStar.ts';
 import { bonusRadius } from '../../shared/bonuses.ts';
+import { findRiskyPosition } from './Placement.ts';
 import type { Game } from '../model/Game.ts';
 
 /** A star lives at least this long (ms), longer on a larger map */
 export const minStarLifetime = 10000;
-
-/** A star is risky when it is this close to a border, or to a trail */
-const riskDistance = 8;
-
-/** How many positions are tried to find a risky one */
-const positionTries = 60;
 
 /** A round lasts this long (ms) when there is no round to learn it from */
 const defaultRoundLength = 30000;
@@ -96,43 +90,9 @@ export class StarSpawner {
         game.bonusManager.add(star);
     }
 
-    /**
-     * A free position close to a border or to a trail. Without one, the one closest to a border.
-     */
+    /** A free position close to a border or to a trail */
     pickPosition(): [number, number] {
-        const game = this.game;
-        const world = game.world;
-        const radius = bonusRadius('BonusStar');
-        const margin = radius + 1;
-        const body = new Body(0, 0, radius);
-        const probe = new Body(0, 0, riskDistance);
-        let best: [number, number] | null = null;
-        let bestDistance = Number.POSITIVE_INFINITY;
-
-        for (let i = 0; i < positionTries; i++) {
-            body.x = probe.x = world.getRandomPoint(margin);
-            body.y = probe.y = world.getRandomPoint(margin);
-
-            if (!world.testBody(body) || !game.bonusManager.world.testBody(body)) {
-                continue;
-            }
-
-            const wall = Math.min(body.x, body.y, game.size - body.x, game.size - body.y);
-
-            if (wall <= riskDistance || world.getBody(probe)) {
-                return [body.x, body.y];
-            }
-
-            if (wall < bestDistance) {
-                bestDistance = wall;
-                best = [body.x, body.y];
-            }
-        }
-
-        return (
-            best ??
-            (game.bonusManager.getRandomPosition(radius, game.bonusManager.bonusPopingMargin) as [number, number])
-        );
+        return findRiskyPosition(this.game, bonusRadius('BonusStar'));
     }
 
     /** Take a star off the map, unless it is not on it any more (caught or expired) */

@@ -214,7 +214,9 @@ describe('players that come back', () => {
 
         game.controller.attachSpectator({ addEvents });
 
-        const pop = addEvents.mock.calls[0][0].find(([name]) => name === 'bonus:pop')[1];
+        const pop = addEvents.mock.calls[0][0].find(
+            ([name, data]) => name === 'bonus:pop' && data[3] === 'BonusStar'
+        )[1];
 
         expect(pop[3]).toBe('BonusStar');
         expect(pop[4]).toBe(starLifetime(game.size, game.getSize(2)));

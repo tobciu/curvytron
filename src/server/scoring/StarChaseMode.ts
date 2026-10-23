@@ -2,6 +2,7 @@ import { classicMode } from './ClassicMode.ts';
 import { drawMissions, MissionRound } from './Missions.ts';
 import { missionPoints, missions, starPoints } from '../../shared/missions.ts';
 import { BonusStar } from '../model/Bonus/BonusStar.ts';
+import { CoinSpawner } from './Coins.ts';
 import { StarSpawner } from './Stars.ts';
 import type { RoundSummary } from '../../shared/missions.ts';
 import type { ScoringMode } from './ScoringMode.ts';
@@ -26,8 +27,11 @@ export const starChaseMode: ScoringMode = {
         const ids = drawMissions(players, game.missions?.ids ?? [], Math.random, enabled, lookBack);
 
         game.stars?.stop();
+        game.coins?.stop();
         game.stars = new StarSpawner(game);
         game.missions = new MissionRound(game, ids);
+        // The coins are only there in a round that has the mission of the coins
+        game.coins = ids.includes('coinHunter') ? new CoinSpawner(game) : null;
         game.summary = null;
         // The counters of the round before are still there until the countdown is over
         game.stats.resetRound();
@@ -40,6 +44,7 @@ export const starChaseMode: ScoringMode = {
 
         // The stars appear once the round runs
         game.stars?.begin(missions?.players.length ?? 2);
+        game.coins?.begin(missions?.players.length ?? 2);
 
         if (!missions || now - missions.checkedAt < checkInterval) {
             return;
@@ -64,6 +69,7 @@ export const starChaseMode: ScoringMode = {
 
     onRoundEnd(game, winner) {
         game.stars?.stop();
+        game.coins?.stop();
         classicMode.onRoundEnd(game, winner);
 
         const missions = game.missions;

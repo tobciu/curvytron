@@ -1,11 +1,11 @@
 import type { Avatar } from '../model/Avatar.ts';
 import type { Game } from '../model/Game.ts';
 import type { Bonus } from '../model/Bonus/Bonus.ts';
-import { BonusStar } from '../model/Bonus/BonusStar.ts';
 import { metrics } from './Metrics.ts';
 import { Body } from '../core/Body.ts';
 import { World } from '../core/World.ts';
 import { Feats, isNearWall } from './Feats.ts';
+import { coinValue, isSpecialBonus } from '../../shared/bonuses.ts';
 import { harmfulBonuses } from '../../shared/missions.ts';
 import { computeAwards } from '../../shared/awards.ts';
 import type { Award, GameStatsData, PlayerStats, RoundCounters, RoundResult } from '../../shared/model/GameStats.ts';
@@ -179,6 +179,7 @@ export class GameStats {
                 wallTime: 0,
                 gapRuns: 0,
                 boostTime: 0,
+                coins: 0,
                 sabotages: 0,
                 place: null
             });
@@ -502,8 +503,15 @@ export class GameStats {
     onBonusCatch(data: { bonus: Bonus; avatar: Avatar }) {
         const stats = this.players.get(data.avatar.id);
 
-        // The star is no bonus of the statistics: the mode gives points for it
-        if (data.bonus instanceof BonusStar) {
+        // The special bonuses (the star, the coins) are no bonuses of the statistics: the mode gives points for them
+        if (isSpecialBonus(data.bonus.constructor.name)) {
+            const counters = this.round.get(data.avatar.id);
+
+            // A coin counts for the mission, not while the avatar is invincible
+            if (counters && !data.avatar.invincible) {
+                counters.coins += coinValue(data.bonus.constructor.name);
+            }
+
             return;
         }
 

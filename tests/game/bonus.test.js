@@ -51,7 +51,7 @@ function pop(Bonus) {
 
 describe('bonus list', () => {
     it('knows all the bonuses of the game', () => {
-        expect(bonusTypes).toHaveLength(20);
+        expect(bonusTypes).toHaveLength(23);
     });
 
     it.each(bonusTypes)('%s is a well formed bonus', (name, Bonus) => {

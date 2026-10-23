@@ -458,6 +458,7 @@ describe('counters of the round', () => {
             wallTime: 0,
             gapRuns: 0,
             boostTime: 0,
+            coins: 0,
             sabotages: 0,
             place: null
         });

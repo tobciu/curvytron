@@ -14,6 +14,7 @@ import { getScoringMode, winConditions } from '../scoring/index.ts';
 import { finaleFactor } from '../../shared/scoring.ts';
 import { defaultRoundTime } from '../scoring/WinCondition.ts';
 import type { MissionRound } from '../scoring/Missions.ts';
+import type { CoinSpawner } from '../scoring/Coins.ts';
 import type { StarSpawner } from '../scoring/Stars.ts';
 import type { RoundSummary } from '../../shared/missions.ts';
 import type { ScoringMode, WinCondition } from '../scoring/index.ts';
@@ -55,6 +56,8 @@ export class Game extends BaseGame {
     missions: MissionRound | null = null;
     /** Makes the stars of the running round appear (Star Chase) */
     stars: StarSpawner | null = null;
+    /** Puts the coins of the coin mission on the map, when the round has it */
+    coins: CoinSpawner | null = null;
     /** What the avatars got in the running round, by source: for the summary of the round */
     breakdown: Map<number, { placement: number; missions: number; stars: number }> = new Map();
     /** How the round ended, null in a mode that has nothing to tell */
@@ -586,6 +589,7 @@ export class Game extends BaseGame {
      */
     release() {
         this.stars?.stop();
+        this.coins?.stop();
         this.stats.destroy();
         this.avatars.clear();
         this.world.clear();

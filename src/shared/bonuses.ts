@@ -24,6 +24,8 @@ export interface BonusDefinition {
      * itself. A mode makes it appear (the star of Star Chase).
      */
     special?: boolean;
+    /** What a coin is worth for the mission of the coins */
+    value?: number;
 }
 
 /** Radius of a bonus on the map */
@@ -182,8 +184,48 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
         enabled: false,
         radius: 1.5,
         special: true
+    },
+    {
+        name: 'BonusCoinBronze',
+        label: 'Bronze coin',
+        description: 'Star Chase only: a coin of the coin mission, worth 1.',
+        css: 'bonus-coin-bronze',
+        enabled: false,
+        radius: 2,
+        special: true,
+        value: 1
+    },
+    {
+        name: 'BonusCoinSilver',
+        label: 'Silver coin',
+        description: 'Star Chase only: a coin of the coin mission, worth 2.',
+        css: 'bonus-coin-silver',
+        enabled: false,
+        radius: 2,
+        special: true,
+        value: 2
+    },
+    {
+        name: 'BonusCoinGold',
+        label: 'Gold coin',
+        description: 'Star Chase only: a coin of the coin mission, worth 3.',
+        css: 'bonus-coin-gold',
+        enabled: false,
+        radius: 2,
+        special: true,
+        value: 3
     }
 ];
+
+/** Is the bonus one of the special ones (no choice of a room, made to appear by a mode)? */
+export function isSpecialBonus(name: string): boolean {
+    return bonusDefinitions.find((definition) => definition.name === name)?.special === true;
+}
+
+/** What a coin is worth, 0 for a bonus that is no coin */
+export function coinValue(name: string): number {
+    return bonusDefinitions.find((definition) => definition.name === name)?.value ?? 0;
+}
 
 /** Radius of a bonus on the map, from the registry */
 export function bonusRadius(name: string): number {
