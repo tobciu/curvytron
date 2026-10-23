@@ -61,7 +61,7 @@ describe('the star on the map', () => {
     it('is small, has no effect and is no choice of the room', () => {
         const star = new BonusStar(10, 20);
 
-        expect(star.body.radius).toBe(2);
+        expect(star.body.radius).toBe(1.5);
         expect(star.radius).toBeLessThan(3);
         expect(game.room.config.bonuses).not.toHaveProperty('BonusStar');
         expect(game.bonusManager.bonusTypes.map((type) => type.name)).not.toContain('BonusStar');
@@ -198,7 +198,7 @@ describe('where the stars come', () => {
         for (let i = 0; i < 40; i++) {
             const [x, y] = game.stars.pickPosition();
 
-            expect(game.world.getBody(new Body(x, y, 2))).toBeFalsy();
+            expect(game.world.getBody(new Body(x, y, 1.5))).toBeFalsy();
         }
     });
 });

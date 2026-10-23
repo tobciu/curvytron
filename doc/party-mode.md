@@ -80,12 +80,14 @@ Beim **Finale** (siehe Abschnitt 6) zählt jede Quelle doppelt.
   mindestens zwei aktive schädliche Bonis (`harmfulBonuses` in `src/shared/missions.ts`: die Bonis der anderen, die
   schneller, dicker, invertiert oder eckig machen; die langsamen helfen dem Getroffenen und zählen nicht, die Leader-Bonis
   auch nicht: sie treffen nur den Führenden, der dafür auch noch eine Mission bekäme).
+- „Raser" wird nur gezogen, wenn der Speed-Bonus (`BonusSelfFast`) im Raum aktiv ist. Er zählt nur die eigenen Pickups, nicht
+  „Enemies faster", sonst wäre er eine Frage des Überlebens.
 - Die Ziehung richtet sich nach der Spielerzahl: Missionen, die mit wenigen Spielern sinnlos sind (zum Beispiel
   Nadelöhr), werden dann nicht gezogen. Bei 2 Spielern wird nur 1 Mission gezogen.
 - Nichts zählt, solange ein Avatar unverwundbar ist (wie bei den Statistiken); gemeint sind Beinahe-Treffer, Engstellen,
   Wandzeit, Strecke und Bonis (Kills zählen, sie stammen aus dem Trail). Pro Mission und Runde gibt es einen Deckel für
   den Zähler, damit sich Werte nicht absichtlich hochtreiben lassen (Startwerte in `src/shared/missions.ts`: Nahkampf 15,
-  Nadelöhr 10, Sammler 8, Jäger 10, Wandläufer 60 s, Saboteur 6).
+  Nadelöhr 10, Sammler 8, Jäger 10, Wandläufer 60 s, Saboteur 6, Raser 40 s, Lückenspringer 8).
 
 ### 4.2 Pool
 
@@ -100,6 +102,8 @@ Beim **Finale** (siehe Abschnitt 6) zählt jede Quelle doppelt.
 | Kamikaze | als Erster stirbt, dabei aber jemanden mitnimmt |
 | Comeback | die Runde gewinnt, nachdem er in der Runde davor Letzter war |
 | Saboteur | die meisten schädlichen Bonis einsammelt (die alle anderen treffen, siehe 4.1) |
+| Raser | die meiste Zeit mit eigenen Speed-Bonis fährt; zwei gleichzeitig zählen doppelt |
+| Lückenspringer | die meisten Lücken in den Trails der anderen durchfährt (jede einmal) |
 
 ### 4.3 Anzeige während der Runde
 
@@ -118,8 +122,8 @@ Spielfeld ab: Nur der Stand ändert sich.
 Der Stern ist ein eigener Bonus-Typ ohne Effekt (er wird über das Bonus-Registry angelegt, siehe `doc/bonuses.md`). Wer
 ihn einsammelt, bekommt sofort ⌈u/3⌉ Punkte (siehe Abschnitt 3).
 
-- **Größe**: kleiner als die normalen Bonis, man muss genauer treffen. Die Größe ist daher pro Bonus-Typ einstellbar
-  (`BaseBonus.radius` ist heute für alle gleich).
+- **Größe**: kleiner als die normalen Bonis (Radius 1,5 statt 3), man muss genauer treffen. Die Größe ist daher pro
+  Bonus-Typ einstellbar (`radius` im Bonus-Register).
 - **Anzahl**: selten und begrenzt, abhängig von der Spielerzahl: `aufgerundet(Spieler / 2)`, höchstens 3 pro Runde (2
   Spieler: 1, 3–4 Spieler: 2), ab 10 Spielern höchstens 5. Die Sterne erscheinen zeitlich verteilt, nicht alle auf einmal.
 - **Platzierung**: bewusst an riskanten Orten, nah an der Wand oder an Trails, nicht gleichverteilt wie die normalen Bonis
@@ -246,7 +250,8 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
    **Erledigt.**
 6. Stern-Item mit Ring-Timer (`BonusStar` als spezieller Eintrag des Bonus-Registers: kein Raumwahl-Bonus, kleinerer Radius pro
    Typ, `StarSpawner`, Lebensdauer im `bonus:pop`). **Erledigt.**
-7. Erweiterungen aus Abschnitt 7.
+7. Weitere Missionen: Raser und Lückenspringer. **Erledigt.**
+8. Erweiterungen aus Abschnitt 7 und die Sammel-Mission mit eigenem Icon (baut auf dem Stern auf).
 
 ## 9. Risiken
 

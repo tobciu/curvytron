@@ -57,7 +57,9 @@ function valueOf(id: MissionId, counters: RoundCounters): number {
         hunter: counters.kills,
         wallRunner: counters.wallTime,
         marathon: counters.distance,
-        saboteur: counters.sabotages
+        saboteur: counters.sabotages,
+        speedDemon: counters.boostTime,
+        gapRunner: counters.gapRuns
     }[id as 'closeCombat'];
 
     return Math.min(Math.round(raw ?? 0), cap);

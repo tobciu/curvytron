@@ -180,7 +180,7 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
         description: 'Star Chase only: a small star at a risky place that gives points to whoever catches it.',
         css: 'bonus-star',
         enabled: false,
-        radius: 2,
+        radius: 1.5,
         special: true
     }
 ];

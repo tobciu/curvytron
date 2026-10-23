@@ -52,6 +52,10 @@ export class GameStats {
     deathOrder: number[] = [];
     /** The places of the round before (1 is the winner), for the missions that look back */
     previousPlaces: Map<number, number> = new Map();
+    /** When the speed-ups of an avatar run out (ms), the ones it caught itself in this round */
+    boosts: Map<number, number[]> = new Map();
+    /** When the time with speed-ups was added to the round counters the last time */
+    boostAt: Map<number, number> = new Map();
     /** When the time close to a border was added to the round counters the last time */
     wallAt: Map<number, number> = new Map();
     /** Special feats of the game, they are hidden until they happen */
@@ -162,6 +166,8 @@ export class GameStats {
         this.round.clear();
         this.deathOrder = [];
         this.wallAt.clear();
+        this.boosts.clear();
+        this.boostAt.clear();
 
         for (const id of this.players.keys()) {
             this.round.set(id, {
@@ -171,6 +177,8 @@ export class GameStats {
                 kills: 0,
                 distance: 0,
                 wallTime: 0,
+                gapRuns: 0,
+                boostTime: 0,
                 sabotages: 0,
                 place: null
             });
@@ -196,6 +204,30 @@ export class GameStats {
         }
 
         this.wallAt.set(avatar.id, now);
+    }
+
+    /**
+     * Add the time an avatar drives with its own speed-ups to its round counters: two speed-ups at once count twice.
+     * Not while it is invincible.
+     */
+    trackBoost(avatar: Avatar, now: number) {
+        const counters = this.round.get(avatar.id);
+        const ends = this.boosts.get(avatar.id)?.filter((end) => end > now);
+        const last = this.boostAt.get(avatar.id);
+
+        if (!counters || !ends || ends.length === 0 || avatar.invincible) {
+            this.boostAt.delete(avatar.id);
+
+            return;
+        }
+
+        this.boosts.set(avatar.id, ends);
+
+        if (last !== undefined) {
+            counters.boostTime += (now - last) * ends.length;
+        }
+
+        this.boostAt.set(avatar.id, now);
     }
 
     /**
@@ -275,6 +307,12 @@ export class GameStats {
                 crossed.add(gap);
                 this.crossedGaps.set(avatar.id, crossed);
                 stats.gapRuns++;
+
+                const counters = this.round.get(avatar.id);
+
+                if (counters) {
+                    counters.gapRuns++;
+                }
             }
         }
     }
@@ -305,6 +343,7 @@ export class GameStats {
             last[1] = avatar.y;
             this.trackGap(avatar);
             this.trackWall(avatar, Date.now());
+            this.trackBoost(avatar, Date.now());
             this.feats.position(
                 avatar,
                 this.game.size,
@@ -430,6 +469,7 @@ export class GameStats {
         this.feats.die(data.avatar, data.killer, time);
         this.deathOrder.push(data.avatar.id);
         this.wallAt.delete(data.avatar.id);
+        this.boostAt.delete(data.avatar.id);
 
         if (!data.killer) {
             metrics.deaths.inc({ cause: 'wall' });
@@ -481,6 +521,13 @@ export class GameStats {
 
                 if (harmfulBonuses.includes(type)) {
                     counters.sabotages++;
+                }
+
+                if (type === 'BonusSelfFast') {
+                    const ends = this.boosts.get(data.avatar.id) ?? [];
+
+                    ends.push(Date.now() + data.bonus.duration);
+                    this.boosts.set(data.avatar.id, ends);
                 }
             }
 

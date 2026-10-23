@@ -22,7 +22,13 @@ export const missionInfo: Record<MissionId, MissionInfo> = {
     marathon: { name: 'Marathon', description: 'Longest distance', format: (value) => String(Math.round(value)) },
     kamikaze: { name: 'Kamikaze', description: 'Die first, and take somebody with you' },
     comeback: { name: 'Comeback', description: 'Win the round after being last in the round before' },
-    saboteur: { name: 'Saboteur', description: 'Most bonuses caught that harm everybody else' }
+    saboteur: { name: 'Saboteur', description: 'Most bonuses caught that harm everybody else' },
+    speedDemon: {
+        name: 'Speed demon',
+        description: 'Most time with your own speed-ups, two at once count twice',
+        format: (value) => `${(value / 1000).toFixed(1)} s`
+    },
+    gapRunner: { name: 'Gap runner', description: 'Most gaps in the trails of others driven through' }
 };
 
 /** How a state of a yes / no mission is written */

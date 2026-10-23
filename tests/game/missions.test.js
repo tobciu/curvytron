@@ -320,6 +320,105 @@ describe('the saboteur', () => {
     });
 });
 
+describe('the speed demon', () => {
+    const catchFast = (avatar) => {
+        game.bonusManager.add(new BonusSelfFast(50, 50));
+        place(avatar, 50, 50, 0);
+        game.bonusManager.testCatch(avatar);
+    };
+
+    /** The avatar drives for a while: a position every 100 ms */
+    const drive = (avatar, ticks) => {
+        for (let i = 0; i < ticks; i++) {
+            vi.setSystemTime(Date.now() + 100);
+            avatar.setPosition(avatar.x + 0.5, avatar.y);
+        }
+    };
+
+    it('counts the time with a speed-up of its own, and nothing without one', () => {
+        startRound(['speedDemon', 'comeback']);
+        drive(bob, 10);
+
+        expect(game.stats.round.get(bob.id).boostTime).toBe(0);
+
+        catchFast(alice);
+        drive(alice, 11);
+
+        // The first position only starts the clock
+        expect(game.stats.round.get(alice.id).boostTime).toBe(1000);
+        expect(game.missions.standing('speedDemon').leaders).toEqual([alice.id]);
+    });
+
+    it('counts two speed-ups at once twice, and stops when they run out', () => {
+        startRound(['speedDemon', 'comeback']);
+        catchFast(alice);
+        catchFast(alice);
+        drive(alice, 10);
+
+        // Ten intervals of 100 ms, two speed-ups: 2000
+        expect(game.stats.round.get(alice.id).boostTime).toBe(2000);
+
+        vi.setSystemTime(Date.now() + 5000);
+        drive(alice, 5);
+
+        expect(game.stats.round.get(alice.id).boostTime).toBe(2000);
+    });
+
+    it('does not count the speed-ups of the others, nor while invincible', () => {
+        startRound(['speedDemon', 'comeback']);
+        catchFast(alice);
+        carl.setInvincible(true);
+        catchFast(carl);
+        drive(bob, 10);
+        drive(carl, 10);
+
+        expect(game.stats.round.get(bob.id).boostTime).toBe(0);
+        expect(game.stats.round.get(carl.id).boostTime).toBe(0);
+    });
+
+    it('is only drawn when the room has the speed-up', () => {
+        const drawn = (bonuses) =>
+            new Set(Array.from({ length: 200 }, () => drawMissions(10, [], Math.random, bonuses)).flat());
+
+        expect(drawn(['BonusEnemyFast', 'BonusSelfSlow'])).not.toContain('speedDemon');
+        expect(drawn(['BonusSelfFast'])).toContain('speedDemon');
+    });
+});
+
+describe('the gap runner', () => {
+    beforeEach(() => {
+        startRound(['gapRunner', 'comeback']);
+        place(carl, 90, 90, 1);
+        bob.setPrinting(false);
+
+        // Bob leaves a gap along x, between 40 and 45
+        for (let x = 40; x <= 45; x += 0.3) {
+            place(bob, x, 20, 0);
+        }
+
+        place(bob, 10, 10, 1);
+    });
+
+    it('counts the gaps of the others that were driven through, once each', () => {
+        place(alice, 42, 21, 0);
+        game.update(16);
+        place(alice, 43, 20, 0);
+        game.update(16);
+
+        expect(game.stats.round.get(alice.id).gapRuns).toBe(1);
+        expect(game.missions.standing('gapRunner').leaders).toEqual([alice.id]);
+        expect(game.stats.round.get(bob.id).gapRuns).toBe(0);
+    });
+
+    it('does not count while invincible, and starts at zero in every round', () => {
+        alice.setInvincible(true);
+        place(alice, 42, 20, 0);
+        game.update(16);
+
+        expect(game.stats.round.get(alice.id).gapRuns).toBe(0);
+    });
+});
+
 describe('players that leave and come back', () => {
     it('do not take part in the missions once they left', () => {
         startRound(['collector', 'hunter']);

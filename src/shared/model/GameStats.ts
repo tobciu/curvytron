@@ -51,6 +51,10 @@ export interface RoundCounters {
     /** Deaths of others on this player's trail */
     kills: number;
     distance: number;
+    /** Gaps in the trails of others that the player drove through */
+    gapRuns: number;
+    /** Time (ms) with the speed-ups of the player, weighted with the number of them that run at once */
+    boostTime: number;
     /** Bonuses that harm all the others (see `harmfulBonuses`) that the player caught */
     sabotages: number;
     /** Time (ms) close to a border, not counted while the borders are no danger */

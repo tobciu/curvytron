@@ -9,7 +9,9 @@ export const missionIds = [
     'marathon',
     'kamikaze',
     'comeback',
-    'saboteur'
+    'saboteur',
+    'speedDemon',
+    'gapRunner'
 ] as const;
 export type MissionId = (typeof missionIds)[number];
 
@@ -34,6 +36,9 @@ export const missions: Record<MissionId, MissionDefinition> = {
     wallRunner: { id: 'wallRunner', kind: 'count', minPlayers: 2, cap: 60000 },
     marathon: { id: 'marathon', kind: 'count', minPlayers: 2 },
     saboteur: { id: 'saboteur', kind: 'count', minPlayers: 2, cap: 6 },
+    // Time (ms) with the speed-ups of the player, a second speed-up on top of the first counts twice
+    speedDemon: { id: 'speedDemon', kind: 'count', minPlayers: 2, cap: 40000 },
+    gapRunner: { id: 'gapRunner', kind: 'count', minPlayers: 2, cap: 8 },
     kamikaze: { id: 'kamikaze', kind: 'flag', minPlayers: 3 },
     comeback: { id: 'comeback', kind: 'flag', minPlayers: 3 }
 };
@@ -56,6 +61,10 @@ export function isMissionAvailable(id: MissionId, enabledBonuses: readonly strin
         return enabledBonuses.length > 0;
     }
 
+    if (id === 'speedDemon') {
+        return enabledBonuses.includes('BonusSelfFast');
+    }
+
     if (id === 'saboteur') {
         // With one harmful bonus it is too rare to be a goal
         return enabledBonuses.filter((name) => harmfulBonuses.includes(name)).length >= 2;
@@ -65,7 +74,7 @@ export function isMissionAvailable(id: MissionId, enabledBonuses: readonly strin
 }
 
 /** Missions that count something that goes on all the time: they are told at most once per second */
-export const continuousMissions: readonly MissionId[] = ['wallRunner', 'marathon'];
+export const continuousMissions: readonly MissionId[] = ['wallRunner', 'marathon', 'speedDemon'];
 
 /** How many missions a round has: one for two players, three from ten on */
 export function missionCount(players: number): number {
