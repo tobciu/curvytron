@@ -1,6 +1,7 @@
 import { continuousMissions, isMissionAvailable, missionCount, missionIds, missions } from '../../shared/missions.ts';
 import type { MissionId, MissionResult, MissionStanding, MissionState } from '../../shared/missions.ts';
 import { selectableBonuses } from '../../shared/bonuses.ts';
+import { randomUnit } from './random.ts';
 import type { RoundCounters } from '../../shared/model/GameStats.ts';
 import type { Game } from '../model/Game.ts';
 
@@ -14,7 +15,7 @@ const bonusNames = Object.fromEntries(selectableBonuses.map(({ name }) => [name,
 export function drawMissions(
     players: number,
     previous: readonly MissionId[] = [],
-    random: () => number = Math.random,
+    random: () => number = randomUnit,
     enabledBonuses: readonly string[] = Object.keys(bonusNames),
     hasPreviousRound: boolean = true
 ): MissionId[] {

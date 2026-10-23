@@ -1,5 +1,6 @@
 import { BonusStar } from '../model/Bonus/BonusStar.ts';
 import { bonusRadius } from '../../shared/bonuses.ts';
+import { randomUnit } from './random.ts';
 import { expectedRoundLength, findRiskyPosition } from './Placement.ts';
 import type { Game } from '../model/Game.ts';
 
@@ -47,7 +48,7 @@ export class StarSpawner {
 
         for (let index = 0; index < count; index++) {
             // One star in every part of the round, not at the very start nor the end
-            const delay = Math.round(((index + 0.2 + Math.random() * 0.6) / count) * length * 0.9);
+            const delay = Math.round(((index + 0.2 + randomUnit() * 0.6) / count) * length * 0.9);
             const timer = setTimeout(() => {
                 this.timers.delete(timer);
                 this.spawn();

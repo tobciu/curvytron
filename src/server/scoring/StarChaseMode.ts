@@ -3,6 +3,7 @@ import { drawMissions, MissionRound } from './Missions.ts';
 import { missionPoints, missions, starPoints } from '../../shared/missions.ts';
 import { BonusStar } from '../model/Bonus/BonusStar.ts';
 import { CoinSpawner } from './Coins.ts';
+import { randomUnit } from './random.ts';
 import { StarSpawner } from './Stars.ts';
 import type { RoundSummary } from '../../shared/missions.ts';
 import type { ScoringMode } from './ScoringMode.ts';
@@ -27,7 +28,7 @@ export const starChaseMode: ScoringMode = {
             .filter(([, on]) => on)
             .map(([name]) => name);
         const lookBack = game.stats.previousPlaces.size >= missions.comeback.minPlayers;
-        const ids = drawMissions(players, game.missions?.ids ?? [], Math.random, enabled, lookBack);
+        const ids = drawMissions(players, game.missions?.ids ?? [], randomUnit, enabled, lookBack);
 
         game.stars?.stop();
         game.coins?.stop();

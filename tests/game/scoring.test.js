@@ -203,3 +203,15 @@ describe('help for the players behind', () => {
         expect(BonusLeaderFast.getProbability(game)).toBe(0.5);
     });
 });
+
+describe('the random numbers of the modes', () => {
+    it('are from 0 up to 1, and different', async () => {
+        const { randomUnit } = await import('../../src/server/scoring/random.ts');
+        const numbers = Array.from({ length: 200 }, randomUnit);
+
+        expect(numbers.every((number) => number >= 0 && number < 1)).toBe(true);
+        expect(new Set(numbers).size).toBeGreaterThan(190);
+        expect(Math.min(...numbers)).toBeLessThan(0.1);
+        expect(Math.max(...numbers)).toBeGreaterThan(0.9);
+    });
+});

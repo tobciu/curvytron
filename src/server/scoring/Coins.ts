@@ -2,6 +2,7 @@ import { bonusRadius } from '../../shared/bonuses.ts';
 import { BonusCoinBronze } from '../model/Bonus/BonusCoinBronze.ts';
 import { BonusCoinGold } from '../model/Bonus/BonusCoinGold.ts';
 import { BonusCoinSilver } from '../model/Bonus/BonusCoinSilver.ts';
+import { randomUnit } from './random.ts';
 import { expectedRoundLength, findFreePosition, findRiskyPosition } from './Placement.ts';
 import type { BonusCoin } from '../model/Bonus/BonusCoin.ts';
 import type { Game } from '../model/Game.ts';
@@ -65,7 +66,7 @@ export class CoinSpawner {
 
         for (const [Coin, earliest] of later) {
             // A random moment of the round: the more a coin is worth, the later it can come
-            const delay = Math.round((earliest + Math.random() * (0.9 - earliest)) * length);
+            const delay = Math.round((earliest + randomUnit() * (0.9 - earliest)) * length);
             const timer = setTimeout(() => {
                 this.timers.delete(timer);
                 this.spawn(Coin);
@@ -84,7 +85,7 @@ export class CoinSpawner {
         }
 
         const radius = bonusRadius(Coin.name);
-        const risky = Coin === BonusCoinGold || (Coin === BonusCoinSilver && Math.random() < 0.5);
+        const risky = Coin === BonusCoinGold || (Coin === BonusCoinSilver && randomUnit() < 0.5);
         const [x, y] = risky ? findRiskyPosition(game, radius) : findFreePosition(game, radius);
         const coin = new Coin(x, y);
 
