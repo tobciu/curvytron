@@ -102,6 +102,7 @@ useEvents(repository, ['player:join'], onJoin);
 useEvents(repository, ['room:master'], onRoomMaster);
 useEvents(repository, ['room:game:start'], start);
 useEvents(repository, ['room:config:open'], onConfigOpen);
+useEvents(repository, ['config:tag'], () => bump());
 useEvents(repository, ['room:launch:start'], onLaunchStart);
 useEvents(repository, ['room:launch:cancel'], onLaunchCancel);
 

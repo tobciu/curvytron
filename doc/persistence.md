@@ -189,10 +189,10 @@ Die Statistik wächst. Wer vor der Einführung von "Gap runs" gespielt hat, hat 
 Ein Tag gruppiert Spiele nach einem Anlass: `daily` für die Runden nach dem Daily, `launch` nach der
 Produktvorstellung und so weiter.
 
-- **Gesetzt** wird er **beim Erstellen des Raums** (Feld "Tag" unter der Raumliste), also vom Spielleiter, der den Raum
-  anlegt. Er ist eine Eigenschaft des Raums (`Room.tag`), nicht der Raumeinstellungen, und lässt sich **später nicht
-  mehr ändern**, auch nicht an abgeschlossenen Spielen. Alle Spiele eines Raums tragen denselben Tag. Er steht in der
-  Raumliste und in der Raumansicht, damit alle wissen, wofür gespielt wird.
+- **Gesetzt** wird er vom Raum-Master in den **Raumeinstellungen** (Feld "Tag"), jederzeit, auch während Spieler die Lobby
+  betreten (`room:config:tag`). Er ist eine Eigenschaft des Raums (`Room.tag`), die an abgeschlossenen Spielen nichts mehr
+  ändert: ein Spiel trägt den Tag, den der Raum bei seinem Ende hat. Er steht in der Raumliste und in der Raumansicht,
+  damit alle wissen, wofür gespielt wird.
 - **Gespeichert** wird er zum Zeitpunkt des Spielendes in `games.tag`.
 
 Regeln: höchstens 24 Zeichen, nach dem Bereinigen nur `a-z`, `0-9` und `-` (aus "Daily Runde" wird `daily-runde`),
@@ -294,7 +294,7 @@ src/shared/model/GameResult.ts   # das serialisierbare Ergebnis eines Spiels, au
 - **`GameResult`** ist ein reines Datenobjekt: Spiel (Zeiten, Raum, Runden, Maximalpunkte, Konfiguration), Spieler
   (Name, Farbe, Rang, Punkte, Zähler, Token-Hash oder nichts) und Feats. Es wird aus `GameStats.serialize()` und den
   Avataren gebaut. `GameStats.serialize()` liefert das schon als reines Datenobjekt (der Todo-Punkt "serializable" ist damit der Sache nach erledigt).
-- **Tag**: `Room.tag` (Server und Client), gesetzt beim Erstellen (`room:create`, bereinigt mit `normalizeTag`), `result.ts` nimmt
+- **Tag**: `Room.tag` (Server und Client), gesetzt vom Raum-Master (`room:config:tag`, bereinigt mit `normalizeTag`; `room:create` nimmt ihn weiterhin optional an), `result.ts` nimmt
   es beim Spielende aus dem Raum.
 - **Einhängen**: `Server` erzeugt den Speicher (je nach Konfiguration) und gibt ihn dem `RoomRepository`. Wenn ein Spiel
   entsteht (`Room.createGame`), hört der Speicher auf dessen `end`-Ereignis und ruft `saveGame(result)`.

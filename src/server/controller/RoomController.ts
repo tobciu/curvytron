@@ -5,6 +5,7 @@ import { Message } from '../model/Message.ts';
 import { Player } from '../model/Player.ts';
 import { Chat } from '../service/Chat.ts';
 import { Collection } from '../../shared/Collection.ts';
+import { normalizeTag } from '../../shared/tag.ts';
 import { invalidData, isShape, rules } from '../core/validate.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
 import type { Room } from '../model/Room.ts';
@@ -106,6 +107,12 @@ export class RoomController extends EventEmitter {
             },
             onConfigMaxScore: function (this: SocketClient, data: any) {
                 controller.onConfigMaxScore(this, data[0], data[1]);
+            },
+            onConfigTag: function (
+                this: SocketClient,
+                data: [ClientEvents['room:config:tag']['data'], Reply<'room:config:tag'>]
+            ) {
+                controller.onConfigTag(this, data[0], data[1]);
             },
             onConfigVariable: function (this: SocketClient, data: any) {
                 controller.onConfigVariable(this, data[0], data[1]);
@@ -313,6 +320,7 @@ export class RoomController extends EventEmitter {
             this.roomMaster.on('room:leave', this.removeRoomMaster);
             this.roomMaster.on('room:config:open', this.callbacks.onConfigOpen);
             this.roomMaster.on('room:config:max-score', this.callbacks.onConfigMaxScore);
+            this.roomMaster.on('room:config:tag', this.callbacks.onConfigTag);
             this.roomMaster.on('room:config:variable', this.callbacks.onConfigVariable);
             this.roomMaster.on('room:config:bonus', this.callbacks.onConfigBonus);
             this.roomMaster.on('room:launch', this.callbacks.onLaunch);
@@ -329,6 +337,7 @@ export class RoomController extends EventEmitter {
             this.roomMaster.removeListener('room:leave', this.removeRoomMaster);
             this.roomMaster.removeListener('room:config:open', this.callbacks.onConfigOpen);
             this.roomMaster.removeListener('room:config:max-score', this.callbacks.onConfigMaxScore);
+            this.roomMaster.removeListener('room:config:tag', this.callbacks.onConfigTag);
             this.roomMaster.removeListener('room:config:variable', this.callbacks.onConfigVariable);
             this.roomMaster.removeListener('room:config:bonus', this.callbacks.onConfigBonus);
             this.roomMaster.removeListener('room:launch', this.callbacks.onLaunch);
@@ -712,6 +721,27 @@ export class RoomController extends EventEmitter {
 
         if (success) {
             this.socketGroup.addEvent('room:config:max-score', { maxScore: this.room.config.maxScore });
+        }
+    }
+
+    /**
+     * On config tag
+     */
+    onConfigTag(
+        client: SocketClient,
+        data: ClientEvents['room:config:tag']['data'],
+        callback?: Reply<'room:config:tag'>
+    ) {
+        if (!isShape(data, { tag: rules.string(100) })) {
+            return callback?.(invalidData);
+        }
+
+        const success = this.isRoomMaster(client) && this.room.setTag(normalizeTag(data.tag));
+
+        callback?.({ success, tag: this.room.tag });
+
+        if (success) {
+            this.socketGroup.addEvent('room:config:tag', { tag: this.room.tag });
         }
     }
 

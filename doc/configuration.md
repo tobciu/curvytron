@@ -70,8 +70,8 @@ The `DATABASE_FILE` environment variable takes precedence over `file`.
   shows the leaderboard, the games, the records and the own totals and feats.
   `npm run storage:rebuild [file]` builds the totals again from the games (stop the server first).
 - **One server per file**: do not start two servers on the same database.
-- The rooms can be given a **tag** when they are created (`daily`, `launch`): the games of the room are stored with it,
-  so that they can be grouped later.
+- The room master can give the room a **tag** in the room settings (`daily`, `launch`), at any time: the games of the room
+  are stored with the tag it has when they end, so that they can be grouped later.
 
 **Metrics:**
 

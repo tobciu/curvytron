@@ -24,6 +24,7 @@ export class RoomsRepository extends EventEmitter {
         this.onRoomPlayers = this.onRoomPlayers.bind(this);
         this.onRoomGame = this.onRoomGame.bind(this);
         this.onRoomConfigOpen = this.onRoomConfigOpen.bind(this);
+        this.onRoomConfigTag = this.onRoomConfigTag.bind(this);
     }
 
     /**
@@ -35,6 +36,7 @@ export class RoomsRepository extends EventEmitter {
         this.client.on('room:players', this.onRoomPlayers);
         this.client.on('room:game', this.onRoomGame);
         this.client.on('room:config:open', this.onRoomConfigOpen);
+        this.client.on('room:config:tag', this.onRoomConfigTag);
     }
 
     /**
@@ -46,6 +48,7 @@ export class RoomsRepository extends EventEmitter {
         this.client.off('room:players', this.onRoomPlayers);
         this.client.off('room:game', this.onRoomGame);
         this.client.off('room:config:open', this.onRoomConfigOpen);
+        this.client.off('room:config:tag', this.onRoomConfigTag);
     }
 
     /**
@@ -65,13 +68,9 @@ export class RoomsRepository extends EventEmitter {
     /**
      * Create
      */
-    create(name?: string, tag?: string, callback?: (...args: any[]) => any) {
-        // Without a name the server picks one; the server cleans the tag
-        this.client.addEvent(
-            'room:create',
-            { name: (name ?? '').substring(0, Room.maxLength).trim(), tag: (tag ?? '').trim() || undefined },
-            callback
-        );
+    create(name?: string, callback?: (...args: any[]) => any) {
+        // Without a name the server picks one
+        this.client.addEvent('room:create', { name: (name ?? '').substring(0, Room.maxLength).trim() }, callback);
     }
 
     /**
@@ -114,6 +113,18 @@ export class RoomsRepository extends EventEmitter {
         if (room) {
             room.open = e.detail.open;
             this.emit('room:config:open', room);
+        }
+    }
+
+    /**
+     * On room tag change
+     */
+    onRoomConfigTag(e: ServerEvent<'room:config:tag'>): void {
+        const room = e.detail.name === undefined ? undefined : this.get(e.detail.name);
+
+        if (room) {
+            room.tag = e.detail.tag;
+            this.emit('room:config:tag', room);
         }
     }
 
