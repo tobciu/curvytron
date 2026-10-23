@@ -244,7 +244,8 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
    der Spielerliste für den, der gerade eine Mission halten würde, Zusammenfassung zwischen den Runden
    (`RoundSummary.vue`), Moduswahl in den Raumparametern und Regelkarte. „Comeback" wird in der ersten Runde nicht gezogen.
    **Erledigt.**
-6. Stern-Item mit Ring-Timer.
+6. Stern-Item mit Ring-Timer (`BonusStar` als spezieller Eintrag des Bonus-Registers: kein Raumwahl-Bonus, kleinerer Radius pro
+   Typ, `StarSpawner`, Lebensdauer im `bonus:pop`). **Erledigt.**
 7. Erweiterungen aus Abschnitt 7.
 
 ## 9. Risiken

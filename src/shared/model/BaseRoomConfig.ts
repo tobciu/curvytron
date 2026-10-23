@@ -1,5 +1,5 @@
 import { EventEmitter } from '#event-emitter';
-import { bonusDefinitions } from '../bonuses.ts';
+import { selectableBonuses } from '../bonuses.ts';
 import type { RoomConfigData } from '../protocol.ts';
 import {
     defaultMinutes,
@@ -54,7 +54,7 @@ export class BaseRoomConfig extends EventEmitter {
             bonusRate: 0
         };
 
-        this.bonuses = Object.fromEntries(bonusDefinitions.map(({ name, enabled }) => [name, enabled]));
+        this.bonuses = Object.fromEntries(selectableBonuses.map(({ name, enabled }) => [name, enabled]));
     }
 
     /**

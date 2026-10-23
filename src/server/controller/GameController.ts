@@ -2,7 +2,7 @@ import { SocketGroup } from '../core/SocketGroup.ts';
 import { Collection } from '../../shared/Collection.ts';
 import { Compressor } from '../../shared/service/Compressor.ts';
 import { isShape, rules } from '../core/validate.ts';
-import type { ServerMessage, ClientEvents } from '../../shared/protocol.ts';
+import type { ServerMessage, ClientEvents, ServerEvents } from '../../shared/protocol.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
 import type { MissionStanding } from '../../shared/missions.ts';
 import type { Avatar } from '../model/Avatar.ts';
@@ -302,15 +302,7 @@ export class GameController {
         if (this.game.inRound) {
             for (i = this.game.bonusManager.bonuses.items.length - 1; i >= 0; i--) {
                 bonus = this.game.bonusManager.bonuses.items[i];
-                events.push([
-                    'bonus:pop',
-                    [
-                        bonus.id as number,
-                        this.compressor.compress(bonus.x),
-                        this.compressor.compress(bonus.y),
-                        bonus.constructor.name
-                    ]
-                ]);
+                events.push(['bonus:pop', this.describeBonus(bonus as Bonus)]);
             }
         } else {
             events.push(['round:end', this.game.roundWinner ? this.game.roundWinner.id : null]);
@@ -434,12 +426,25 @@ export class GameController {
      * On bonus pop
      */
     onBonusPop(bonus: Bonus) {
-        this.socketGroup.addEvent('bonus:pop', [
+        this.socketGroup.addEvent('bonus:pop', this.describeBonus(bonus));
+    }
+
+    /**
+     * How a bonus is told to the clients: a bonus with a lifetime also tells how long it lives, and how long is left
+     */
+    describeBonus(bonus: Bonus): ServerEvents['bonus:pop'] {
+        const description: ServerEvents['bonus:pop'] = [
             bonus.id as number,
             this.compressor.compress(bonus.x),
             this.compressor.compress(bonus.y),
             bonus.constructor.name
-        ]);
+        ];
+
+        if (bonus.lifetime !== null && bonus.expiresAt !== null) {
+            description.push(bonus.lifetime, Math.max(bonus.expiresAt - Date.now(), 0));
+        }
+
+        return description;
     }
 
     /**

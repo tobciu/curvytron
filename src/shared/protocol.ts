@@ -214,8 +214,8 @@ export interface ServerEvents {
     /** `[id, score]` */
     score: [number, number];
     'score:round': [number, number];
-    /** `[id, x, y, type]` */
-    'bonus:pop': [number, number, number, string];
+    /** `[id, x, y, type, lifetime, remaining]`: the last two (ms) for a bonus that goes away by itself (the star) */
+    'bonus:pop': [number, number, number, string, number?, number?];
     'bonus:clear': number;
     /** `[avatar id, method, bonus id, type, duration]` */
     'bonus:stack': [number, string, number, string, number];

@@ -252,7 +252,9 @@ export class GameRepository extends EventEmitter {
             e.detail[0],
             this.compressor.decompress(e.detail[1]),
             this.compressor.decompress(e.detail[2]),
-            e.detail[3]
+            e.detail[3],
+            e.detail[4],
+            e.detail[5]
         );
 
         this.game.bonusManager.add(bonus);

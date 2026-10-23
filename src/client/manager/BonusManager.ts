@@ -5,6 +5,12 @@ import { Canvas } from '../core/Canvas.ts';
 import { BaseBonusManager } from '../../shared/manager/BaseBonusManager.ts';
 import { SpriteAsset } from '../lib/SpriteAsset.ts';
 
+/** The ring of a bonus that goes away: its radius (times the radius of the bonus), its width and its colors */
+const ringFactor = 1.7;
+const ringWidth = 0.5;
+const ringColor = '#ffd700';
+const ringWarningColor = '#ff4d4d';
+
 /**
  * Bonus Manager
  */
@@ -80,20 +86,53 @@ export class BonusManager extends BaseBonusManager {
      * Draw
      */
     draw() {
+        // A bonus with a ring is drawn again in every frame: the ring shrinks with its time
         for (let i = this.bonuses.items.length - 1; i >= 0; i--) {
             const bonus = this.bonuses.items[i];
-            if (!bonus.animation.done && bonus.drawWidth) {
+            if ((!bonus.animation.done && bonus.drawWidth) || bonus.expiresAt !== null) {
                 this.clearBonus(bonus);
             }
         }
 
+        const now = Date.now();
+
         for (let i = this.bonuses.items.length - 1; i >= 0; i--) {
             const bonus = this.bonuses.items[i];
-            if (!bonus.animation.done) {
+            if (!bonus.animation.done || bonus.expiresAt !== null) {
                 bonus.update();
                 this.drawBonus(bonus);
+
+                if (bonus.expiresAt !== null) {
+                    this.drawRing(bonus, now);
+                }
             }
         }
+    }
+
+    /**
+     * Draw the ring of a bonus that goes away: it is full when the bonus appears and shrinks until it is gone, and gets
+     * red for the last quarter.
+     */
+    drawRing(bonus: MapBonus, now: number) {
+        const remaining = bonus.getRemaining(now);
+        const context = this.canvas.context;
+        const scale = this.canvas.scale;
+        const radius = bonus.drawRadius * ringFactor;
+
+        context.save();
+        context.lineWidth = Math.max(ringWidth * scale, 1);
+        context.lineCap = 'round';
+        context.strokeStyle = remaining > 0.25 ? ringColor : ringWarningColor;
+        context.beginPath();
+        context.arc(
+            bonus.x * scale,
+            bonus.y * scale,
+            radius * scale,
+            -Math.PI / 2,
+            -Math.PI / 2 + remaining * 2 * Math.PI
+        );
+        context.stroke();
+        context.restore();
     }
 
     /**
@@ -107,7 +146,15 @@ export class BonusManager extends BaseBonusManager {
      * Clear bonus from the canvas
      */
     clearBonus(bonus: any) {
-        this.canvas.clearZoneScaled(bonus.drawX, bonus.drawY, bonus.drawWidth, bonus.drawWidth);
+        // The ring is larger than the bonus
+        const pad = bonus.expiresAt === null ? 0 : bonus.drawRadius * (ringFactor - 1) + ringWidth;
+
+        this.canvas.clearZoneScaled(
+            bonus.drawX - pad,
+            bonus.drawY - pad,
+            bonus.drawWidth + 2 * pad,
+            bonus.drawWidth + 2 * pad
+        );
     }
 
     /**

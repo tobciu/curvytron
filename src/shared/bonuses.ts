@@ -17,7 +17,17 @@ export interface BonusDefinition {
     enabled: boolean;
     /** The presets of the room parameters that include the bonus (the presets "All", "No bonuses" and "Random" need no list) */
     presets?: readonly PresetId[];
+    /** Radius on the map, the default is `defaultBonusRadius` */
+    radius?: number;
+    /**
+     * A bonus that is no choice of the room: it is not in the room parameters nor in the presets, and does not pop by
+     * itself. A mode makes it appear (the star of Star Chase).
+     */
+    special?: boolean;
 }
+
+/** Radius of a bonus on the map */
+export const defaultBonusRadius = 3;
 
 export type PresetId = 'speed' | 'size' | 'solo';
 
@@ -163,8 +173,25 @@ export const bonusDefinitions: readonly BonusDefinition[] = [
         description: 'You can cross the borders and come out on the opposite side.',
         css: 'bonus-self-borderless',
         enabled: true
+    },
+    {
+        name: 'BonusStar',
+        label: 'Star',
+        description: 'Star Chase only: a small star at a risky place that gives points to whoever catches it.',
+        css: 'bonus-star',
+        enabled: false,
+        radius: 2,
+        special: true
     }
 ];
+
+/** Radius of a bonus on the map, from the registry */
+export function bonusRadius(name: string): number {
+    return bonusDefinitions.find((definition) => definition.name === name)?.radius ?? defaultBonusRadius;
+}
+
+/** The bonuses a room can choose from: everything but the special ones */
+export const selectableBonuses: readonly BonusDefinition[] = bonusDefinitions.filter(({ special }) => !special);
 
 /** Images of the sprite per line */
 export const spriteColumns = 3;
@@ -208,5 +235,5 @@ export function presetBonuses(preset: PresetId): string[] {
     return bonusDefinitions.filter(({ presets }) => presets?.includes(preset)).map(({ name }) => name);
 }
 
-/** Names of all the bonuses */
-export const bonusNames: readonly string[] = bonusDefinitions.map(({ name }) => name);
+/** Names of all the bonuses a room can choose from */
+export const bonusNames: readonly string[] = selectableBonuses.map(({ name }) => name);

@@ -1,10 +1,10 @@
 import { continuousMissions, isMissionAvailable, missionCount, missionIds, missions } from '../../shared/missions.ts';
 import type { MissionId, MissionResult, MissionStanding, MissionState } from '../../shared/missions.ts';
-import { bonusDefinitions } from '../../shared/bonuses.ts';
+import { selectableBonuses } from '../../shared/bonuses.ts';
 import type { RoundCounters } from '../../shared/model/GameStats.ts';
 import type { Game } from '../model/Game.ts';
 
-const bonusNames = Object.fromEntries(bonusDefinitions.map(({ name }) => [name, true]));
+const bonusNames = Object.fromEntries(selectableBonuses.map(({ name }) => [name, true]));
 
 /**
  * Draw the missions of a round: the number depends on the players, a mission that makes no sense with so few players

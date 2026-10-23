@@ -12,7 +12,11 @@ describe('texts of the rules page', () => {
         for (const definition of bonusDefinitions) {
             expect(definition.label, definition.name).not.toBe('');
             expect(definition.description, definition.name).not.toBe('');
-            expect(['self', 'enemy', 'leader', 'all', 'game']).toContain(bonusTarget(definition));
+
+            // The special bonuses are not on the page: no group
+            if (!definition.special) {
+                expect(['self', 'enemy', 'leader', 'all', 'game']).toContain(bonusTarget(definition));
+            }
         }
     });
 

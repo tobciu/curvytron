@@ -1,6 +1,7 @@
 import type { Avatar } from '../model/Avatar.ts';
 import type { Game } from '../model/Game.ts';
 import type { Bonus } from '../model/Bonus/Bonus.ts';
+import { BonusStar } from '../model/Bonus/BonusStar.ts';
 import { metrics } from './Metrics.ts';
 import { Body } from '../core/Body.ts';
 import { World } from '../core/World.ts';
@@ -460,6 +461,11 @@ export class GameStats {
 
     onBonusCatch(data: { bonus: Bonus; avatar: Avatar }) {
         const stats = this.players.get(data.avatar.id);
+
+        // The star is no bonus of the statistics: the mode gives points for it
+        if (data.bonus instanceof BonusStar) {
+            return;
+        }
 
         if (stats) {
             const type = data.bonus.constructor.name;

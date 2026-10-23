@@ -30,6 +30,7 @@ export const gameModes: readonly GameMode[] = [
             'The places in a round give points as in the classic mode.',
             'Every round has missions that everybody sees at the edge of the field, with the standing during the round: one mission with two players, two missions from three, three from ten. The best player of each mission gets points, all of them when tied, nobody when the value is 0.',
             'A mission is worth half the points of a round win (at least one). Nothing counts while a player is invincible.',
+            'Small stars appear at risky places, close to the walls or to trails, and go away after a while: a ring around a star shows how long it stays. A star is worth a third of the points of a round win (at least one). There are fewer stars than players: half the players rounded up, at most three.',
             'Between two rounds the recap shows what everybody got: the place, the missions and the total.',
             'By default the game ends after 8 rounds. In the last two rounds, every source of points counts twice. A tied score is decided in a tie break round, in which only the tied players score.',
             'The room owner can also end the game at a score or after some time, in both modes.'

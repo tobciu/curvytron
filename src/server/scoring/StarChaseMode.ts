@@ -1,6 +1,8 @@
 import { classicMode } from './ClassicMode.ts';
 import { drawMissions, MissionRound } from './Missions.ts';
-import { missionPoints, missions } from '../../shared/missions.ts';
+import { missionPoints, missions, starPoints } from '../../shared/missions.ts';
+import { BonusStar } from '../model/Bonus/BonusStar.ts';
+import { StarSpawner } from './Stars.ts';
 import type { RoundSummary } from '../../shared/missions.ts';
 import type { ScoringMode } from './ScoringMode.ts';
 
@@ -23,6 +25,8 @@ export const starChaseMode: ScoringMode = {
         const lookBack = game.stats.previousPlaces.size >= missions.comeback.minPlayers;
         const ids = drawMissions(players, game.missions?.ids ?? [], Math.random, enabled, lookBack);
 
+        game.stars?.stop();
+        game.stars = new StarSpawner(game);
         game.missions = new MissionRound(game, ids);
         game.summary = null;
         // The counters of the round before are still there until the countdown is over
@@ -33,6 +37,9 @@ export const starChaseMode: ScoringMode = {
 
     onFrame(game, now) {
         const missions = game.missions;
+
+        // The stars appear once the round runs
+        game.stars?.begin(missions?.players.length ?? 2);
 
         if (!missions || now - missions.checkedAt < checkInterval) {
             return;
@@ -49,9 +56,14 @@ export const starChaseMode: ScoringMode = {
 
     onKill: classicMode.onKill,
 
-    onBonusCatch() {},
+    onBonusCatch(game, avatar, bonus) {
+        if (bonus instanceof BonusStar) {
+            game.award(avatar, starPoints(game.missions?.players.length ?? 2), 'stars');
+        }
+    },
 
     onRoundEnd(game, winner) {
+        game.stars?.stop();
         classicMode.onRoundEnd(game, winner);
 
         const missions = game.missions;
