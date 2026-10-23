@@ -6,8 +6,8 @@ import { BaseBonusManager } from '../../shared/manager/BaseBonusManager.ts';
 import { SpriteAsset } from '../lib/SpriteAsset.ts';
 
 /** The ring of a bonus that goes away: its radius (times the radius of the bonus), its width and its colors */
-const ringFactor = 1.7;
-const ringWidth = 0.5;
+const ringFactor = 1.5;
+const ringWidth = 0.2;
 const ringColor = '#ffd700';
 const ringWarningColor = '#ff4d4d';
 
