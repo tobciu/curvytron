@@ -1,0 +1,49 @@
+name: SonarQube
+
+# In the pull request (own analysis of the PR, the quality gate decides) and after the merge to main (the baseline that
+# new code is compared against, also for the local scans of tools/pre-pr-check.sh). Needs the secret SONAR_TOKEN.
+on:
+    pull_request:
+    push:
+        branches: [main]
+
+permissions:
+    contents: read
+
+# A newer push to the same pull request makes the running analysis obsolete, the analysis of main is never cancelled
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+    sonar:
+        runs-on: ubuntu-24.04
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # the whole history: SonarQube needs it to tell what code is new
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+            - run: npm ci
+            # The scan reads the coverage from coverage/lcov.info (sonar-project.properties)
+            - run: npm run test:coverage
+            - name: SonarQube scan
+              env:
+                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                  SONAR_HOST_URL: https://sonarqube.tobciu08.de
+                  EVENT_NAME: ${{ github.event_name }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  PR_BRANCH: ${{ github.head_ref }}
+                  PR_BASE: ${{ github.base_ref }}
+              run: |
+                  if [ "$EVENT_NAME" = "pull_request" ]; then
+                      # Waits for the quality gate (sonar-project.properties): a red gate makes the check red
+                      npx --yes @sonar/scan \
+                          -Dsonar.pullrequest.key="$PR_NUMBER" \
+                          -Dsonar.pullrequest.branch="$PR_BRANCH" \
+                          -Dsonar.pullrequest.base="$PR_BASE"
+                  else
+                      npx --yes @sonar/scan -Dsonar.qualitygate.wait=false
+                  fi

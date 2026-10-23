@@ -174,7 +174,7 @@ The SonarQube scan (project `curvytron` on the self-hosted server) needs `SONAR_
 "Execute Analysis") in the environment or in `~/.config/sonar-token`. It always runs as the branch
 analysis `local/<branch>` and waits for the quality gate; on red the new findings are listed. The gate
 counts what changed against `main` as new code (coverage ≥ 80 %, no new findings), `main` itself is
-analyzed by the CI on push. Useful options: `--skip-e2e`, `--skip-sonar`, `--skip-security`,
+analyzed by `.github/workflows/sonar.yml` after every merge (the same workflow analyzes every pull request). Useful options: `--skip-e2e`, `--skip-sonar`, `--skip-security`,
 `--sonar-only`, `--fail-fast`; `--help` lists everything.
 
 ## Releases
