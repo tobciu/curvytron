@@ -1,14 +1,14 @@
 /**
  * What the HTTP interface of the statistics (`/api/...`) answers: the games that were kept, the leaderboard, the records.
- * Names of players who keep out of the public lists are "Anonymous", the secret feats are `?` for everybody but their owner.
+ * Names of players who keep out of the public lists are "Anonymous", the feats of the others are only counted, the owner knows them.
  */
 import type { GameStatsData } from './GameStats.ts';
 
 /** What a player who is not shown is called */
 export const anonymous = 'Anonymous';
 
-/** The id of a feat that the viewer may not know: it says that something happened, not what */
-export const secretFeat = '?';
+/** Feats that are not given anymore (a statistic or an award now): the old ones are not counted in the lists */
+export const retiredFeats: readonly string[] = ['graveKill'];
 
 export interface ApiGamePlayer {
     slot: number;
@@ -45,6 +45,8 @@ export interface ApiGames {
 /** A game with its statistics as the game showed them at the end (the player ids are the slots) */
 export interface ApiGameDetail extends ApiGame {
     stats: GameStatsData;
+    /** The feats of the other players: they are only counted, `stats.feats` has the ones of the viewer */
+    hiddenFeats: number;
 }
 
 export const leaderboardBys = ['wins', 'winRate', 'roundsWon', 'kills', 'games'] as const;

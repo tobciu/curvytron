@@ -7,7 +7,7 @@ import FeatList from './FeatList.vue';
 import { awardInfo, statInfo } from '../../content/stats';
 import type { StatInfo } from '../../content/stats';
 
-const props = defineProps<{ stats: GameStatsData }>();
+const props = defineProps<{ stats: GameStatsData; hiddenFeats?: number }>();
 
 /** The columns of the table: what they count, see `content/stats.ts` */
 const columns: Array<StatInfo & { value: (player: PlayerStats) => number; format?: (value: number) => string }> = [
@@ -26,16 +26,6 @@ const columns: Array<StatInfo & { value: (player: PlayerStats) => number; format
         format: (value: number) => `${seconds(value)} s`
     }
 ];
-
-/** The highest value of every column: the bars of the cells are relative to it */
-const maxima = computed(() => columns.map((column) => Math.max(0, ...props.stats.players.map(column.value))));
-
-/** Width of the bar of a cell, in percent of the best of its column */
-function bar(index: number, player: PlayerStats): Record<string, string> {
-    const max = maxima.value[index];
-
-    return { '--bar': `${max > 0 ? Math.round((columns[index].value(player) / max) * 100) : 0}%` };
-}
 
 /** `bonus-self-fast` => "self fast" */
 const bonusLabels = new Map(
@@ -134,11 +124,9 @@ function bonusDetails(player: PlayerStats): string[] {
                         <span :style="{ color: player.color }">{{ player.name }}</span>
                     </td>
                     <td
-                        v-for="(column, index) in columns"
+                        v-for="column in columns"
                         :key="column.label"
-                        class="bar"
                         :class="{ 'has-tip': hasTip(column.label, player) }"
-                        :style="bar(index, player)"
                         :tabindex="hasTip(column.label, player) ? 0 : undefined"
                     >
                         {{ column.format ? column.format(column.value(player)) : column.value(player) }}
@@ -173,6 +161,10 @@ function bonusDetails(player: PlayerStats): string[] {
                 <span class="value">{{ seconds(result.duration) }} s</span>
             </li>
         </ol>
+        <p v-if="hiddenFeats" class="secret-feats">
+            {{ hiddenFeats }} {{ stats.feats.length ? 'more ' : '' }}secret
+            {{ hiddenFeats === 1 ? 'feat was' : 'feats were' }} triggered
+        </p>
         <p class="rules-link">
             <a href="#/rules/statistics" target="_blank" class="animated">How is this counted?</a>
         </p>

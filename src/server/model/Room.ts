@@ -38,6 +38,20 @@ export class Room extends BaseRoom {
     }
 
     /**
+     * Set the tag of the games of the room (already cleaned), null for none
+     */
+    setTag(tag: string | null) {
+        if (this.tag === tag) {
+            return false;
+        }
+
+        this.tag = tag;
+        this.emit('room:tag', { room: this, tag });
+
+        return true;
+    }
+
+    /**
      * Close
      */
     close() {

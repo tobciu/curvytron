@@ -28,6 +28,17 @@ const crash = (victim, killer = null) => game.kill(victim, killer ? new AvatarBo
 
 const endRound = (winner) => game.emit('round:end', { winner });
 
+/** A game with this many players: alice, bob and carl are the first three */
+function playGame(count) {
+    const names = ['Alice', 'Bob', 'Carl', 'Dora', 'Emil', 'Fred'].slice(0, count);
+
+    ({
+        game,
+        avatars: [alice, bob, carl]
+    } = createGame(names));
+    game.avatars.items.forEach((avatar) => avatar.printManager.stop());
+}
+
 beforeEach(() => {
     vi.useFakeTimers();
     ({
@@ -99,20 +110,23 @@ describe('feats', () => {
         expect(feats('doubleKill')).toHaveLength(1);
     });
 
-    it('gives a kill from beyond the grave, not for a crash in the same moment', () => {
+    it('counts a kill from beyond the grave in the statistics, not as a feat, and not for a crash in the same moment', () => {
         startRound();
         crash(alice);
         crash(bob, alice);
 
-        expect(ids()).not.toContain('graveKill');
+        expect(game.stats.players.get(alice.id).graveKills).toBe(0);
 
         vi.advanceTimersByTime(1000);
         crash(carl, alice);
 
-        expect(feats('graveKill')).toEqual([{ id: 'graveKill', player: alice.id, round: 1 }]);
+        expect(game.stats.players.get(alice.id).graveKills).toBe(1);
+        expect(game.stats.players.get(alice.id).kills).toBe(2);
+        expect(ids()).not.toContain('graveKill');
     });
 
-    it('gives revenge for the one that killed you in the round before, and says who', () => {
+    it('gives revenge for the one that killed you in the round before, and says who, with five players', () => {
+        playGame(5);
         startRound();
         crash(alice, bob);
         endRound(bob);
@@ -127,7 +141,20 @@ describe('feats', () => {
         expect(feats('revenge')).toEqual([{ id: 'revenge', player: alice.id, round: 2, other: bob.id }]);
     });
 
+    it('gives no revenge with fewer than five players', () => {
+        playGame(4);
+        startRound();
+        crash(alice, bob);
+        endRound(bob);
+
+        startRound();
+        crash(bob, alice);
+
+        expect(ids()).not.toContain('revenge');
+    });
+
     it('does not remember the revenge for longer than one round', () => {
+        playGame(5);
         startRound();
         crash(alice, bob);
         endRound(bob);
@@ -162,10 +189,45 @@ describe('feats', () => {
         expect(ids()).not.toContain('photoFinish');
     });
 
-    it('gives a pacifist the win without a kill', () => {
+    it('gives a pacifist the second win in a row without a kill, not the first', () => {
         startRound();
         crash(bob);
         crash(carl, carl);
+        endRound(alice);
+
+        expect(ids()).not.toContain('pacifist');
+
+        startRound();
+        crash(bob);
+        crash(carl, carl);
+        endRound(alice);
+
+        expect(feats('pacifist')).toEqual([{ id: 'pacifist', player: alice.id, round: 2 }]);
+    });
+
+    it('does not give a pacifist when a kill or another winner is in between', () => {
+        startRound();
+        crash(bob);
+        crash(carl, carl);
+        endRound(alice);
+
+        startRound();
+        crash(bob, alice);
+        crash(carl);
+        endRound(alice);
+
+        startRound();
+        crash(bob);
+        crash(carl, carl);
+        endRound(alice);
+
+        expect(ids()).not.toContain('pacifist');
+    });
+
+    it('gives a pacifist the first win without a kill with five players', () => {
+        playGame(5);
+        startRound();
+        game.avatars.items.filter((avatar) => avatar !== alice).forEach((avatar) => crash(avatar));
         endRound(alice);
 
         expect(feats('pacifist')).toEqual([{ id: 'pacifist', player: alice.id, round: 1 }]);
@@ -176,7 +238,7 @@ describe('feats', () => {
         game.bonusManager.add(new BonusSelfFast(50, 50));
         alice.setPosition(50, 50);
         game.bonusManager.testCatch(alice);
-        vi.advanceTimersByTime(2000);
+        vi.advanceTimersByTime(1500);
         crash(alice);
 
         expect(feats('badKarma')).toEqual([{ id: 'badKarma', player: alice.id, round: 1 }]);
@@ -185,7 +247,7 @@ describe('feats', () => {
         game.bonusManager.add(new BonusSelfFast(50, 50));
         bob.setPosition(50, 50);
         game.bonusManager.testCatch(bob);
-        vi.advanceTimersByTime(4000);
+        vi.advanceTimersByTime(2500);
         crash(bob);
 
         expect(feats('badKarma')).toHaveLength(1);
@@ -202,23 +264,41 @@ describe('feats', () => {
         expect(feats('badKarma')).toEqual([]);
     });
 
-    it('gives an early exit for the first death three rounds in a row', () => {
-        for (let round = 1; round <= 3; round++) {
-            startRound();
-            crash(alice);
-            vi.advanceTimersByTime(1000);
-            crash(bob, carl);
-            endRound(carl);
+    it('gives an early exit for the first death in a row: the fewer the players the more rounds', () => {
+        // Three players: five rounds, four players: four rounds, five players or more: three rounds
+        for (const [count, rounds] of [
+            [3, 5],
+            [4, 4],
+            [5, 3]
+        ]) {
+            playGame(count);
 
-            expect(feats('earlyExit')).toHaveLength(round === 3 ? 1 : 0);
+            for (let round = 1; round <= rounds; round++) {
+                startRound();
+                crash(alice);
+                vi.advanceTimersByTime(1000);
+                game.avatars.items.filter((avatar) => avatar !== alice).forEach((avatar) => crash(avatar, carl));
+                endRound(carl);
+
+                expect(feats('earlyExit'), `${count} players, round ${round}`).toHaveLength(round === rounds ? 1 : 0);
+            }
+        }
+    });
+
+    it('starts counting the early exit again when somebody else is the first one out', () => {
+        playGame(5);
+
+        for (const first of [alice, alice, bob, alice, alice]) {
+            startRound();
+            crash(first);
+            vi.advanceTimersByTime(1000);
+            game.avatars.items
+                .filter((avatar) => avatar !== first && avatar !== carl)
+                .forEach((avatar) => crash(avatar, carl));
+            endRound(carl);
         }
 
-        startRound();
-        crash(bob);
-        crash(alice);
-        endRound(carl);
-
-        expect(feats('earlyExit')).toHaveLength(1);
+        expect(ids()).not.toContain('earlyExit');
     });
 
     it("gives time's up for dying right after the invincibility ran out, not later", () => {
@@ -294,7 +374,7 @@ describe('feats', () => {
         expect(feats('rookieMistake')).toHaveLength(1);
     });
 
-    it('gives a wall rider for three seconds close to a border, not when something interrupts it', () => {
+    it('gives a wall rider for four seconds close to a border, not when something interrupts it', () => {
         startRound();
 
         const ride = (x, seconds) => {
@@ -304,14 +384,14 @@ describe('feats', () => {
             }
         };
 
-        ride(1, 2);
+        ride(1, 3);
         alice.setPosition(40, 40);
         vi.setSystemTime(Date.now() + 1000);
-        ride(1, 2);
+        ride(1, 3);
 
         expect(ids()).not.toContain('wallRider');
 
-        ride(1, 4);
+        ride(1, 5);
 
         expect(feats('wallRider')).toEqual([{ id: 'wallRider', player: alice.id, round: 1 }]);
     });

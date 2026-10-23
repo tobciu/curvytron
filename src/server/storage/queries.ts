@@ -4,7 +4,7 @@ import type { PlayerCounters } from '../../shared/model/GameResult.ts';
 import type { Feat, PlayerStats, RoundResult } from '../../shared/model/GameStats.ts';
 import {
     anonymous,
-    secretFeat,
+    retiredFeats,
     type ApiGame,
     type ApiGameDetail,
     type ApiGamePlayer,
@@ -18,6 +18,9 @@ import {
     type LeaderboardBy
 } from '../../shared/model/StatsApi.ts';
 import { addGame, emptyTotals, totalsFromRow, type Totals } from './totals.ts';
+
+/** SQL: the feats that are given today (the retired ones are kept in the games but not counted) */
+const currentFeats = `feat NOT IN (${retiredFeats.map((id) => `'${id}'`).join(', ')})`;
 
 /** The records, in the order they are shown (the texts are in `src/client/content/stats.ts`) */
 export const recordIds = [
@@ -69,6 +72,7 @@ const emptyCounters: PlayerCounters = {
     selfDeaths: 0,
     trailDeaths: 0,
     kills: 0,
+    graveKills: 0,
     nearMisses: 0,
     squeezes: 0,
     gapRuns: 0,
@@ -170,7 +174,7 @@ export class StatsQueries {
             const counts = this.db
                 .prepare(
                     `SELECT game_id, COUNT(*) AS feats FROM feats
-                     WHERE game_id IN (${ids.map(() => '?').join(',')}) GROUP BY game_id`
+                     WHERE ${currentFeats} AND game_id IN (${ids.map(() => '?').join(',')}) GROUP BY game_id`
                 )
                 .all(...ids) as Array<{ game_id: number; feats: number }>;
 
@@ -214,27 +218,32 @@ export class StatsQueries {
                 .prepare('SELECT round, winner_slot, duration_ms FROM rounds WHERE game_id = ? ORDER BY round')
                 .all(id) as Array<{ round: number; winner_slot: number | null; duration_ms: number }>
         ).map((round): RoundResult => ({ round: round.round, winner: round.winner_slot, duration: round.duration_ms }));
-        const feats = (
-            this.db
-                .prepare('SELECT round, slot, feat, other_slot FROM feats WHERE game_id = ? ORDER BY round, rowid')
-                .all(id) as Array<{ round: number; slot: number; feat: string; other_slot: number | null }>
-        ).map((feat): Feat => {
-            // The owner of a feat knows it already, nobody else is told what it was
-            if (!mine.has(feat.slot)) {
-                return { id: secretFeat, player: feat.slot, round: feat.round };
-            }
+        const feats: Feat[] = [];
+        let hiddenFeats = 0;
+        const featRows = this.db
+            .prepare(
+                `SELECT round, slot, feat, other_slot FROM feats WHERE game_id = ? AND ${currentFeats} ORDER BY round, rowid`
+            )
+            .all(id) as Array<{ round: number; slot: number; feat: string; other_slot: number | null }>;
 
-            return {
-                id: feat.feat,
-                player: feat.slot,
-                round: feat.round,
-                ...(feat.other_slot === null ? {} : { other: feat.other_slot })
-            };
-        });
+        for (const feat of featRows) {
+            if (mine.has(feat.slot)) {
+                // The owner of a feat knows it already, nobody else is told what it was: the others only get the number
+                feats.push({
+                    id: feat.feat,
+                    player: feat.slot,
+                    round: feat.round,
+                    ...(feat.other_slot === null ? {} : { other: feat.other_slot })
+                });
+            } else {
+                hiddenFeats++;
+            }
+        }
 
         return {
-            ...this.toGame(game, this.playersOf([id], viewer).get(id) ?? [], feats.length),
-            stats: { players, awards: computeAwards(players), rounds, feats }
+            ...this.toGame(game, this.playersOf([id], viewer).get(id) ?? [], featRows.length),
+            stats: { players, awards: computeAwards(players), rounds, feats },
+            hiddenFeats
         };
     }
 
@@ -370,7 +379,7 @@ export class StatsQueries {
         const feats = this.db
             .prepare(
                 `SELECT f.game_id, f.slot, COUNT(*) AS feats FROM feats f JOIN games g ON g.id = f.game_id
-                 WHERE (?1 IS NULL OR g.tag = ?1) GROUP BY f.game_id, f.slot ORDER BY g.ended_at, g.id, f.slot`
+                 WHERE (?1 IS NULL OR g.tag = ?1) AND f.${currentFeats} GROUP BY f.game_id, f.slot ORDER BY g.ended_at, g.id, f.slot`
             )
             .all(tag) as Array<{ game_id: number; slot: number; feats: number }>;
 

@@ -5,9 +5,12 @@ import { useRoute, useRouter } from 'vue-router';
 import GameStats from '../components/game/GameStats.vue';
 import { NotKeptError, statsApi } from '../core/statsApi';
 import { recordInfo } from '../content/stats';
-import { featInfo } from '../content/feats';
+import { featInfo, retiredFeatInfo } from '../content/feats';
 import { leaderboardBys, type ApiGame, type ApiGameDetail, type ApiLeaderboard,
     type ApiMe, type ApiRecords, type ApiTag, type LeaderboardBy } from '../../shared/model/StatsApi';
+
+/** The text of a feat of the player: the ones that are not given anymore have a text too */
+const featText = (id: string) => featInfo[id] ?? retiredFeatInfo[id];
 
 const route = useRoute();
 const router = useRouter();
@@ -231,7 +234,7 @@ function recordValue(id: string, value: number): string {
                         </span>
                     </button>
                     <div v-if="opened === game.id && details.get(game.id)" class="game-detail">
-                        <GameStats :stats="details.get(game.id)!.stats" />
+                        <GameStats :stats="details.get(game.id)!.stats" :hidden-feats="details.get(game.id)!.hiddenFeats" />
                     </div>
                 </li>
             </ul>
@@ -281,10 +284,10 @@ function recordValue(id: string, value: number): string {
                 <p v-if="!me.feats.length" class="empty">None yet. There are some to be found.</p>
                 <ul v-else class="my-feats">
                     <li v-for="(feat, index) in me.feats" :key="index">
-                        <strong>{{ featInfo[feat.id]?.label ?? feat.id }}</strong>
+                        <strong>{{ featText(feat.id)?.label ?? feat.id }}</strong>
                         <span class="where">{{ feat.room }}, round {{ feat.round }}, {{ date(feat.endedAt) }}</span>
                         <span class="description">
-                            {{ (featInfo[feat.id]?.description ?? '').replace('{other}', feat.other ?? 'somebody') }}
+                            {{ (featText(feat.id)?.description ?? '').replace('{other}', feat.other ?? 'somebody') }}
                         </span>
                     </li>
                 </ul>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 /** Configuration of a room: victory score, public / private, bonuses. Only the room master can change it. */
 import { computed } from 'vue';
+import { normalizeTag, tagMaxLength } from '../../shared/tag';
 import { useServices } from '../services';
 import { useLive } from '../composables/useEmitter';
 import { spritePosition } from '../../shared/bonuses';
@@ -13,6 +14,7 @@ const { live: config, bump } = useLive(props.room.config, repository, [
     'config:open',
     'room:config:open',
     'config:max-score',
+    'config:tag',
     'config:variable',
     'config:bonus'
 ]);
@@ -108,6 +110,19 @@ function setMaxScore(event: Event): void {
     }
 }
 
+function setTag(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    input.value = normalizeTag(input.value) ?? '';
+
+    if (repository.amIMaster()) {
+        repository.setConfigTag(input.value, (result) => {
+            input.value = ('tag' in result ? result.tag : props.room.tag) ?? '';
+            bump();
+        });
+    }
+}
+
 function setVariable(variable: string, event: Event): void {
     const target = config.value;
 
@@ -140,6 +155,21 @@ function setVariable(variable: string, event: Event): void {
                 :disabled="!master"
                 @input="setMaxScore"
             />
+
+            <div class="room-tag">
+                <h2>Tag</h2>
+                <input
+                    id="room-tag"
+                    type="text"
+                    class="form-control"
+                    name="tag"
+                    placeholder="daily"
+                    :value="room.tag ?? ''"
+                    :maxlength="tagMaxLength + 8"
+                    :disabled="!master"
+                    @change="setTag"
+                />
+            </div>
 
             <div class="public-room">
                 <h2>Your room is</h2>

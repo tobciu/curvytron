@@ -5,7 +5,6 @@ import type { Feat } from '../../shared/model/GameStats.ts';
 export const featIds = [
     'cleanSweep',
     'doubleKill',
-    'graveKill',
     'revenge',
     'photoFinish',
     'pacifist',
@@ -28,7 +27,7 @@ const doubleKillWindow = 1000;
 const graveDelay = 300;
 
 /** Dying this soon (ms) after catching a bonus that is bad for you is bad karma */
-const karmaWindow = 3000;
+const karmaWindow = 2000;
 
 /** The bonuses that are a risk for the one who catches them: faster (the rocket) is harder to steer, angular too */
 const karmaBonuses = new Set(['BonusSelfFast', 'BonusSelfRandom']);
@@ -51,17 +50,25 @@ const daredevilWindow = 3000;
 const rookieWindow = 5000;
 
 /** Staying this long (ms) close to a border, closer than this many radii */
-const wallRiderTime = 3000;
+const wallRiderTime = 4000;
 const wallRiderRadii = 6;
 
 /** A game without a lost round needs at least this many rounds */
 const whitewashRounds = 3;
 
-/** First to die in this many rounds in a row */
-const earlyExitRounds = 3;
+/** First to die in this many rounds in a row: the fewer the players, the more rounds, as it is easier to be the first */
+function earlyExitRounds(players: number): number {
+    return Math.max(3, 8 - players);
+}
 
 /** With fewer players, a kill is the whole round and everybody is first to die every other round */
 const minPlayers = 3;
+
+/** With fewer players than this, a revenge is too easy: there are not enough players to get lost between */
+const revengePlayers = 5;
+
+/** A pacifist needs two rounds in a row, unless there are this many players: then it is hard to stay out */
+const pacifistPlayers = 5;
 
 /**
  * Special feats: things that happen in a round and are not counted by the statistics. They are hidden: nobody tells
@@ -87,6 +94,8 @@ export class Feats {
     lastKill: Map<number, number> = new Map();
     /** When an avatar caught a bonus that is bad for it */
     badCatches: Map<number, number> = new Map();
+    /** The winner of the last round that was won without a kill, null when the last round was not like this */
+    lastPacifist: number | null = null;
     /** Feats of this round that were given already */
     given: Set<string> = new Set();
     /** First to die, rounds in a row */
@@ -152,15 +161,19 @@ export class Feats {
 
         this.lastKill.set(killer.id, time);
 
-        if (this.previousKillers.get(killer.id) === victim.id) {
+        if (this.participants.size >= revengePlayers && this.previousKillers.get(killer.id) === victim.id) {
             this.give('revenge', killer.id, victim.id);
         }
+    }
 
+    /**
+     * Did the killer die already (and not in the same moment)? Its trail is still there and kills the others: it is no
+     * feat but a number of the statistics, call it before `die` counts the death of the victim
+     */
+    isGraveKill(killer: Avatar, time: number): boolean {
         const dead = this.deaths.find(({ id }) => id === killer.id);
 
-        if (dead && time - dead.time >= graveDelay) {
-            this.give('graveKill', killer.id);
-        }
+        return dead !== undefined && time - dead.time >= graveDelay;
     }
 
     catchBonus(avatar: Avatar, type: string, time: number) {
@@ -238,11 +251,13 @@ export class Feats {
                 }
             }
 
-            if (winner && !this.kills.get(winner.id)) {
-                this.give('pacifist', winner.id);
-            }
+            this.endPacifist(winner, players);
 
             this.endFirstDeaths();
+        }
+
+        if (players < minPlayers) {
+            this.lastPacifist = null;
         }
 
         if (!winner && this.deaths.length >= 2) {
@@ -259,6 +274,21 @@ export class Feats {
         this.rounds++;
     }
 
+    /** Winning without a kill: it takes a streak of rounds, or enough players to make it hard to stay out */
+    private endPacifist(winner: Avatar | null, players: number) {
+        if (!winner || this.kills.get(winner.id)) {
+            this.lastPacifist = null;
+
+            return;
+        }
+
+        if (players >= pacifistPlayers || this.lastPacifist === winner.id) {
+            this.give('pacifist', winner.id);
+        }
+
+        this.lastPacifist = winner.id;
+    }
+
     /** Whoever is the first to die, round after round */
     private endFirstDeaths() {
         const first = this.deaths[0]?.id;
@@ -268,7 +298,7 @@ export class Feats {
 
             this.firstDeaths.set(id, streak);
 
-            if (streak > 0 && streak % earlyExitRounds === 0) {
+            if (streak > 0 && streak % earlyExitRounds(this.participants.size) === 0) {
                 this.give('earlyExit', id);
             }
         }

@@ -276,26 +276,6 @@ li.player-row {
     }
 }
 
-// The tag of a room (the games of the room are grouped by it)
-.room-tag {
-    clear: both;
-    margin: 0 0 15px;
-    text-align: right;
-    font-size: 14px;
-
-    label {
-        margin-right: 8px;
-    }
-
-    input {
-        width: 120px;
-        border: 0;
-        padding: 4px 8px;
-        background: #fff;
-        font: inherit;
-    }
-}
-
 .tag {
     margin-left: 8px;
     font-size: 0.6em;

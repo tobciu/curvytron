@@ -83,7 +83,7 @@ test('created rooms are listed for other players, with their player count', asyn
     await expect(row.locator('.room-nb-players')).toContainText('2 players');
 });
 
-test('a room can be created with a tag, which is cleaned and shown in the list and in the room', async ({
+test('the master sets a tag in the room settings, which is cleaned and shown in the list and in the room', async ({
     browser
 }) => {
     const name = roomName('tag');
@@ -91,10 +91,11 @@ test('a room can be created with a tag, which is cleaned and shown in the list a
     const bob = await openPlayer(browser, 'Bob');
 
     await bob.goto('/');
-    await alice.goto('/');
+    await createRoom(alice, name);
+    await alice.locator('.icon-params').click();
     await alice.locator('#room-tag').fill(' Daily Runde ');
-    await alice.locator('.room-list .top-right-form input').fill(name);
-    await alice.keyboard.press('Enter');
+    // The tag is sent when the field is left
+    await alice.locator('#room-tag').blur();
 
     await expect(alice.locator('.room .header')).toContainText('#daily-runde');
     await expect(bob.locator('#rooms tr.room', { hasText: name }).locator('.tag')).toHaveText('#daily-runde');

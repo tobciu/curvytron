@@ -18,13 +18,9 @@ export const featInfo: Record<string, FeatInfo> = {
         label: 'Double kill',
         description: 'Two players crashed on the trail of this player within a second.'
     },
-    graveKill: {
-        label: 'From beyond the grave',
-        description: 'Somebody crashed on the trail of this player after they were out of the round already.'
-    },
     revenge: {
         label: 'Revenge',
-        description: 'Got {other} on their trail, who got them in the round before.'
+        description: 'Got {other} on their trail, who got them in the round before (with five players or more).'
     },
     photoFinish: {
         label: 'Photo finish',
@@ -32,12 +28,13 @@ export const featInfo: Record<string, FeatInfo> = {
     },
     pacifist: {
         label: 'Pacifist',
-        description: 'Won the round without a single kill: the others took care of themselves.'
+        description:
+            'Won the round without a single kill, two rounds in a row or with five players or more: the others took care of themselves.'
     },
     badKarma: {
         label: 'Bad karma',
         description:
-            'Died right after catching a bonus that is a risk for the player themselves: faster (the rocket) or angular (turns of 45°).'
+            'Died within two seconds of catching a bonus that is a risk for the player themselves: faster (the rocket) or angular (turns of 45°).'
     },
     timesUp: {
         label: "Time's up",
@@ -57,7 +54,7 @@ export const featInfo: Record<string, FeatInfo> = {
     },
     wallRider: {
         label: 'Wall rider',
-        description: 'Rode along a border for three seconds without crashing.'
+        description: 'Rode along a border for four seconds without crashing.'
     },
     whitewash: {
         label: 'Whitewash',
@@ -65,6 +62,16 @@ export const featInfo: Record<string, FeatInfo> = {
     },
     earlyExit: {
         label: 'Early exit',
-        description: 'First one out, three rounds in a row.'
+        description:
+            'First one out, again and again: five rounds in a row with three players, four with four, three with five or more.'
+    }
+};
+
+/** Feats that are not given anymore: the player still has the old ones (`retiredFeats` in `src/shared/model/StatsApi.ts`) */
+export const retiredFeatInfo: Record<string, FeatInfo> = {
+    graveKill: {
+        label: 'From beyond the grave',
+        description:
+            'Somebody crashed on the trail of this player after they were out of the round already. Not a feat anymore: it is a statistic now, with the award “Wall of the dead”.'
     }
 };

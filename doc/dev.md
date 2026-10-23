@@ -42,8 +42,8 @@ of the database, `src/shared/model/StatsApi.ts` the types of the answers (the pa
 
 The four `/api/me` calls need the identity code in the header `X-Identity` (a page of another site can not send it) and are not cached.
 
-The answers are public: names of players who keep out of the lists are `Anonymous`, and the special feats are `?` (no
-id, no text) for everybody but their owner. A request with the header `X-Identity: <code>` is told its own name and its own
+The answers are public: names of players who keep out of the lists are `Anonymous`, and the special feats of the others are only counted
+(`hiddenFeats` of `GET /api/games/:id`), nothing says what they were or who has them. A request with the header `X-Identity: <code>` is told its own name and its own
 feats and is not cached. 120 requests per minute and address (`apiLimit`), `503` when nothing is kept.
 
 ### Client
@@ -179,7 +179,13 @@ analyzed by the CI on push. Useful options: `--skip-e2e`, `--skip-sonar`, `--ski
 
 ## Releases
 
-Releases are made locally with `tools/local-release.sh` (no CI minutes): it determines the next version
+**Automatic:** after a merge to `main` that changes the app sources, `.github/workflows/release.yml` makes the release:
+the next `vX.Y.Z` comes from the newest tag and the label of the merged PR (`bump:major`, `bump:minor`, patch without
+a label), the image goes to `ghcr.io/tobciu/curvytron:<version>` and `:latest`, the commit is tagged and the GitHub
+release is created. The version is set in `package.json` inside the build only (no commit to `main`), so `/health` of the
+image reports it. Create the labels `bump:minor` and `bump:major` once in the repository.
+
+**Locally:** releases can still be made locally with `tools/local-release.sh` (no CI minutes): it determines the next version
 from the newest `vX.Y.Z` tag, commits `Bump version to X.Y.Z` when needed (the version in package.json
 is what `/health` reports), builds the image, pushes it to GHCR as `ghcr.io/tobciu/curvytron:<version>`
 and `:latest`, tags the commit and creates the GitHub release.

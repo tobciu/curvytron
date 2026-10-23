@@ -58,7 +58,8 @@ test('a player that never comes back is let go when the game is over', async ({ 
 
     await bob.context().close();
 
-    await expect(alice.locator('.game-players .player.away')).toHaveCount(1);
+    // The message stays in the chat: the player is marked as away only for a moment when the game ends right away
+    await expect(alice.locator('#chat-feed')).toContainText('Bob lost the connection');
     await expect(alice.locator('#end .btn-back-to-room').first()).toBeVisible({ timeout: 60_000 });
     await alice.locator('#end .btn-back-to-room').first().click();
     await expect(alice).toHaveURL(new RegExp(`#/room/${name}`));

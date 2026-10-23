@@ -174,6 +174,30 @@ describe('a whole game over the socket', () => {
     }, 20000);
 });
 
+describe('the tag of a room', () => {
+    it('is set by the room master at any time, and reaches the room and the room list', async () => {
+        const master = { client: await connect() };
+        const guest = { client: await connect() };
+        const lobby = await connect();
+
+        await createRoom('tagged', [
+            { ...master, player: 'Alice' },
+            { ...guest, player: 'Bob' }
+        ]);
+
+        const inRoom = guest.client.waitFor('room:config:tag');
+        const inList = lobby.waitFor('room:config:tag');
+
+        expect(await master.client.request('room:config:tag', { tag: 'Daily Runde' })).toEqual({
+            success: true,
+            tag: 'daily-runde'
+        });
+        expect(await inRoom).toMatchObject({ tag: 'daily-runde' });
+        expect(await inList).toEqual({ name: 'tagged', tag: 'daily-runde' });
+        expect(await master.client.request('room:config:tag', { tag: '' })).toEqual({ success: true, tag: null });
+    });
+});
+
 describe('wrong data from the clients', () => {
     const payloads = [
         'null',

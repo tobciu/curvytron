@@ -7,7 +7,7 @@ import { NullStorage } from '../src/server/storage/NullStorage.ts';
 import { SqliteStorage } from '../src/server/storage/SqliteStorage.ts';
 import { minGamesForWinRate } from '../src/server/storage/queries.ts';
 import { statsVersion } from '../src/shared/model/GameStats.ts';
-import { anonymous, secretFeat } from '../src/shared/model/StatsApi.ts';
+import { anonymous } from '../src/shared/model/StatsApi.ts';
 
 const codes = { alice: 'alice-code-0123456789', bob: 'bob-code-0123456789ab', carl: 'carl-code-0123456789a' };
 
@@ -144,20 +144,38 @@ describe('the games', () => {
         ]);
     });
 
-    it('does not tell what a feat was, except to the player who has it', () => {
+    it('does not list the feats of the others, only their number, and lists the ones of the viewer', () => {
         storage.saveGame(result());
 
-        expect(queries.getGame(1).stats.feats).toEqual([
-            { id: secretFeat, player: 0, round: 1 },
-            { id: secretFeat, player: 1, round: 2 }
-        ]);
+        const game = queries.getGame(1);
+
+        expect(game.stats.feats).toEqual([]);
+        expect(game.hiddenFeats).toBe(2);
+        expect(game.feats).toBe(2);
 
         const bob = queries.playerIdByIdentity(hashIdentity(codes.bob));
+        const own = queries.getGame(1, bob);
 
-        expect(queries.getGame(1, bob).stats.feats).toEqual([
-            { id: secretFeat, player: 0, round: 1 },
-            { id: 'revenge', player: 1, round: 2, other: 0 }
-        ]);
+        expect(own.stats.feats).toEqual([{ id: 'revenge', player: 1, round: 2, other: 0 }]);
+        expect(own.hiddenFeats).toBe(1);
+        expect(own.feats).toBe(2);
+    });
+
+    it('does not count the feats that are not given anymore', () => {
+        storage.saveGame(
+            result({
+                feats: [
+                    { round: 1, slot: 0, feat: 'graveKill' },
+                    { round: 2, slot: 1, feat: 'badKarma' }
+                ]
+            })
+        );
+
+        const game = queries.getGame(1);
+
+        expect(game.feats).toBe(1);
+        expect(game.hiddenFeats).toBe(1);
+        expect(queries.listGames({ limit: 10, before: null, tag: null }).games[0].feats).toBe(1);
     });
 
     it('is nothing when there is no such game', () => {
@@ -356,7 +374,6 @@ describe('the HTTP interface', () => {
 
         expect(text).not.toContain('cleanSweep');
         expect(text).not.toContain('revenge');
-        expect(text).toContain(secretFeat);
     });
 
     it('tells more to the one who sends their identity, and does not let a cache keep it', async () => {
@@ -368,12 +385,9 @@ describe('the HTTP interface', () => {
 
         expect(anonymousResponse.headers.get('cache-control')).toMatch(/max-age/);
         expect(ownResponse.headers.get('cache-control')).toBe('no-store');
-        expect((await ownResponse.json()).stats.feats.map(({ id }) => id)).toEqual([secretFeat, 'revenge']);
+        expect((await ownResponse.json()).stats.feats.map(({ id }) => id)).toEqual(['revenge']);
         // Not a code, or an unknown one: nothing more than anybody
-        expect((await (await get('/games/1', { 'X-Identity': 'x' })).json()).stats.feats.map(({ id }) => id)).toEqual([
-            secretFeat,
-            secretFeat
-        ]);
+        expect((await (await get('/games/1', { 'X-Identity': 'x' })).json()).stats.feats).toEqual([]);
     });
 
     it('is not there when nothing is kept', async () => {

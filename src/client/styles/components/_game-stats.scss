@@ -135,6 +135,7 @@
         vertical-align: 1px;
     }
 
+    // Tiles of the same width, four in a row, the last row is centered; two in a row on a small screen
     .awards {
         display: flex;
         flex-wrap: wrap;
@@ -145,13 +146,20 @@
         list-style: none;
 
         li {
-            padding: 10px 20px;
+            flex: 0 0 calc(25% - 7.5px);
+            box-sizing: border-box;
             background: transparentize(#fff, 0.95);
             font-size: 18px;
             font-weight: 300;
+            text-align: center;
+
+            @media (max-width: 700px) {
+                flex-basis: calc(50% - 5px);
+            }
 
             button {
-                padding: 0;
+                width: 100%;
+                padding: 10px 12px;
                 border: 0;
                 background: none;
                 font: inherit;
@@ -170,6 +178,14 @@
                 opacity: 0.7;
             }
         }
+    }
+
+    .secret-feats {
+        margin: 20px 0 0;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 300;
+        opacity: 0.75;
     }
 
     .rounds {
@@ -200,29 +216,20 @@
         text-align: center;
 
         th {
-            padding: 10px;
+            padding: 10px 6px;
             font-size: 13px;
             font-weight: 300;
             text-transform: uppercase;
             // Not `opacity`: it would dim the explanations too
             color: transparentize(#fff, 0.3);
-            white-space: nowrap;
         }
 
         td {
-            padding: 10px;
+            padding: 10px 6px;
             background: transparentize(#fff, 0.95);
             border-top: 2px solid transparentize(#fff, 0.95);
             font-size: 20px;
             font-weight: 300;
-        }
-
-        // The length of the bar is relative to the best of the column (--bar, set by the component)
-        td.bar {
-            background-image: linear-gradient(transparentize(#fff, 0.6), transparentize(#fff, 0.6));
-            background-repeat: no-repeat;
-            background-position: left bottom;
-            background-size: var(--bar, 0%) 4px;
         }
 
         .name {
