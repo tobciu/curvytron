@@ -12,7 +12,11 @@ export class BonusCoin extends Bonus {
         return [avatar];
     }
 
-    on() {}
+    on() {
+        // No effect: the mode gives the points
+    }
 
-    off() {}
+    off() {
+        // No effect to take back
+    }
 }

@@ -241,14 +241,6 @@ export class GameController {
      * Attach spectator
      */
     attachSpectator(client: SocketClient) {
-        const properties: Record<string, keyof Avatar> = {
-            angle: 'angle',
-            radius: 'radius',
-            color: 'color',
-            printing: 'printing',
-            score: 'score'
-        };
-
         const events: ServerMessage[] = [
             [
                 'spectate',
@@ -265,52 +257,70 @@ export class GameController {
             ]
         ];
 
-        let avatar;
-        let bonus;
-        let i;
+        for (let i = this.game.avatars.items.length - 1; i >= 0; i--) {
+            events.push(...this.describeAvatar(this.game.avatars.items[i]));
+        }
 
-        for (i = this.game.avatars.items.length - 1; i >= 0; i--) {
-            avatar = this.game.avatars.items[i];
-            events.push([
-                'position',
-                [avatar.id, this.compressor.compress(avatar.x), this.compressor.compress(avatar.y)]
-            ]);
+        events.push(['round:info', this.game.round], ...this.describeRound());
+        events.push(['game:spectators', this.countSpectators()]);
 
-            for (const property in properties) {
-                if (Object.hasOwn(properties, property)) {
-                    events.push(['property', [avatar.id, property, avatar[properties[property]]]]);
-                }
-            }
+        client.addEvents(events);
+    }
 
-            if (!avatar.alive) {
-                events.push(['die', [avatar.id, null, null]]);
+    /**
+     * What a client that comes later needs to know about an avatar: where it is, how it looks, whether it is dead
+     */
+    describeAvatar(avatar: Avatar): ServerMessage[] {
+        const properties: Record<string, keyof Avatar> = {
+            angle: 'angle',
+            radius: 'radius',
+            color: 'color',
+            printing: 'printing',
+            score: 'score'
+        };
+        const events: ServerMessage[] = [
+            ['position', [avatar.id, this.compressor.compress(avatar.x), this.compressor.compress(avatar.y)]]
+        ];
+
+        for (const property in properties) {
+            if (Object.hasOwn(properties, property)) {
+                events.push(['property', [avatar.id, property, avatar[properties[property]]]]);
             }
         }
 
-        events.push(['round:info', this.game.round]);
+        if (!avatar.alive) {
+            events.push(['die', [avatar.id, null, null]]);
+        }
 
-        // A client that comes in the middle of a round sees the missions with their standing, and the summary of the round
-        // that just ended
+        return events;
+    }
+
+    /**
+     * What a client that comes later needs to know about the round: the missions with their standing, the summary of the
+     * round that just ended, and the bonuses (with the time they have left) or the winner of the round
+     */
+    describeRound(): ServerMessage[] {
+        const events: ServerMessage[] = [];
+
         if (this.game.missions) {
             events.push(['round:missions', this.game.missions.standings()]);
         }
 
-        if (!this.game.inRound && this.game.summary) {
-            events.push(['round:summary', this.game.summary]);
-        }
-
-        if (this.game.inRound) {
-            for (i = this.game.bonusManager.bonuses.items.length - 1; i >= 0; i--) {
-                bonus = this.game.bonusManager.bonuses.items[i];
-                events.push(['bonus:pop', this.describeBonus(bonus as Bonus)]);
+        if (!this.game.inRound) {
+            if (this.game.summary) {
+                events.push(['round:summary', this.game.summary]);
             }
-        } else {
+
             events.push(['round:end', this.game.roundWinner ? this.game.roundWinner.id : null]);
+
+            return events;
         }
 
-        events.push(['game:spectators', this.countSpectators()]);
+        for (const bonus of [...this.game.bonusManager.bonuses.items].reverse()) {
+            events.push(['bonus:pop', this.describeBonus(bonus as Bonus)]);
+        }
 
-        client.addEvents(events);
+        return events;
     }
 
     /**

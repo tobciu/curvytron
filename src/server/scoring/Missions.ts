@@ -111,40 +111,51 @@ export class MissionRound {
      * State of a yes/no mission for a player. `ended`: the round is over, `winner`: who survived it.
      */
     stateOf(id: MissionId, player: number, ended: boolean, winner: number | null): MissionState {
-        const counters = this.counters(player);
-        const alive = this.isAlive(player);
-
-        if (!counters) {
+        if (!this.counters(player)) {
             return 'missed';
         }
 
         if (id === 'kamikaze') {
-            const first = this.game.stats.deathOrder[0];
-
-            if (first === undefined) {
-                return ended ? 'missed' : 'open';
-            }
-
-            if (first !== player) {
-                return 'missed';
-            }
-
-            return counters.kills >= 1 ? 'done' : ended ? 'missed' : 'open';
+            return this.kamikazeState(player, ended);
         }
 
         if (id === 'comeback') {
-            if (!this.wasLast(player)) {
-                return 'missed';
-            }
-
-            if (ended) {
-                return winner === player ? 'done' : 'missed';
-            }
-
-            return alive ? 'open' : 'missed';
+            return this.comebackState(player, ended, winner);
         }
 
         return 'missed';
+    }
+
+    /** Kamikaze: the first to die, when somebody dies on its trail */
+    private kamikazeState(player: number, ended: boolean): MissionState {
+        const first = this.game.stats.deathOrder[0];
+
+        if (first === undefined) {
+            return ended ? 'missed' : 'open';
+        }
+
+        if (first !== player) {
+            return 'missed';
+        }
+
+        if ((this.counters(player)?.kills ?? 0) >= 1) {
+            return 'done';
+        }
+
+        return ended ? 'missed' : 'open';
+    }
+
+    /** Comeback: the last of the round before wins this one */
+    private comebackState(player: number, ended: boolean, winner: number | null): MissionState {
+        if (!this.wasLast(player)) {
+            return 'missed';
+        }
+
+        if (ended) {
+            return winner === player ? 'done' : 'missed';
+        }
+
+        return this.isAlive(player) ? 'open' : 'missed';
     }
 
     /** How a mission stands right now */

@@ -31,18 +31,25 @@ interface Row {
     text: string;
 }
 
+/** Who leads a counting mission, as a text */
+function leadText(standing: MissionStanding, best: string): string {
+    if (standing.leaders.length === 0) {
+        return 'nobody yet';
+    }
+
+    if (standing.leaders.length > 1) {
+        return `${standing.leaders.length} tied at ${best}`;
+    }
+
+    return `${nameOf(standing.leaders[0])} leads with ${best}`;
+}
+
 function countRow(standing: MissionStanding): Pick<Row, 'status' | 'text'> {
     const format = missionInfo[standing.id].format ?? String;
     const values = new Map(standing.values ?? []);
     const best = Math.max(0, ...values.values());
     const mine = me.value ? (values.get(me.value.id) ?? 0) : null;
-    const leader = standing.leaders.length > 0 ? nameOf(standing.leaders[0]) : null;
-    const lead =
-        leader === null
-            ? 'nobody yet'
-            : standing.leaders.length > 1
-              ? `${standing.leaders.length} tied at ${format(best)}`
-              : `${leader} leads with ${format(best)}`;
+    const lead = leadText(standing, format(best));
 
     if (mine === null) {
         return { status: 'none', text: lead };
