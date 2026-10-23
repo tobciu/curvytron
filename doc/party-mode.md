@@ -1,10 +1,10 @@
-# Sternenjagd – Game Design Document
+# Star Chase – Game Design Document
 
 Status: Entwurf, nichts ist umgesetzt.
 
 ## 1. Überblick
 
-Die **Sternenjagd** ist ein alternativer Spielmodus für Curvytron. Er ändert die Wertung, nicht die Steuerung und nicht
+Der **Star Chase** (Arbeitstitel auf Deutsch: Star Chase) ist ein alternativer Spielmodus für Curvytron. Er ändert die Wertung, nicht die Steuerung und nicht
 das Fahrgefühl. Gutes Fahren bleibt die Grundlage, reicht aber nicht allein zum Sieg: Wer gewinnen will, muss sich auch
 um Rundenmissionen kümmern, kleine Sterne auf dem Spielfeld einsammeln und dafür Risiken eingehen. Das Vorbild sind
 Spiele wie Mario Party, in denen Sterne und Bonuspunkte den Ausgang bis zum Schluss offen halten.
@@ -21,8 +21,8 @@ Spiele wie Mario Party, in denen Sterne und Bonuspunkte den Ausgang bis zum Schl
 
 | Einstellung | Werte | Standard |
 |---|---|---|
-| Modus (Wertung) | Klassisch, Sternenjagd | Klassisch |
-| Siegbedingung | Rundenzahl, Zeitlimit oder Punktelimit | Sternenjagd: 8 Runden; Klassisch: Punktelimit wie bisher |
+| Modus (Wertung) | Klassisch, Star Chase | Klassisch |
+| Siegbedingung | Rundenzahl, Zeitlimit oder Punktelimit | Star Chase: 8 Runden; Klassisch: Punktelimit wie bisher |
 
 Modus und Siegbedingung sind unabhängig: Alle Siegbedingungen sind in beiden Modi wählbar. Die Dauer eines Spiels soll
 bei etwa 15 Minuten liegen (siehe Abschnitt 6).
@@ -35,7 +35,7 @@ bei etwa 15 Minuten liegen (siehe Abschnitt 6).
    Spielfeld. Punkte für Platzierung gibt es wie im klassischen Modus.
 3. **Ende**: Sobald nur noch einer lebt, endet die Runde. Die Missionen werden ausgewertet, die Sterne vergeben.
 4. **Zwischenstand**: Ein Overlay zeigt die Aufschlüsselung der Punkte jedes Spielers (Platzierung, Missionen, gesammelte
-   Sterne) und den Gesamtstand. Die Pause (`warmdownTime`) beträgt in der Sternenjagd **8 s**.
+   Sterne) und den Gesamtstand. Die Pause (`warmdownTime`) beträgt in der Star Chase **8 s**.
 5. **Nächste Runde** oder Spielende nach der Siegbedingung.
 
 ## 3. Punktequellen
@@ -129,14 +129,14 @@ Die Dauer eines Spiels soll bei etwa 15 Minuten liegen. Die Länge einer Runde s
 vorbei, andere ziehen sich), und sie hängt von der Spielerzahl und der Kartengröße ab. Deshalb gibt es drei
 Siegbedingungen:
 
-- **Feste Rundenzahl** (Standard in der Sternenjagd: 8 Runden, als Startwert): Der Ausgang bleibt bis zum Schluss offen,
+- **Feste Rundenzahl** (Standard in der Star Chase: 8 Runden, als Startwert): Der Ausgang bleibt bis zum Schluss offen,
   weil Sterne alles drehen können. Es gilt das Finale. Bei Gleichstand nach der letzten Runde folgt eine Stichrunde
   unter den Gleichplatzierten.
 - **Zeitlimit** (Standard 15 Minuten): Läuft die Zeit ab, wird die laufende Runde noch zu Ende gespielt, danach endet das
   Spiel. Die letzte Runde wird vorher angesagt. Die Dauer stimmt unabhängig von Spielerzahl und Rundenlänge, die Zahl der
   Runden liegt nicht fest. Es gilt das Finale. Gleichstand wie bei der festen Rundenzahl.
 - **Punktelimit**: wie heute (`maxScore`), kein Finale. Der Standardwert `(n-1)·10` ergibt für einen durchschnittlichen
-  Spieler etwa 20 Runden und ist für 15 Minuten zu hoch. In der Sternenjagd, wo die Sonderpunkte den Stand zusätzlich
+  Spieler etwa 20 Runden und ist für 15 Minuten zu hoch. In der Star Chase, wo die Sonderpunkte den Stand zusätzlich
   anheben, ist der Standardwert niedriger gewählt. Der klassische Modus bleibt unverändert.
 
 **Finale**: In den letzten 2 Runden zählt jede Punktequelle doppelt. Das gilt bei fester Rundenzahl und beim Zeitlimit.
@@ -164,27 +164,39 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
 - **Punkte**: `Game.kill` vergibt Punkte nach der Reihenfolge der Tode, `resolveScores` addiert n-1 für den Rundensieger,
   `isWon` prüft `maxScore`.
 - **Bonis**: `BonusManager.testCatch` löst `bonus:catch` aus, `GameStats` hört darauf.
-- **Statistiken**: `GameStats` zählt über das ganze Spiel, pro Runde gibt es nur Sieger und Dauer (`rounds[]`).
-  Near Misses und Squeezes gibt es bereits (`testSurroundings`).
+- **Statistiken**: `GameStats` (`src/server/service/GameStats.ts`) zählt über das ganze Spiel. Near Misses, Squeezes und
+  Gap Runs gibt es (`testSurroundings`), ebenso `kills` und `graveKills`. Pro Runde gibt es nur Sieger und Dauer.
+- **Feats**: `Feats.ts` misst schon Wandnähe (`wallRiderRadii`, `wallRiderTime`), Zustand über Runden hinweg
+  (`lastPacifist`, `firstDeaths`) und Bonus-Fänge. Das sind Ja/Nein-Feats, keine Zähler.
+- **Speicherung** (SQLite, `src/server/storage`): Tabellen `games` (mit `mode`, Standard `classic`), `game_players`
+  (Zähler als `stats_json`), `rounds` (`duration_ms`, Sieger) und `feats`. `result.ts` setzt `mode` heute fest auf
+  `'classic'`. `statsVersion` ist 2. Die Spielerzahl ergibt sich aus `game_players`.
+- **Raum-Einstellungen**: Der Tag ist das fertige Muster für eine Einstellung des Raum-Masters: `room:config:tag`
+  (`protocol.ts`), `RoomController.onConfigTag`, `Room.setTag`, `RoomParameters.vue` und `RoomRepository.setConfigTag`.
 - **Anzeige**: `PlayerList.vue` zeigt `+roundScore` und `score`.
 - **Pausen**: `warmupTime = 3000`, `warmdownTime = 5000` in `BaseGame`.
 
 ### 8.2 Bausteine
 
-0. **Rundenzeiten erfassen**: Dauer jeder Runde zusammen mit Spielerzahl und Kartengröße. `GameStats` kennt die Dauer
-   schon (`rounds[].duration`); sie kommt zusätzlich mit Spielerzahl und Kartengröße in die Metriken (siehe
-   `doc/monitoring.md`), damit die Standardwerte aus echten Spielen abgeleitet werden. Das ist auch ohne den neuen Modus
-   nützlich.
-1. **Statistiken pro Runde**: `GameStats` bekommt je Spieler ein `round`-Objekt neben den Gesamtzählern, das in
-   `onRoundStart` zurückgesetzt wird (der offene Punkt „Werte pro Runde" in `doc/todo.md`). Neue Zähler: Zeit nah an der
-   Wand, Platz in der Runde, überlebte Mali, Reihenfolge der Tode.
-2. **Wertung als Strategie**: Ein Interface `ScoringMode` (`classic`, `party`) mit den Hooks `onKill`, `onBonusCatch` und
-   `onRoundEnd`. `Game.resolveScores` und `isWon` geben dorthin ab, die Siegbedingung ist davon getrennt. Der klassische
-   Modus bleibt unverändert.
+0. **Kartengröße pro Runde**: Rundendauer und Spielerzahl werden schon gespeichert. Es fehlt die Kartengröße, entweder
+   als Spalte in `rounds` (Migration) oder als Metrik (`doc/monitoring.md`). Damit lassen sich die Standardwerte per
+   SQL aus echten Spielen ableiten. Klein, auch ohne den neuen Modus nützlich.
+1. **Zähler pro Runde**: `GameStats` bekommt je Spieler ein `round`-Objekt, das in `onRoundStart` zurückgesetzt wird (der
+   offene Punkt „Werte pro Runde" in `doc/todo.md`). Es ist reiner Laufzeitzustand und wird nicht in `stats_json`
+   geschrieben, `statsVersion` bleibt unverändert. Es wird an derselben Stelle gefüllt wie die Gesamtzähler (in `onDie`
+   vor `feats.die`). Zähler: Nahbeinahe, Engstellen, Bonis, Kills, Strecke, Zeit nah an der Wand, Platz in der Runde,
+   Reihenfolge der Tode, überlebte Mali (Herkunft des Malus nötig). Feat und Mission nutzen denselben Wandabstand
+   (`wallRiderRadii`), aber nicht dieselbe Dauer: Die Mission zählt die Gesamtzeit.
+2. **Wertung als Strategie**: Ein Interface `ScoringMode` (`classic`, `starchase`) mit den Hooks `onKill`, `onBonusCatch`
+   und `onRoundEnd`. `Game.resolveScores` und `isWon` geben dorthin ab, die Siegbedingung ist davon getrennt. Der
+   klassische Modus bleibt unverändert.
 3. **Missions-Modul**: Pool, Ziehung abhängig von der Spielerzahl, laufender Stand (Werte aller Spieler, Führender und
    Status je Spieler) und Auswertung am Rundenende.
-4. **Raum-Einstellung**: Modus (`classic` / `party`) und Siegbedingung (Runden, Zeit oder Punkte, mit Wert) in `BaseRoomConfig`
-   und in den Raumparametern. Die Pause von 8 s wird im Modus gesetzt, nicht global.
+4. **Raum-Einstellung**: Modus (`classic` / `starchase`) und Siegbedingung (Runden, Zeit oder Punkte, mit Wert) in
+   `BaseRoomConfig` und in den Raumparametern, nach dem Muster des Tags (`room:config:mode`, `room:config:win`, nur für
+   den Raum-Master, Weitergabe in die Raumliste). `result.ts` nimmt `mode` aus dem Raum statt der Konstante. Der Schlüssel
+   steht in `games.mode` und ist schwer zu ändern, er wird vor dieser Stufe festgelegt. Die Pause von 8 s wird im Modus
+   gesetzt, nicht global.
 5. **Stern-Bonus**: eigener Radius pro Typ, eigene Platzierung, Begrenzung nach Spielerzahl, Wert nach Spielerzahl,
    Lebensdauer mit Entfernen durch den Server (`bonus:clear` gibt es bereits).
 6. **Protokoll** (`src/shared/protocol.ts`):
@@ -208,11 +220,11 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
 - Finale (doppelte Punkte), Stichrunde und Zeitlimit (die laufende Runde wird zu Ende gespielt, die letzte Runde wird
   angesagt).
 - Der klassische Modus liefert dieselben Punkte wie vorher.
-- Ein e2e-Lauf der Sternenjagd.
+- Ein e2e-Lauf der Star Chase.
 
 ### 8.4 Reihenfolge
 
-1. Rundenzeiten erfassen und Statistiken pro Runde (beides auch ohne den neuen Modus nützlich).
+1. Zähler pro Runde, dazu die Kartengröße pro Runde (beides auch ohne den neuen Modus nützlich).
 2. Interface `ScoringMode`, der klassische Modus dahinter, unverändert und getestet.
 3. Missionen mit Protokoll und Raum-Einstellung.
 4. Missionsanzeige und Overlay zwischen den Runden.
