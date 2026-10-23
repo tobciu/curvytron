@@ -135,6 +135,7 @@
         vertical-align: 1px;
     }
 
+    // Tiles of the same width, four in a row, the last row is centered; two in a row on a small screen
     .awards {
         display: flex;
         flex-wrap: wrap;
@@ -145,13 +146,20 @@
         list-style: none;
 
         li {
-            padding: 10px 20px;
+            flex: 0 0 calc(25% - 7.5px);
+            box-sizing: border-box;
             background: transparentize(#fff, 0.95);
             font-size: 18px;
             font-weight: 300;
+            text-align: center;
+
+            @media (max-width: 700px) {
+                flex-basis: calc(50% - 5px);
+            }
 
             button {
-                padding: 0;
+                width: 100%;
+                padding: 10px 12px;
                 border: 0;
                 background: none;
                 font: inherit;

@@ -353,7 +353,7 @@ Die Feats sollen in den Listen **nicht** verraten, was sie sind. Das gilt für d
 - In den **Rekorden** gibt es keinen Rekord, der ein Feat nennt (zum Beispiel "meiste Clean sweeps"), sondern nur
   "meiste Feats" als Zahl.
 - Die Schnittstelle liefert die Feats der anderen **gar nicht** (weder Kennung noch Runde noch Spieler), nur die Zahl:
-  `GET /api/games/:id` hat `hiddenFeats`, die Seite schreibt am Ende eines Spiels "N secret feats were discovered".
+  `GET /api/games/:id` hat `hiddenFeats`, die Seite schreibt am Ende eines Spiels "N secret feats were triggered".
   Die eigenen Feats sieht man mit Namen. Feats, die es nicht mehr gibt (`retiredFeats`, zum Beispiel `graveKill`, heute
   die Statistik "Wall of the dead"), zählen in den Listen nicht mit, stehen aber in "My feats".
 - Die Feats **im Spiel** (am Rundenende und Spielende) ändern sich nicht: Dort sehen die Mitspielenden Namen und

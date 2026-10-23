@@ -163,7 +163,7 @@ function bonusDetails(player: PlayerStats): string[] {
         </ol>
         <p v-if="hiddenFeats" class="secret-feats">
             {{ hiddenFeats }} {{ stats.feats.length ? 'more ' : '' }}secret
-            {{ hiddenFeats === 1 ? 'feat was' : 'feats were' }} discovered
+            {{ hiddenFeats === 1 ? 'feat was' : 'feats were' }} triggered
         </p>
         <p class="rules-link">
             <a href="#/rules/statistics" target="_blank" class="animated">How is this counted?</a>
