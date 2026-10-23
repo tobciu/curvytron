@@ -13,6 +13,8 @@ import { buildGameResult, minPlayers } from '../storage/result.ts';
 import { getScoringMode, winConditions } from '../scoring/index.ts';
 import { finaleFactor } from '../../shared/scoring.ts';
 import { defaultRoundTime } from '../scoring/WinCondition.ts';
+import type { MissionRound } from '../scoring/Missions.ts';
+import type { RoundSummary } from '../../shared/missions.ts';
 import type { ScoringMode, WinCondition } from '../scoring/index.ts';
 import type { Body } from '../core/Body.ts';
 import type { Bonus } from './Bonus/Bonus.ts';
@@ -48,6 +50,12 @@ export class Game extends BaseGame {
     finalPlayed: boolean = false;
     /** The avatars that are tied after the last round: only they score in the tie break */
     tiebreakers: Set<Avatar> | null = null;
+    /** The missions of the running round (Star Chase), null in a mode without */
+    missions: MissionRound | null = null;
+    /** What the avatars got in the running round, by source: for the summary of the round */
+    breakdown: Map<number, { placement: number; missions: number; stars: number }> = new Map();
+    /** How the round ended, null in a mode that has nothing to tell */
+    summary: RoundSummary | null = null;
     /** Points count this many times in the running round (2 in the finale) */
     scoreFactor: number = 1;
 
@@ -210,6 +218,8 @@ export class Game extends BaseGame {
     override update(step: number) {
         const score = this.deaths.count();
 
+        this.scoring.onFrame?.(this, Date.now());
+
         this.deathInFrame = false;
 
         for (let i = this.avatars.items.length - 1; i >= 0; i--) {
@@ -286,12 +296,17 @@ export class Game extends BaseGame {
     /**
      * Give points to an avatar: the finale counts twice, the tie break only for the avatars that are tied
      */
-    award(avatar: Avatar, points: number) {
+    award(avatar: Avatar, points: number, source: 'placement' | 'missions' | 'stars' = 'placement') {
         if (this.tiebreakers && !this.tiebreakers.has(avatar)) {
             return;
         }
 
-        avatar.addScore(points * this.scoreFactor);
+        const given = points * this.scoreFactor;
+        const total = this.breakdown.get(avatar.id) ?? { placement: 0, missions: 0, stars: 0 };
+
+        total[source] += given;
+        this.breakdown.set(avatar.id, total);
+        avatar.addScore(given);
     }
 
     /**
@@ -325,6 +340,7 @@ export class Game extends BaseGame {
         const tied = this.finalPlayed ? this.getTiedAvatars() : null;
         const plan = tied ? { last: true, finale: false } : this.winRule.plan(this);
 
+        this.breakdown.clear();
         this.tiebreakers = tied;
         this.scoreFactor = plan.finale ? finaleFactor : 1;
         this.round = { round: this.roundsPlayed + 1, last: plan.last, finale: plan.finale, tiebreak: tied !== null };
@@ -460,6 +476,7 @@ export class Game extends BaseGame {
         this.planRound();
         this.emit('round:new', { game: this });
         super.onRoundNew();
+        this.scoring.onRoundStart?.(this);
 
         let avatar, position, i;
 

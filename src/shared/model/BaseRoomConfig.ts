@@ -4,8 +4,10 @@ import type { RoomConfigData } from '../protocol.ts';
 import {
     defaultMinutes,
     defaultRounds,
+    defaultScorePerPlayer,
     defaultScoringMode,
     defaultWinCondition,
+    defaultWinConditions,
     isScoringMode,
     isWinCondition,
     maxMinutes,
@@ -74,7 +76,11 @@ export class BaseRoomConfig extends EventEmitter {
             return false;
         }
 
-        this.mode = mode;
+        if (this.mode !== mode) {
+            this.mode = mode;
+            // Every mode has its way to end, the master can change it again
+            this.winCondition = defaultWinConditions[mode];
+        }
 
         return true;
     }
@@ -214,7 +220,7 @@ export class BaseRoomConfig extends EventEmitter {
      * Get max score
      */
     getDefaultMaxScore(): number {
-        return Math.max(1, (this.room.players.count() - 1) * 10);
+        return Math.max(1, (this.room.players.count() - 1) * defaultScorePerPlayer[this.mode]);
     }
 
     /**

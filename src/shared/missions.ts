@@ -1,0 +1,100 @@
+/** The missions of a round in Star Chase: what they are, what they are worth, and what the server tells the clients */
+
+export const missionIds = [
+    'closeCombat',
+    'needleEye',
+    'collector',
+    'hunter',
+    'wallRunner',
+    'marathon',
+    'kamikaze',
+    'comeback',
+    'stubborn'
+] as const;
+export type MissionId = (typeof missionIds)[number];
+
+/** A `count` mission goes to the best value, a `flag` mission to everybody who did it */
+export type MissionKind = 'count' | 'flag';
+
+export interface MissionDefinition {
+    id: MissionId;
+    kind: MissionKind;
+    /** A mission that makes no sense with fewer players is not drawn */
+    minPlayers: number;
+    /** A value counts up to this much in a round, so that it can not be driven up on purpose */
+    cap?: number;
+}
+
+export const missions: Record<MissionId, MissionDefinition> = {
+    closeCombat: { id: 'closeCombat', kind: 'count', minPlayers: 2, cap: 15 },
+    needleEye: { id: 'needleEye', kind: 'count', minPlayers: 3, cap: 10 },
+    collector: { id: 'collector', kind: 'count', minPlayers: 2, cap: 8 },
+    hunter: { id: 'hunter', kind: 'count', minPlayers: 2, cap: 10 },
+    // Time close to a border (ms)
+    wallRunner: { id: 'wallRunner', kind: 'count', minPlayers: 2, cap: 60000 },
+    marathon: { id: 'marathon', kind: 'count', minPlayers: 2 },
+    kamikaze: { id: 'kamikaze', kind: 'flag', minPlayers: 3 },
+    comeback: { id: 'comeback', kind: 'flag', minPlayers: 3 },
+    stubborn: { id: 'stubborn', kind: 'flag', minPlayers: 3 }
+};
+
+/** Missions that count something that goes on all the time: they are told at most once per second */
+export const continuousMissions: readonly MissionId[] = ['wallRunner', 'marathon'];
+
+/** How many missions a round has: one for two players, three from ten on */
+export function missionCount(players: number): number {
+    if (players <= 2) {
+        return 1;
+    }
+
+    return players >= 10 ? 3 : 2;
+}
+
+/** Points of a round win for the given number of players */
+function roundWin(players: number): number {
+    return Math.max(players - 1, 1);
+}
+
+/** A mission won is worth half a round win, at least 1 */
+export function missionPoints(players: number): number {
+    return Math.max(Math.ceil(roundWin(players) / 2), 1);
+}
+
+/** A star is worth a third of a round win, at least 1 */
+export function starPoints(players: number): number {
+    return Math.max(Math.ceil(roundWin(players) / 3), 1);
+}
+
+export type MissionState = 'open' | 'done' | 'missed';
+
+/** How a mission stands: the values (`count`) or the states (`flag`) of the players, and who would get it now */
+export interface MissionStanding {
+    id: MissionId;
+    leaders: number[];
+    /** `[avatar id, value]`, the values are capped */
+    values?: Array<[number, number]>;
+    /** `[avatar id, state]` */
+    states?: Array<[number, MissionState]>;
+}
+
+/** Who got a mission at the end of a round */
+export interface MissionResult {
+    id: MissionId;
+    winners: number[];
+}
+
+/** What a player got in a round */
+export interface RoundSummaryPlayer {
+    id: number;
+    /** Points for the place in the round */
+    placement: number;
+    missions: number;
+    stars: number;
+    /** All of it, with the finale */
+    total: number;
+}
+
+export interface RoundSummary {
+    missions: MissionResult[];
+    players: RoundSummaryPlayer[];
+}

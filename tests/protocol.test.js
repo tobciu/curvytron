@@ -254,13 +254,24 @@ describe('when the game is over', () => {
 
         await createRoom('modes', [{ ...master, player: 'Alice' }]);
 
+        const same = master.client.waitFor('room:config:win');
+
         expect(await master.client.request('room:config:mode', { mode: 'classic' })).toEqual({
             success: true,
             mode: 'classic'
         });
+        expect(await same).toMatchObject({ condition: 'points' });
+        const win = master.client.waitFor('room:config:win');
+
+        // Star Chase ends after rounds unless the master chooses otherwise, and tells it with the mode
+        expect(await master.client.request('room:config:mode', { mode: 'starchase' })).toEqual({
+            success: true,
+            mode: 'starchase'
+        });
+        expect(await win).toMatchObject({ condition: 'rounds' });
         expect(await master.client.request('room:config:mode', { mode: 'chaos' })).toEqual({
             success: false,
-            mode: 'classic'
+            mode: 'starchase'
         });
     });
 });

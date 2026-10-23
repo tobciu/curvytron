@@ -50,6 +50,8 @@ export class GameStats {
     deathOrder: number[] = [];
     /** The places of the round before (1 is the winner), for the missions that look back */
     previousPlaces: Map<number, number> = new Map();
+    /** Timers that wait for a malus of another player to run out */
+    malusTimers: Set<ReturnType<typeof setTimeout>> = new Set();
     /** When the time close to a border was added to the round counters the last time */
     wallAt: Map<number, number> = new Map();
     /** Special feats of the game, they are hidden until they happen */
@@ -134,6 +136,7 @@ export class GameStats {
         this.game.removeListener('round:end', this.onRoundEnd);
         this.game.removeListener('clear', this.onClear);
         this.game.bonusManager?.removeListener('bonus:catch', this.onBonusCatch);
+        this.clearMalusTimers();
     }
 
     /**
@@ -157,6 +160,7 @@ export class GameStats {
 
     /** Everybody starts the round with nothing */
     resetRound() {
+        this.clearMalusTimers();
         this.round.clear();
         this.deathOrder = [];
         this.wallAt.clear();
@@ -169,8 +173,55 @@ export class GameStats {
                 kills: 0,
                 distance: 0,
                 wallTime: 0,
+                malusesSurvived: 0,
                 place: null
             });
+        }
+    }
+
+    /** Stop waiting for the maluses to run out */
+    clearMalusTimers() {
+        for (const timer of this.malusTimers) {
+            clearTimeout(timer);
+        }
+
+        this.malusTimers.clear();
+    }
+
+    /**
+     * A bonus that harms the others (the enemies, the leader) was caught: whoever is still alive when the effect runs out
+     * lived through a malus. Not for an avatar that is invincible, it takes no courage.
+     */
+    trackMaluses(bonus: Bonus) {
+        if (bonus.affect !== 'enemy' && bonus.affect !== 'leader') {
+            return;
+        }
+
+        for (const victim of (bonus.target ?? []) as Avatar[]) {
+            const counters = this.round.get(victim.id);
+
+            if (!counters || victim.invincible) {
+                continue;
+            }
+
+            const survived = () => {
+                if (victim.alive && this.round.get(victim.id) === counters) {
+                    counters.malusesSurvived++;
+                }
+            };
+
+            if (!bonus.duration) {
+                survived();
+
+                continue;
+            }
+
+            const timer = setTimeout(() => {
+                this.malusTimers.delete(timer);
+                survived();
+            }, bonus.duration);
+
+            this.malusTimers.add(timer);
         }
     }
 
@@ -288,7 +339,8 @@ export class GameStats {
 
                 const counters = this.round.get(avatar.id);
 
-                if (counters) {
+                // Nothing counts for the missions while the avatar is invincible
+                if (counters && !avatar.invincible) {
                     counters.distance += distance;
                 }
 
@@ -466,9 +518,12 @@ export class GameStats {
 
             const counters = this.round.get(data.avatar.id);
 
-            if (counters) {
+            // The bonus that makes the avatar invincible counts, what it catches while it is invincible does not
+            if (counters && (!data.avatar.invincible || type === 'BonusSelfMaster')) {
                 counters.bonuses++;
             }
+
+            this.trackMaluses(data.bonus);
 
             stats.bonusesByType[type] = (stats.bonusesByType[type] ?? 0) + 1;
             this.feats.catchBonus(data.avatar, type, Date.now() - this.roundStart);

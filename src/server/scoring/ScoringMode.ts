@@ -12,6 +12,10 @@ export interface ScoringMode {
     id: ScoringModeId;
     /** Time (ms) between the end of a round and the next one */
     warmdownTime: number;
+    /** A round is prepared (before the countdown) */
+    onRoundStart?(game: Game): void;
+    /** Every frame of a running round: the mode must be quick */
+    onFrame?(game: Game, now: number): void;
     /** An avatar died: `place` is the number of avatars that died before it, the points of its place in the round */
     onKill(game: Game, avatar: Avatar, place: number): void;
     /** An avatar caught a bonus */

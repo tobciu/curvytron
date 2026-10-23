@@ -56,7 +56,7 @@ um 1 Punkt, feste Werte wie 2 oder 3 wären dort kaum spürbar, bei 2 Spielern d
 | 4 | 3 | 2 | 1 |
 | 6 | 5 | 3 | 2 |
 | 10 | 9 | 5 | 3 |
-| 20 | 19 | 10 | 6 |
+| 20 | 19 | 10 | 7 |
 
 Ein Stern allein entscheidet eine Runde nicht, aber zwei Sterne oder eine Mission plus ein Stern können den Rundensieg
 aufwiegen. Die Faktoren (½ und ⅓) sind Startwerte und werden nach den ersten Testspielen angepasst.
@@ -78,8 +78,10 @@ Beim **Finale** (siehe Abschnitt 6) zählt jede Quelle doppelt.
   werden, aber nicht in der direkt folgenden.
 - Die Ziehung richtet sich nach der Spielerzahl: Missionen, die mit wenigen Spielern sinnlos sind (zum Beispiel
   Nadelöhr), werden dann nicht gezogen. Bei 2 Spielern wird nur 1 Mission gezogen.
-- Nichts zählt, solange ein Avatar unverwundbar ist (wie bei den Statistiken). Pro Mission und Runde gibt es einen
-  Deckel für den Zähler, damit sich Werte nicht absichtlich hochtreiben lassen.
+- Nichts zählt, solange ein Avatar unverwundbar ist (wie bei den Statistiken); gemeint sind Beinahe-Treffer, Engstellen,
+  Wandzeit, Strecke, Bonis und Mali (Kills zählen, sie stammen aus dem Trail). Pro Mission und Runde gibt es einen Deckel für
+  den Zähler, damit sich Werte nicht absichtlich hochtreiben lassen (Startwerte in `src/shared/missions.ts`: Nahkampf 15,
+  Nadelöhr 10, Sammler 8, Jäger 10, Wandläufer 60 s).
 
 ### 4.2 Pool
 
@@ -93,7 +95,7 @@ Beim **Finale** (siehe Abschnitt 6) zählt jede Quelle doppelt.
 | Marathon | die längste Strecke fährt |
 | Kamikaze | als Erster stirbt, dabei aber jemanden mitnimmt |
 | Comeback | die Runde gewinnt, nachdem er in der Runde davor Letzter war |
-| Hartnäckig | mit mindestens 2 Mali von Gegnern überlebt |
+| Hartnäckig | mindestens 2 Mali von Gegnern bis zum Ablaufen überlebt (ein Malus zählt, wenn der Avatar beim Ende seiner Wirkung noch lebt) |
 
 ### 4.3 Anzeige während der Runde
 
@@ -234,7 +236,9 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
    Finale und Stichrunde, in beiden Modi nutzbar. Bisher kennt `scoringModes` nur `classic`: `starchase` wird mit den
    Missionen eingetragen, mit der Pause von 8 s und den Standardwerten. Die Wahl des Modus hat noch keine Oberfläche, weil
    es nichts zu wählen gibt. **Erledigt.**
-4. Missionen mit Protokoll.
+4. Missionen mit Protokoll (`round:missions`, `mission:progress`, `round:summary`), Modus `starchase` mit Pause von 8 s,
+   Ziehung, Auswertung, Deckel und Wiederherstellung bei Reconnect und Late Join. Die Moduswahl hat noch keine
+   Oberfläche, bis die Anzeige da ist. **Erledigt (Server).**
 5. Missionsanzeige und Overlay zwischen den Runden.
 6. Stern-Item mit Ring-Timer.
 7. Erweiterungen aus Abschnitt 7.

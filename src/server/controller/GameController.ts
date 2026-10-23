@@ -4,6 +4,7 @@ import { Compressor } from '../../shared/service/Compressor.ts';
 import { isShape, rules } from '../core/validate.ts';
 import type { ServerMessage, ClientEvents } from '../../shared/protocol.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
+import type { MissionStanding } from '../../shared/missions.ts';
 import type { Avatar } from '../model/Avatar.ts';
 import type { Bonus } from '../model/Bonus/Bonus.ts';
 import type { Game } from '../model/Game.ts';
@@ -46,6 +47,8 @@ export class GameController {
         this.onBonusClear = this.onBonusClear.bind(this);
         this.onRoundNew = this.onRoundNew.bind(this);
         this.onRoundEnd = this.onRoundEnd.bind(this);
+        this.onRoundMissions = this.onRoundMissions.bind(this);
+        this.onMissionProgress = this.onMissionProgress.bind(this);
         this.onPlayerLeave = this.onPlayerLeave.bind(this);
         this.onPlayerJoin = this.onPlayerJoin.bind(this);
         this.onClear = this.onClear.bind(this);
@@ -84,6 +87,8 @@ export class GameController {
         this.game.on('player:join', this.onPlayerJoin);
         this.game.on('round:new', this.onRoundNew);
         this.game.on('round:end', this.onRoundEnd);
+        this.game.on('round:missions', this.onRoundMissions);
+        this.game.on('mission:progress', this.onMissionProgress);
         this.game.on('borderless', this.onBorderless);
         this.game.bonusManager.on('bonus:pop', this.onBonusPop);
         this.game.bonusManager.on('bonus:clear', this.onBonusClear);
@@ -107,6 +112,8 @@ export class GameController {
         this.game.removeListener('player:join', this.onPlayerJoin);
         this.game.removeListener('round:new', this.onRoundNew);
         this.game.removeListener('round:end', this.onRoundEnd);
+        this.game.removeListener('round:missions', this.onRoundMissions);
+        this.game.removeListener('mission:progress', this.onMissionProgress);
         this.game.removeListener('borderless', this.onBorderless);
         this.game.bonusManager.removeListener('bonus:pop', this.onBonusPop);
         this.game.bonusManager.removeListener('bonus:clear', this.onBonusClear);
@@ -281,6 +288,16 @@ export class GameController {
         }
 
         events.push(['round:info', this.game.round]);
+
+        // A client that comes in the middle of a round sees the missions with their standing, and the summary of the round
+        // that just ended
+        if (this.game.missions) {
+            events.push(['round:missions', this.game.missions.standings()]);
+        }
+
+        if (!this.game.inRound && this.game.summary) {
+            events.push(['round:summary', this.game.summary]);
+        }
 
         if (this.game.inRound) {
             for (i = this.game.bonusManager.bonuses.items.length - 1; i >= 0; i--) {
@@ -491,10 +508,29 @@ export class GameController {
     }
 
     /**
+     * On round missions: the missions of the round that is prepared
+     */
+    onRoundMissions(missions: MissionStanding[]) {
+        this.socketGroup.addEvent('round:missions', missions);
+    }
+
+    /**
+     * On mission progress: only the missions that changed
+     */
+    onMissionProgress(missions: MissionStanding[]) {
+        this.socketGroup.addEvent('mission:progress', missions);
+    }
+
+    /**
      * On round end
      */
     onRoundEnd(data: { winner: Avatar | null }) {
         this.socketGroup.addEvent('round:end', data.winner ? data.winner.id : null);
+
+        if (this.game.summary) {
+            this.socketGroup.addEvent('round:summary', this.game.summary);
+        }
+
         this.socketGroup.addEvent('game:stats', this.game.stats.serialize());
     }
 

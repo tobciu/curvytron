@@ -778,7 +778,16 @@ export class RoomController extends EventEmitter {
         callback?.({ success, mode: this.room.config.mode });
 
         if (success) {
-            this.socketGroup.addEvent('room:config:mode', { mode: this.room.config.mode });
+            const config = this.room.config;
+
+            this.socketGroup.addEvent('room:config:mode', { mode: config.mode });
+            // A mode has its own way to end: the room master sees what the game is played for now
+            this.socketGroup.addEvent('room:config:win', {
+                condition: config.winCondition,
+                maxScore: config.maxScore,
+                rounds: config.rounds,
+                minutes: config.minutes
+            });
         }
     }
 

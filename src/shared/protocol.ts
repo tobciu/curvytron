@@ -6,6 +6,7 @@
  * Both sides use them, so that a change of the data shows up as a type error on the other side.
  */
 import type { GameStatsData } from './model/GameStats.ts';
+import type { MissionStanding, RoundSummary } from './missions.ts';
 import type { RoundInfo, ScoringModeId, WinConditionId } from './scoring.ts';
 
 // Data
@@ -191,6 +192,12 @@ export interface ServerEvents {
     /** Where the round is on the way to the end of the game, right after `round:new` */
     'round:info': RoundInfo;
     'round:end': number | null;
+    /** The missions of the round, with their standing: right after `round:new`, and for a client that comes later */
+    'round:missions': MissionStanding[];
+    /** The missions whose standing changed */
+    'mission:progress': MissionStanding[];
+    /** What every player got in the round and who got the missions, after `round:end` */
+    'round:summary': RoundSummary;
     end: void;
     clear: void;
     borderless: boolean;

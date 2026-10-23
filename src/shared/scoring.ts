@@ -1,7 +1,7 @@
 /** How a game is scored and when it is over: the settings of a room that both server and client know */
 
-/** The ways to score a game: only the classic one for now */
-export const scoringModes = ['classic'] as const;
+/** The ways to score a game: the classic one, and Star Chase with its missions */
+export const scoringModes = ['classic', 'starchase'] as const;
 export type ScoringModeId = (typeof scoringModes)[number];
 
 export const defaultScoringMode: ScoringModeId = 'classic';
@@ -11,6 +11,18 @@ export const winConditions = ['points', 'rounds', 'time'] as const;
 export type WinConditionId = (typeof winConditions)[number];
 
 export const defaultWinCondition: WinConditionId = 'points';
+
+/** What a game ends with when the master did not choose: Star Chase is made for a fixed number of rounds */
+export const defaultWinConditions: Record<ScoringModeId, WinConditionId> = {
+    classic: defaultWinCondition,
+    starchase: 'rounds'
+};
+
+/** The victory score without a choice, per player: the points of Star Chase come faster than the classic ones */
+export const defaultScorePerPlayer: Record<ScoringModeId, number> = {
+    classic: 10,
+    starchase: 6
+};
 
 /** Rounds of a game that is played for a number of rounds */
 export const defaultRounds = 8;
