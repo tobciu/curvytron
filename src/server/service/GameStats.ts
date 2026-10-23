@@ -97,6 +97,7 @@ export class GameStats {
             selfDeaths: 0,
             trailDeaths: 0,
             kills: 0,
+            graveKills: 0,
             nearMisses: 0,
             squeezes: 0,
             gapRuns: 0,
@@ -357,6 +358,9 @@ export class GameStats {
         const time = Date.now() - this.roundStart;
 
         stats.longestLife = Math.max(stats.longestLife, time);
+        const grave =
+            data.killer !== null && data.killer.id !== data.avatar.id && this.feats.isGraveKill(data.killer, time);
+
         this.feats.die(data.avatar, data.killer, time);
 
         if (!data.killer) {
@@ -373,6 +377,10 @@ export class GameStats {
 
             if (killer) {
                 killer.kills++;
+
+                if (grave) {
+                    killer.graveKills++;
+                }
             }
         }
     }

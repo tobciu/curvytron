@@ -231,7 +231,7 @@ function recordValue(id: string, value: number): string {
                         </span>
                     </button>
                     <div v-if="opened === game.id && details.get(game.id)" class="game-detail">
-                        <GameStats :stats="details.get(game.id)!.stats" />
+                        <GameStats :stats="details.get(game.id)!.stats" :hidden-feats="details.get(game.id)!.hiddenFeats" />
                     </div>
                 </li>
             </ul>

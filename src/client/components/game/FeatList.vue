@@ -5,7 +5,7 @@ import type { Feat, PlayerStats } from '../../../shared/model/GameStats';
 import { featInfo } from '../../content/feats';
 import { secretFeat } from '../../../shared/model/StatsApi';
 
-const props = defineProps<{ feats: Feat[]; players: PlayerStats[]; showRound?: boolean }>();
+const props = defineProps<{ feats: Feat[]; players: PlayerStats[]; showRound?: boolean; hidden?: number }>();
 
 const playersById = computed(() => new Map(props.players.map((player) => [player.id, player])));
 
@@ -28,7 +28,7 @@ const entries = computed(() =>
 </script>
 
 <template>
-    <div v-if="entries.length" class="feats">
+    <div v-if="entries.length || hidden" class="feats">
         <h3>Special feats</h3>
         <ul>
             <li v-for="(feat, index) in entries" :key="`${feat.round}-${feat.id}-${feat.player}-${index}`">
@@ -38,5 +38,8 @@ const entries = computed(() =>
                 <span class="description">{{ feat.description }}</span>
             </li>
         </ul>
+        <p v-if="hidden" class="hidden-feats">
+            {{ hidden }} more hidden {{ hidden === 1 ? 'feat' : 'feats' }} of the other players
+        </p>
     </div>
 </template>
