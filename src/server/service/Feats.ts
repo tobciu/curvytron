@@ -53,6 +53,11 @@ const rookieWindow = 5000;
 const wallRiderTime = 4000;
 const wallRiderRadii = 6;
 
+/** Is the avatar close to a border (the distance feats and missions call wall riding)? */
+export function isNearWall(avatar: Avatar, size: number): boolean {
+    return Math.min(avatar.x, avatar.y, size - avatar.x, size - avatar.y) <= avatar.radius * wallRiderRadii;
+}
+
 /** A game without a lost round needs at least this many rounds */
 const whitewashRounds = 3;
 
@@ -202,9 +207,7 @@ export class Feats {
      * Where the avatar is: close to a border for long enough is a feat. Not when the borders are no danger.
      */
     position(avatar: Avatar, size: number, safe: boolean, time: number) {
-        const distance = Math.min(avatar.x, avatar.y, size - avatar.x, size - avatar.y);
-
-        if (safe || distance > avatar.radius * wallRiderRadii) {
+        if (safe || !isNearWall(avatar, size)) {
             this.wallSince.delete(avatar.id);
 
             return;

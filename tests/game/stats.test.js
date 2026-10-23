@@ -310,7 +310,7 @@ describe('squeezes and rounds', () => {
 
         const { rounds } = game.stats.serialize();
 
-        expect(rounds).toEqual([{ round: 1, winner: carl.id, duration: expect.any(Number) }]);
+        expect(rounds).toEqual([{ round: 1, winner: carl.id, duration: expect.any(Number), size: expect.any(Number) }]);
         expect(rounds[0].duration).toBeGreaterThanOrEqual(2500);
     });
 
@@ -433,5 +433,91 @@ describe('win streaks', () => {
         endRound(bob);
 
         expect(game.stats.getAwards()).toContainEqual({ id: 'streak', player: bob.id, value: 2 });
+    });
+});
+
+describe('counters of the round', () => {
+    const round = (avatar) => game.stats.round.get(avatar.id);
+
+    it('start every round at zero, the totals keep growing', () => {
+        startRound();
+        game.bonusManager.add(new BonusSelfFast(50, 50));
+        place(alice, 50, 50, 0);
+        game.bonusManager.testCatch(alice);
+
+        expect(round(alice).bonuses).toBe(1);
+
+        startRound();
+
+        expect(round(alice)).toEqual({
+            nearMisses: 0,
+            squeezes: 0,
+            bonuses: 0,
+            kills: 0,
+            distance: 0,
+            wallTime: 0,
+            place: null
+        });
+        expect(stats(alice).bonuses).toBe(1);
+    });
+
+    it('count the kills and the distance of the round', () => {
+        startRound();
+        alice.emit('die', { avatar: bob, killer: carl, old: false });
+        place(alice, 50, 50, 0);
+        alice.setPosition(50, 53);
+
+        expect(round(carl).kills).toBe(1);
+        expect(round(alice).distance).toBeCloseTo(3);
+    });
+
+    it('add up the time close to a border, but not while the borders are no danger', () => {
+        startRound();
+        place(alice, 2, 50, 0);
+        alice.setPosition(2, 51);
+        vi.setSystemTime(Date.now() + 1500);
+        alice.setPosition(2, 52);
+
+        expect(round(alice).wallTime).toBe(1500);
+
+        // Away from the border: nothing is added, and it starts again at the next approach
+        alice.setPosition(50, 50);
+        vi.setSystemTime(Date.now() + 1000);
+        alice.setPosition(50, 51);
+
+        expect(round(alice).wallTime).toBe(1500);
+
+        alice.setInvincible(true);
+        place(alice, 2, 50, 0);
+        alice.setPosition(2, 51);
+        vi.setSystemTime(Date.now() + 1000);
+        alice.setPosition(2, 52);
+
+        expect(round(alice).wallTime).toBe(1500);
+    });
+
+    it('give the places in the opposite order of the deaths, the survivor is first', () => {
+        startRound();
+        place(alice, 99.5, 50, 0);
+        place(bob, 99.5, 20, 0);
+        place(carl, 50, 50, 1);
+        game.update(16);
+
+        expect(game.inRound).toBe(false);
+        expect(round(carl).place).toBe(1);
+        expect([round(alice).place, round(bob).place].toSorted()).toEqual([2, 3]);
+        expect(game.stats.previousPlaces.get(carl.id)).toBe(1);
+        expect(game.stats.deathOrder).toHaveLength(2);
+    });
+
+    it('keep the size of the map with the result of the round', () => {
+        startRound();
+        place(alice, 99.5, 50, 0);
+        place(bob, 99.5, 20, 0);
+        place(carl, 50, 50, 1);
+        game.update(16);
+
+        expect(game.stats.serialize().rounds[0].size).toBe(game.size);
+        expect(game.size).toBeGreaterThan(0);
     });
 });

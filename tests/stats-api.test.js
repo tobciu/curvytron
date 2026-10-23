@@ -49,8 +49,8 @@ function result(overrides = {}) {
             player('Carl', 2, 3)
         ],
         roundResults: [
-            { round: 1, winner: 0, duration: 20000 },
-            { round: 2, winner: null, duration: 10000 }
+            { round: 1, winner: 0, duration: 20000, size: 100 },
+            { round: 2, winner: null, duration: 10000, size: 100 }
         ],
         feats: [
             { round: 1, slot: 0, feat: 'cleanSweep' },
@@ -139,8 +139,8 @@ describe('the games', () => {
         expect(stats.players[1]).toMatchObject({ kills: 0, gapRuns: 0, bonusesByType: {} });
         expect(stats.awards).toContainEqual({ id: 'hunter', player: 0, value: 4 });
         expect(stats.rounds).toEqual([
-            { round: 1, winner: 0, duration: 20000 },
-            { round: 2, winner: null, duration: 10000 }
+            { round: 1, winner: 0, duration: 20000, size: 100 },
+            { round: 2, winner: null, duration: 10000, size: 100 }
         ]);
     });
 

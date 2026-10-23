@@ -40,6 +40,23 @@ export interface PlayerStats {
     longestLife: number;
 }
 
+/**
+ * What a player did in the current round. Runtime state of the server: it is reset at the start of every round and
+ * not stored, so `statsVersion` stays as it is
+ */
+export interface RoundCounters {
+    nearMisses: number;
+    squeezes: number;
+    bonuses: number;
+    /** Deaths of others on this player's trail */
+    kills: number;
+    distance: number;
+    /** Time (ms) close to a border, not counted while the borders are no danger */
+    wallTime: number;
+    /** Place in the round (1 is the winner), null while the player is alive and in the round */
+    place: number | null;
+}
+
 /** What a player is the best at: the key of the award, the winner and their value */
 export interface Award {
     id: string;
@@ -63,6 +80,8 @@ export interface RoundResult {
     winner: number | null;
     /** Time between the start and the end of the round (ms) */
     duration: number;
+    /** Size of the map in this round */
+    size: number;
 }
 
 export interface GameStatsData {

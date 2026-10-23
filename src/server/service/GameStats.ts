@@ -4,9 +4,9 @@ import type { Bonus } from '../model/Bonus/Bonus.ts';
 import { metrics } from './Metrics.ts';
 import { Body } from '../core/Body.ts';
 import { World } from '../core/World.ts';
-import { Feats } from './Feats.ts';
+import { Feats, isNearWall } from './Feats.ts';
 import { computeAwards } from '../../shared/awards.ts';
-import type { Award, GameStatsData, PlayerStats, RoundResult } from '../../shared/model/GameStats.ts';
+import type { Award, GameStatsData, PlayerStats, RoundCounters, RoundResult } from '../../shared/model/GameStats.ts';
 
 /**
  * Between two positions of an avatar, a larger distance is a teleport (borderless, new round)
@@ -44,6 +44,14 @@ export class GameStats {
     lastGapPoint: Map<number, [number, number]> = new Map();
     /** Avatars that are invincible right now */
     invincible: Set<number> = new Set();
+    /** What every player did in the running round (reset when a round starts, not stored) */
+    round: Map<number, RoundCounters> = new Map();
+    /** The ids of the players that died in the running round, in the order of the deaths */
+    deathOrder: number[] = [];
+    /** The places of the round before (1 is the winner), for the missions that look back */
+    previousPlaces: Map<number, number> = new Map();
+    /** When the time close to a border was added to the round counters the last time */
+    wallAt: Map<number, number> = new Map();
     /** Special feats of the game, they are hidden until they happen */
     feats: Feats = new Feats();
     /** Rounds in a row that an avatar has won right now */
@@ -135,6 +143,7 @@ export class GameStats {
         this.roundStart = Date.now();
         this.startedAt ??= this.roundStart;
         this.positions.clear();
+        this.resetRound();
         this.near.clear();
         this.squeezing.clear();
         this.onClear();
@@ -144,6 +153,46 @@ export class GameStats {
         for (const avatar of this.game.avatars.items) {
             this.positions.set(avatar.id, [avatar.x, avatar.y]);
         }
+    }
+
+    /** Everybody starts the round with nothing */
+    resetRound() {
+        this.round.clear();
+        this.deathOrder = [];
+        this.wallAt.clear();
+
+        for (const id of this.players.keys()) {
+            this.round.set(id, {
+                nearMisses: 0,
+                squeezes: 0,
+                bonuses: 0,
+                kills: 0,
+                distance: 0,
+                wallTime: 0,
+                place: null
+            });
+        }
+    }
+
+    /**
+     * Add the time an avatar spends close to a border to its round counters. Not while the borders are no danger.
+     */
+    trackWall(avatar: Avatar, now: number) {
+        const counters = this.round.get(avatar.id);
+        const safe = this.game.borderless || avatar.ghost || avatar.invincible;
+        const last = this.wallAt.get(avatar.id);
+
+        if (!counters || safe || !isNearWall(avatar, this.game.size)) {
+            this.wallAt.delete(avatar.id);
+
+            return;
+        }
+
+        if (last !== undefined) {
+            counters.wallTime += now - last;
+        }
+
+        this.wallAt.set(avatar.id, now);
     }
 
     /**
@@ -237,6 +286,12 @@ export class GameStats {
             if (distance < maxStep) {
                 stats.distance += distance;
 
+                const counters = this.round.get(avatar.id);
+
+                if (counters) {
+                    counters.distance += distance;
+                }
+
                 if (avatar.printing) {
                     stats.trailLength += distance;
                 }
@@ -245,6 +300,7 @@ export class GameStats {
             last[0] = avatar.x;
             last[1] = avatar.y;
             this.trackGap(avatar);
+            this.trackWall(avatar, Date.now());
             this.feats.position(
                 avatar,
                 this.game.size,
@@ -337,6 +393,12 @@ export class GameStats {
             set.add(stats.id);
             stats[field]++;
 
+            const counters = this.round.get(stats.id);
+
+            if (counters) {
+                counters[field]++;
+            }
+
             if (field === 'nearMisses') {
                 this.feats.nearMiss(stats.id, Date.now() - this.roundStart);
             }
@@ -362,6 +424,8 @@ export class GameStats {
             data.killer !== null && data.killer.id !== data.avatar.id && this.feats.isGraveKill(data.killer, time);
 
         this.feats.die(data.avatar, data.killer, time);
+        this.deathOrder.push(data.avatar.id);
+        this.wallAt.delete(data.avatar.id);
 
         if (!data.killer) {
             metrics.deaths.inc({ cause: 'wall' });
@@ -378,6 +442,12 @@ export class GameStats {
             if (killer) {
                 killer.kills++;
 
+                const counters = this.round.get(killer.id);
+
+                if (counters) {
+                    counters.kills++;
+                }
+
                 if (grave) {
                     killer.graveKills++;
                 }
@@ -393,6 +463,13 @@ export class GameStats {
 
             metrics.bonuses.inc({ type });
             stats.bonuses++;
+
+            const counters = this.round.get(data.avatar.id);
+
+            if (counters) {
+                counters.bonuses++;
+            }
+
             stats.bonusesByType[type] = (stats.bonusesByType[type] ?? 0) + 1;
             this.feats.catchBonus(data.avatar, type, Date.now() - this.roundStart);
         }
@@ -418,7 +495,13 @@ export class GameStats {
             }
         }
 
-        this.rounds.push({ round: this.rounds.length + 1, winner: data.winner?.id ?? null, duration });
+        this.rounds.push({
+            round: this.rounds.length + 1,
+            winner: data.winner?.id ?? null,
+            duration,
+            size: this.game.size
+        });
+        this.placeRound();
 
         const winner = data.winner ? this.players.get(data.winner.id) : null;
 
@@ -440,6 +523,33 @@ export class GameStats {
             this.streaks.set(stats.id, streak);
             stats.longestStreak = Math.max(stats.longestStreak, streak);
         }
+    }
+
+    /**
+     * The places of the round: whoever is alive is first, then the players in the opposite order of their deaths. Only
+     * the players that took part. Players that died at the same moment are ordered as they were told about.
+     */
+    placeRound() {
+        const alive = this.game.avatars.items.filter(
+            (avatar) => avatar.alive && this.feats.participants.has(avatar.id) && !this.deathOrder.includes(avatar.id)
+        );
+        const places = new Map<number, number>();
+
+        for (const avatar of alive) {
+            places.set(avatar.id, 1);
+        }
+
+        this.deathOrder.toReversed().forEach((id, index) => places.set(id, alive.length + 1 + index));
+
+        for (const [id, place] of places) {
+            const counters = this.round.get(id);
+
+            if (counters) {
+                counters.place = place;
+            }
+        }
+
+        this.previousPlaces = places;
     }
 
     /**

@@ -84,7 +84,8 @@ export function buildGameResult(game: Game, endedAt: number = Date.now()): GameR
         roundResults: all.rounds.map((round) => ({
             round: round.round,
             winner: slotOf(round.winner),
-            duration: round.duration
+            duration: round.duration,
+            size: round.size
         })),
         feats: all.feats.flatMap((feat) => {
             const slot = slotOf(feat.player);

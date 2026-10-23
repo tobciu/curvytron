@@ -54,7 +54,7 @@ export class SqliteStorage implements Storage {
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
             );
             this.insertRound = this.db.prepare(
-                'INSERT INTO rounds (game_id, round, winner_slot, duration_ms) VALUES (?, ?, ?, ?)'
+                'INSERT INTO rounds (game_id, round, winner_slot, duration_ms, size) VALUES (?, ?, ?, ?, ?)'
             );
             this.insertFeat = this.db.prepare(
                 'INSERT INTO feats (game_id, round, slot, feat, other_slot) VALUES (?, ?, ?, ?, ?)'
@@ -133,7 +133,7 @@ export class SqliteStorage implements Storage {
             }
 
             for (const round of result.roundResults) {
-                this.insertRound.run(id, round.round, round.winner, round.duration);
+                this.insertRound.run(id, round.round, round.winner, round.duration, round.size);
             }
 
             for (const feat of result.feats) {

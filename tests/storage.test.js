@@ -50,8 +50,8 @@ function sampleResult(overrides = {}) {
             }
         ],
         roundResults: [
-            { round: 1, winner: 0, duration: 12000 },
-            { round: 2, winner: null, duration: 8000 }
+            { round: 1, winner: 0, duration: 12000, size: 100 },
+            { round: 2, winner: null, duration: 8000, size: 100 }
         ],
         feats: [
             { round: 1, slot: 0, feat: 'cleanSweep' },
@@ -146,9 +146,9 @@ describe('the SQLite storage', () => {
             { slot: 0, player_id: null, name: 'Alice', rank: 1, score: 21, rounds_won: 2, stats_json: '{"kills":3}' },
             { slot: 1, player_id: null, name: 'Bob', rank: 2, score: 5, rounds_won: 0, stats_json: '{"kills":0}' }
         ]);
-        expect(storage.db.prepare('SELECT round, winner_slot, duration_ms FROM rounds').all()).toEqual([
-            { round: 1, winner_slot: 0, duration_ms: 12000 },
-            { round: 2, winner_slot: null, duration_ms: 8000 }
+        expect(storage.db.prepare('SELECT round, winner_slot, duration_ms, size FROM rounds').all()).toEqual([
+            { round: 1, winner_slot: 0, duration_ms: 12000, size: 100 },
+            { round: 2, winner_slot: null, duration_ms: 8000, size: 100 }
         ]);
         expect(storage.db.prepare('SELECT round, slot, feat, other_slot FROM feats').all()).toEqual([
             { round: 1, slot: 0, feat: 'cleanSweep', other_slot: null },
@@ -394,7 +394,7 @@ describe('the result of a game', () => {
             rounds: 1,
             completed: false,
             statsVersion,
-            roundResults: [{ round: 1, winner: 0, duration: expect.any(Number) }]
+            roundResults: [{ round: 1, winner: 0, duration: expect.any(Number), size: expect.any(Number) }]
         });
         expect(result.players.map(({ name, rank, score, roundsWon }) => [name, rank, score, roundsWon])).toEqual([
             ['Alice', 1, 5, 1],
@@ -438,7 +438,9 @@ describe('the result of a game', () => {
             ['Alice', 0, 1, 4],
             ['Bob', 1, 2, 2]
         ]);
-        expect(result.roundResults).toEqual([{ round: 1, winner: null, duration: expect.any(Number) }]);
+        expect(result.roundResults).toEqual([
+            { round: 1, winner: null, duration: expect.any(Number), size: expect.any(Number) }
+        ]);
         expect(result.feats.every(({ slot }) => slot <= 1)).toBe(true);
     });
 
