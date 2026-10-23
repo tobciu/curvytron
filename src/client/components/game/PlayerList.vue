@@ -40,6 +40,10 @@ useEvents(client, ['score:round'], ({ detail }) => {
 });
 
 useEvents(client, ['game:leave', 'game:join'], bump);
+useEvents(gameRepository, ['round:new', 'round:missions', 'mission:progress'], bump);
+
+/** Would the avatar get a mission if the round ended now? */
+const leads = (avatar: Avatar): boolean => props.game.missions.some((standing) => standing.leaders.includes(avatar.id));
 
 // The repository tells it once the player is updated: the same event of the socket may come before that
 useEvents(roomRepository, ['player:connection'], bump);
@@ -89,6 +93,7 @@ useEvents(client, ['die'], ({ detail }) => {
                 avatar.roundScore ? `+${avatar.roundScore}` : ''
             }}</span>
             <span class="player-name" :title="avatar.name">{{ avatar.name }}</span>
+            <span v-if="leads(avatar)" class="mission-star" title="Leads a mission">★</span>
             <span :id="`avatar-score-${avatar.id}`" class="score">{{ avatar.score }}</span>
         </div>
     </div>

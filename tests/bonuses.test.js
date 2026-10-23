@@ -1,7 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 import { describe, expect, it } from 'vitest';
-import { bonusDefinitions, spriteLines, spritePosition } from '../src/shared/bonuses.ts';
+import {
+    bonusDefinitions,
+    bonusRadius,
+    selectableBonuses,
+    spriteLines,
+    spritePosition
+} from '../src/shared/bonuses.ts';
 import { RoomConfig } from '../src/server/model/RoomConfig.ts';
 import { RoomConfig as ClientRoomConfig } from '../src/client/model/RoomConfig.ts';
 import { buildSprite } from '../tools/build-sprite.ts';
@@ -27,9 +33,11 @@ describe('bonus registry', () => {
         const client = new ClientRoomConfig({});
 
         for (const config of [server, client]) {
+            // The special bonuses (the star) are no choice of a room
             expect(config.bonuses).toEqual(
-                Object.fromEntries(bonusDefinitions.map(({ name, enabled }) => [name, enabled]))
+                Object.fromEntries(selectableBonuses.map(({ name, enabled }) => [name, enabled]))
             );
+            expect(config.bonuses).not.toHaveProperty('BonusStar');
         }
 
         expect(client.bonusClasses).toEqual(Object.fromEntries(bonusDefinitions.map(({ name, css }) => [name, css])));
@@ -51,7 +59,7 @@ describe('bonus registry', () => {
         const client = new ClientRoomConfig({});
         const preset = (name) => client.presets.find((candidate) => candidate.name === name).bonuses.toSorted();
 
-        expect(preset('All')).toEqual(bonusDefinitions.map(({ name }) => name).toSorted());
+        expect(preset('All')).toEqual(selectableBonuses.map(({ name }) => name).toSorted());
         expect(preset('Speed of light')).toEqual(['BonusEnemyFast', 'BonusSelfFast']);
         expect(preset('Super size me')).toEqual(['BonusEnemyBig']);
         expect(preset('Solo')).toEqual(
@@ -65,6 +73,26 @@ describe('bonus registry', () => {
             ].toSorted()
         );
         expect(preset('No bonuses')).toEqual([]);
+    });
+
+    it('knows the radius of the bonuses: the star is smaller than the others', () => {
+        expect(bonusRadius('BonusSelfFast')).toBe(3);
+        expect(bonusRadius('BonusStar')).toBeLessThan(bonusRadius('BonusSelfFast'));
+        expect(bonusRadius('BonusNothing')).toBe(3);
+    });
+
+    it('has the star and the coins at the end, special and off, and no preset has them', () => {
+        const special = bonusDefinitions.slice(-4);
+
+        expect(special.map(({ name }) => name)).toEqual([
+            'BonusStar',
+            'BonusCoinBronze',
+            'BonusCoinSilver',
+            'BonusCoinGold'
+        ]);
+        expect(bonusDefinitions.filter(({ special }) => special)).toEqual(special);
+        expect(special.every(({ enabled, presets }) => !enabled && !presets)).toBe(true);
+        expect(special.slice(1).map(({ value }) => value)).toEqual([1, 2, 3]);
     });
 
     it('loads the class of every bonus, with the name of the bonus', () => {

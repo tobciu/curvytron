@@ -10,6 +10,10 @@ export abstract class Bonus extends BaseBonus {
     body: Body;
     target: any;
     timeout: any;
+    /** How long the bonus stays on the map (ms), null for the ones that stay until somebody catches them */
+    lifetime: number | null = null;
+    /** When it goes away (ms since 1970), null without a lifetime */
+    expiresAt: number | null = null;
 
     /** Resolve the avatar(s) affected by the bonus */
     abstract getTarget(avatar: Avatar, game: Game): any;

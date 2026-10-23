@@ -6,6 +6,8 @@
  * Both sides use them, so that a change of the data shows up as a type error on the other side.
  */
 import type { GameStatsData } from './model/GameStats.ts';
+import type { MissionStanding, RoundSummary } from './missions.ts';
+import type { RoundInfo, ScoringModeId, WinConditionId } from './scoring.ts';
 
 // Data
 
@@ -23,10 +25,22 @@ export interface RoomData {
 
 export interface RoomConfigData {
     maxScore: number | null;
+    mode: ScoringModeId;
+    winCondition: WinConditionId;
+    rounds: number | null;
+    minutes: number | null;
     variables: Record<string, number>;
     bonuses: Record<string, boolean>;
     open: boolean;
     password: string | null;
+}
+
+/** When the game is over: the condition and the values that go with it */
+export interface WinConfigData {
+    condition: WinConditionId;
+    maxScore: number | null;
+    rounds: number | null;
+    minutes: number | null;
 }
 
 export interface PlayerData {
@@ -110,6 +124,12 @@ export interface ClientEvents {
         reply: Failure | (Result & { maxScore: number | null });
     };
     'room:config:tag': { data: { tag: string }; reply: Failure | (Result & { tag: string | null }) };
+    'room:config:mode': { data: { mode: string }; reply: Failure | (Result & { mode: ScoringModeId }) };
+    /** `value`: the score, the rounds or the minutes, depending on the condition. Left out, it stays as it is */
+    'room:config:win': {
+        data: { condition: string; value?: number | string | null };
+        reply: Failure | (Result & WinConfigData);
+    };
     'room:config:variable': {
         data: { variable: string; value: number | string };
         reply: Failure | (Result & { value?: number });
@@ -138,6 +158,8 @@ export interface ServerEvents {
     'room:config:max-score': { maxScore: number | null };
     /** In the room: the new tag of the room. In the list of the rooms (with the name): the same, for the room named */
     'room:config:tag': { name?: string; tag: string | null };
+    'room:config:mode': { mode: ScoringModeId };
+    'room:config:win': WinConfigData;
     'room:config:variable': { variable: string; value: number | undefined };
     'room:config:bonus': { bonus: string; enabled: boolean | undefined };
     'room:join': { player: PlayerData };
@@ -167,7 +189,15 @@ export interface ServerEvents {
     /** Statistics are sent at the end of every round */
     ready: number;
     'round:new': void;
+    /** Where the round is on the way to the end of the game, right after `round:new` */
+    'round:info': RoundInfo;
     'round:end': number | null;
+    /** The missions of the round, with their standing: right after `round:new`, and for a client that comes later */
+    'round:missions': MissionStanding[];
+    /** The missions whose standing changed */
+    'mission:progress': MissionStanding[];
+    /** What every player got in the round and who got the missions, after `round:end` */
+    'round:summary': RoundSummary;
     end: void;
     clear: void;
     borderless: boolean;
@@ -184,8 +214,8 @@ export interface ServerEvents {
     /** `[id, score]` */
     score: [number, number];
     'score:round': [number, number];
-    /** `[id, x, y, type]` */
-    'bonus:pop': [number, number, number, string];
+    /** `[id, x, y, type, lifetime, remaining]`: the last two (ms) for a bonus that goes away by itself (the star) */
+    'bonus:pop': [number, number, number, string, number?, number?];
     'bonus:clear': number;
     /** `[avatar id, method, bonus id, type, duration]` */
     'bonus:stack': [number, string, number, string, number];
@@ -194,6 +224,9 @@ export interface ServerEvents {
         inRound: boolean;
         rendered: boolean;
         maxScore: number;
+        winCondition: WinConditionId;
+        rounds: number;
+        minutes: number;
         /** Size of the map, which depends on the number of avatars that take part */
         size: number;
         /** Avatars that do not take part for now */

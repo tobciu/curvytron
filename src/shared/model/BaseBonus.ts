@@ -1,4 +1,5 @@
 import { EventEmitter } from '#event-emitter';
+import { bonusRadius, defaultBonusRadius } from '../bonuses.ts';
 import type { BaseAvatar } from './BaseAvatar.ts';
 import type { BaseGame } from './BaseGame.ts';
 
@@ -18,7 +19,7 @@ export class BaseBonus extends EventEmitter {
     /**
      * Radius
      */
-    static radius = 3;
+    static radius = defaultBonusRadius;
 
     radius: number = BaseBonus.radius;
 
@@ -38,6 +39,8 @@ export class BaseBonus extends EventEmitter {
         this.x = x;
         this.y = y;
         this.id = null;
+        // The registry knows the radius of every bonus (the star is smaller)
+        this.radius = bonusRadius(this.constructor.name);
     }
 
     /**

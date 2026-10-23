@@ -77,6 +77,10 @@ export const migrations: readonly string[] = [
         deaths        INTEGER NOT NULL DEFAULT 0,
         totals_json   TEXT NOT NULL DEFAULT '{}'
     );
+    `,
+    // 3: the size of the map in a round (0 for the rounds before it was kept), to set the length of a game from real rounds
+    `
+    ALTER TABLE rounds ADD COLUMN size INTEGER NOT NULL DEFAULT 0;
     `
 ];
 

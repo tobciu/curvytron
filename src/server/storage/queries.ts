@@ -215,9 +215,14 @@ export class StatsQueries {
         const mine = new Set(rows.filter((row) => viewer !== null && row.player_id === viewer).map((row) => row.slot));
         const rounds = (
             this.db
-                .prepare('SELECT round, winner_slot, duration_ms FROM rounds WHERE game_id = ? ORDER BY round')
-                .all(id) as Array<{ round: number; winner_slot: number | null; duration_ms: number }>
-        ).map((round): RoundResult => ({ round: round.round, winner: round.winner_slot, duration: round.duration_ms }));
+                .prepare('SELECT round, winner_slot, duration_ms, size FROM rounds WHERE game_id = ? ORDER BY round')
+                .all(id) as Array<{ round: number; winner_slot: number | null; duration_ms: number; size: number }>
+        ).map((round): RoundResult => ({
+            round: round.round,
+            winner: round.winner_slot,
+            duration: round.duration_ms,
+            size: round.size
+        }));
         const feats: Feat[] = [];
         let hiddenFeats = 0;
         const featRows = this.db

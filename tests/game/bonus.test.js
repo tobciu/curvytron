@@ -1,3 +1,4 @@
+import { bonusRadius } from '../../src/shared/bonuses.ts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RoomConfig } from '../../src/server/model/RoomConfig.ts';
 import { BonusSelfFast } from '../../src/server/model/Bonus/BonusSelfFast.ts';
@@ -50,7 +51,7 @@ function pop(Bonus) {
 
 describe('bonus list', () => {
     it('knows all the bonuses of the game', () => {
-        expect(bonusTypes).toHaveLength(19);
+        expect(bonusTypes).toHaveLength(23);
     });
 
     it.each(bonusTypes)('%s is a well formed bonus', (name, Bonus) => {
@@ -59,7 +60,7 @@ describe('bonus list', () => {
         expect(['self', 'enemy', 'all', 'game', 'leader']).toContain(bonus.affect === 'self' ? 'self' : bonus.affect);
         expect(bonus.x).toBe(10);
         expect(bonus.y).toBe(20);
-        expect(bonus.body.radius).toBe(3);
+        expect(bonus.body.radius).toBe(bonusRadius(name));
         expect(bonus.duration).toBeGreaterThanOrEqual(0);
         expect(Bonus.getProbability(game)).toBeGreaterThanOrEqual(0);
         expect(Bonus.getProbability(game)).toBeLessThanOrEqual(1);

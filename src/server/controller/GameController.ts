@@ -2,8 +2,9 @@ import { SocketGroup } from '../core/SocketGroup.ts';
 import { Collection } from '../../shared/Collection.ts';
 import { Compressor } from '../../shared/service/Compressor.ts';
 import { isShape, rules } from '../core/validate.ts';
-import type { ServerMessage, ClientEvents } from '../../shared/protocol.ts';
+import type { ServerMessage, ClientEvents, ServerEvents } from '../../shared/protocol.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
+import type { MissionStanding } from '../../shared/missions.ts';
 import type { Avatar } from '../model/Avatar.ts';
 import type { Bonus } from '../model/Bonus/Bonus.ts';
 import type { Game } from '../model/Game.ts';
@@ -46,6 +47,8 @@ export class GameController {
         this.onBonusClear = this.onBonusClear.bind(this);
         this.onRoundNew = this.onRoundNew.bind(this);
         this.onRoundEnd = this.onRoundEnd.bind(this);
+        this.onRoundMissions = this.onRoundMissions.bind(this);
+        this.onMissionProgress = this.onMissionProgress.bind(this);
         this.onPlayerLeave = this.onPlayerLeave.bind(this);
         this.onPlayerJoin = this.onPlayerJoin.bind(this);
         this.onClear = this.onClear.bind(this);
@@ -84,6 +87,8 @@ export class GameController {
         this.game.on('player:join', this.onPlayerJoin);
         this.game.on('round:new', this.onRoundNew);
         this.game.on('round:end', this.onRoundEnd);
+        this.game.on('round:missions', this.onRoundMissions);
+        this.game.on('mission:progress', this.onMissionProgress);
         this.game.on('borderless', this.onBorderless);
         this.game.bonusManager.on('bonus:pop', this.onBonusPop);
         this.game.bonusManager.on('bonus:clear', this.onBonusClear);
@@ -107,6 +112,8 @@ export class GameController {
         this.game.removeListener('player:join', this.onPlayerJoin);
         this.game.removeListener('round:new', this.onRoundNew);
         this.game.removeListener('round:end', this.onRoundEnd);
+        this.game.removeListener('round:missions', this.onRoundMissions);
+        this.game.removeListener('mission:progress', this.onMissionProgress);
         this.game.removeListener('borderless', this.onBorderless);
         this.game.bonusManager.removeListener('bonus:pop', this.onBonusPop);
         this.game.bonusManager.removeListener('bonus:clear', this.onBonusClear);
@@ -234,14 +241,6 @@ export class GameController {
      * Attach spectator
      */
     attachSpectator(client: SocketClient) {
-        const properties: Record<string, keyof Avatar> = {
-            angle: 'angle',
-            radius: 'radius',
-            color: 'color',
-            printing: 'printing',
-            score: 'score'
-        };
-
         const events: ServerMessage[] = [
             [
                 'spectate',
@@ -249,54 +248,81 @@ export class GameController {
                     inRound: this.game.inRound,
                     rendered: !!this.game.rendered,
                     maxScore: this.game.maxScore,
+                    winCondition: this.game.winCondition,
+                    rounds: this.game.rounds,
+                    minutes: this.game.minutes,
                     size: this.game.size,
                     away: this.game.avatars.items.filter((avatar) => !avatar.present).map((avatar) => avatar.id)
                 }
             ]
         ];
 
-        let avatar;
-        let bonus;
-        let i;
-
-        for (i = this.game.avatars.items.length - 1; i >= 0; i--) {
-            avatar = this.game.avatars.items[i];
-            events.push([
-                'position',
-                [avatar.id, this.compressor.compress(avatar.x), this.compressor.compress(avatar.y)]
-            ]);
-
-            for (const property in properties) {
-                if (Object.hasOwn(properties, property)) {
-                    events.push(['property', [avatar.id, property, avatar[properties[property]]]]);
-                }
-            }
-
-            if (!avatar.alive) {
-                events.push(['die', [avatar.id, null, null]]);
-            }
+        for (let i = this.game.avatars.items.length - 1; i >= 0; i--) {
+            events.push(...this.describeAvatar(this.game.avatars.items[i]));
         }
 
-        if (this.game.inRound) {
-            for (i = this.game.bonusManager.bonuses.items.length - 1; i >= 0; i--) {
-                bonus = this.game.bonusManager.bonuses.items[i];
-                events.push([
-                    'bonus:pop',
-                    [
-                        bonus.id as number,
-                        this.compressor.compress(bonus.x),
-                        this.compressor.compress(bonus.y),
-                        bonus.constructor.name
-                    ]
-                ]);
-            }
-        } else {
-            events.push(['round:end', this.game.roundWinner ? this.game.roundWinner.id : null]);
-        }
-
-        events.push(['game:spectators', this.countSpectators()]);
+        events.push(['round:info', this.game.round], ...this.describeRound(), [
+            'game:spectators',
+            this.countSpectators()
+        ]);
 
         client.addEvents(events);
+    }
+
+    /**
+     * What a client that comes later needs to know about an avatar: where it is, how it looks, whether it is dead
+     */
+    describeAvatar(avatar: Avatar): ServerMessage[] {
+        const properties: Record<string, keyof Avatar> = {
+            angle: 'angle',
+            radius: 'radius',
+            color: 'color',
+            printing: 'printing',
+            score: 'score'
+        };
+        const events: ServerMessage[] = [
+            ['position', [avatar.id, this.compressor.compress(avatar.x), this.compressor.compress(avatar.y)]]
+        ];
+
+        for (const property in properties) {
+            if (Object.hasOwn(properties, property)) {
+                events.push(['property', [avatar.id, property, avatar[properties[property]]]]);
+            }
+        }
+
+        if (!avatar.alive) {
+            events.push(['die', [avatar.id, null, null]]);
+        }
+
+        return events;
+    }
+
+    /**
+     * What a client that comes later needs to know about the round: the missions with their standing, the summary of the
+     * round that just ended, and the bonuses (with the time they have left) or the winner of the round
+     */
+    describeRound(): ServerMessage[] {
+        const events: ServerMessage[] = [];
+
+        if (this.game.missions) {
+            events.push(['round:missions', this.game.missions.standings()]);
+        }
+
+        if (!this.game.inRound) {
+            if (this.game.summary) {
+                events.push(['round:summary', this.game.summary]);
+            }
+
+            events.push(['round:end', this.game.roundWinner ? this.game.roundWinner.id : null]);
+
+            return events;
+        }
+
+        for (const bonus of [...this.game.bonusManager.bonuses.items].reverse()) {
+            events.push(['bonus:pop', this.describeBonus(bonus as Bonus)]);
+        }
+
+        return events;
     }
 
     /**
@@ -412,12 +438,25 @@ export class GameController {
      * On bonus pop
      */
     onBonusPop(bonus: Bonus) {
-        this.socketGroup.addEvent('bonus:pop', [
+        this.socketGroup.addEvent('bonus:pop', this.describeBonus(bonus));
+    }
+
+    /**
+     * How a bonus is told to the clients: a bonus with a lifetime also tells how long it lives, and how long is left
+     */
+    describeBonus(bonus: Bonus): ServerEvents['bonus:pop'] {
+        const description: ServerEvents['bonus:pop'] = [
             bonus.id as number,
             this.compressor.compress(bonus.x),
             this.compressor.compress(bonus.y),
             bonus.constructor.name
-        ]);
+        ];
+
+        if (bonus.lifetime !== null && bonus.expiresAt !== null) {
+            description.push(bonus.lifetime, Math.max(bonus.expiresAt - Date.now(), 0));
+        }
+
+        return description;
     }
 
     /**
@@ -482,6 +521,21 @@ export class GameController {
      */
     onRoundNew(data?: unknown) {
         this.socketGroup.addEvent('round:new');
+        this.socketGroup.addEvent('round:info', this.game.round);
+    }
+
+    /**
+     * On round missions: the missions of the round that is prepared
+     */
+    onRoundMissions(missions: MissionStanding[]) {
+        this.socketGroup.addEvent('round:missions', missions);
+    }
+
+    /**
+     * On mission progress: only the missions that changed
+     */
+    onMissionProgress(missions: MissionStanding[]) {
+        this.socketGroup.addEvent('mission:progress', missions);
     }
 
     /**
@@ -489,6 +543,11 @@ export class GameController {
      */
     onRoundEnd(data: { winner: Avatar | null }) {
         this.socketGroup.addEvent('round:end', data.winner ? data.winner.id : null);
+
+        if (this.game.summary) {
+            this.socketGroup.addEvent('round:summary', this.game.summary);
+        }
+
         this.socketGroup.addEvent('game:stats', this.game.stats.serialize());
     }
 

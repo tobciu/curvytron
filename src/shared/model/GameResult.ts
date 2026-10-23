@@ -25,6 +25,8 @@ export interface GameResultRound {
     /** Slot of the winner, null when everybody died together */
     winner: number | null;
     duration: number;
+    /** Size of the map in this round */
+    size: number;
 }
 
 export interface GameResultFeat {

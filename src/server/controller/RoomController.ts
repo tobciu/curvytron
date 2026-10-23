@@ -114,6 +114,18 @@ export class RoomController extends EventEmitter {
             ) {
                 controller.onConfigTag(this, data[0], data[1]);
             },
+            onConfigMode: function (
+                this: SocketClient,
+                data: [ClientEvents['room:config:mode']['data'], Reply<'room:config:mode'>]
+            ) {
+                controller.onConfigMode(this, data[0], data[1]);
+            },
+            onConfigWin: function (
+                this: SocketClient,
+                data: [ClientEvents['room:config:win']['data'], Reply<'room:config:win'>]
+            ) {
+                controller.onConfigWin(this, data[0], data[1]);
+            },
             onConfigVariable: function (this: SocketClient, data: any) {
                 controller.onConfigVariable(this, data[0], data[1]);
             },
@@ -321,6 +333,8 @@ export class RoomController extends EventEmitter {
             this.roomMaster.on('room:config:open', this.callbacks.onConfigOpen);
             this.roomMaster.on('room:config:max-score', this.callbacks.onConfigMaxScore);
             this.roomMaster.on('room:config:tag', this.callbacks.onConfigTag);
+            this.roomMaster.on('room:config:mode', this.callbacks.onConfigMode);
+            this.roomMaster.on('room:config:win', this.callbacks.onConfigWin);
             this.roomMaster.on('room:config:variable', this.callbacks.onConfigVariable);
             this.roomMaster.on('room:config:bonus', this.callbacks.onConfigBonus);
             this.roomMaster.on('room:launch', this.callbacks.onLaunch);
@@ -338,6 +352,8 @@ export class RoomController extends EventEmitter {
             this.roomMaster.removeListener('room:config:open', this.callbacks.onConfigOpen);
             this.roomMaster.removeListener('room:config:max-score', this.callbacks.onConfigMaxScore);
             this.roomMaster.removeListener('room:config:tag', this.callbacks.onConfigTag);
+            this.roomMaster.removeListener('room:config:mode', this.callbacks.onConfigMode);
+            this.roomMaster.removeListener('room:config:win', this.callbacks.onConfigWin);
             this.roomMaster.removeListener('room:config:variable', this.callbacks.onConfigVariable);
             this.roomMaster.removeListener('room:config:bonus', this.callbacks.onConfigBonus);
             this.roomMaster.removeListener('room:launch', this.callbacks.onLaunch);
@@ -742,6 +758,69 @@ export class RoomController extends EventEmitter {
 
         if (success) {
             this.socketGroup.addEvent('room:config:tag', { tag: this.room.tag });
+        }
+    }
+
+    /**
+     * On config mode
+     */
+    onConfigMode(
+        client: SocketClient,
+        data: ClientEvents['room:config:mode']['data'],
+        callback?: Reply<'room:config:mode'>
+    ) {
+        if (!isShape(data, { mode: rules.string(20) })) {
+            return callback?.(invalidData);
+        }
+
+        const success = this.isRoomMaster(client) && this.room.config.setMode(data.mode);
+
+        callback?.({ success, mode: this.room.config.mode });
+
+        if (success) {
+            const config = this.room.config;
+
+            this.socketGroup.addEvent('room:config:mode', { mode: config.mode });
+            // A mode has its own way to end: the room master sees what the game is played for now
+            this.socketGroup.addEvent('room:config:win', {
+                condition: config.winCondition,
+                maxScore: config.maxScore,
+                rounds: config.rounds,
+                minutes: config.minutes
+            });
+        }
+    }
+
+    /**
+     * On config win: when the game is over
+     */
+    onConfigWin(
+        client: SocketClient,
+        data: ClientEvents['room:config:win']['data'],
+        callback?: Reply<'room:config:win'>
+    ) {
+        if (
+            !isShape(data, {
+                condition: rules.string(20),
+                value: rules.optional(rules.either(rules.number, rules.string(10)))
+            })
+        ) {
+            return callback?.(invalidData);
+        }
+
+        const config = this.room.config;
+        const success = this.isRoomMaster(client) && config.setWinCondition(data.condition, data.value);
+        const state = {
+            condition: config.winCondition,
+            maxScore: config.maxScore,
+            rounds: config.rounds,
+            minutes: config.minutes
+        };
+
+        callback?.({ success, ...state });
+
+        if (success) {
+            this.socketGroup.addEvent('room:config:win', state);
         }
     }
 

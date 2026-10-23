@@ -6,6 +6,7 @@ import { BonusManager } from '../manager/BonusManager.ts';
 import type { Avatar } from './Avatar.ts';
 import type { Player } from './Player.ts';
 import type { Room } from './Room.ts';
+import type { MissionStanding, RoundSummary } from '../../shared/missions.ts';
 import type { GameStatsData } from '../../shared/model/GameStats.ts';
 import type { Collection } from '../../shared/Collection.ts';
 
@@ -20,6 +21,10 @@ export class Game extends BaseGame {
     declare avatars: Collection<Avatar>;
     declare bonusManager: BonusManager;
     roundWinner: Avatar | null = null;
+    /** The missions of the round with their standing (Star Chase), empty in a mode without */
+    missions: MissionStanding[] = [];
+    /** What every player got in the round that just ended (Star Chase) */
+    summary: RoundSummary | null = null;
     /** Statistics of the game, as of the last round */
     stats: GameStatsData | null = null;
     // Created by `loadDOM()`
@@ -155,6 +160,11 @@ export class Game extends BaseGame {
      * Is tie break
      */
     isTieBreak(): boolean {
+        // Played for rounds or time: the game goes on after the last round only when the score is tied
+        if (this.winCondition !== 'points') {
+            return this.round.last;
+        }
+
         const maxScore = this.maxScore;
 
         return (

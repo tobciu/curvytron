@@ -7,6 +7,7 @@ import type { Player } from '../model/Player.ts';
 import type { RoomRepository } from './RoomRepository.ts';
 import type { SoundManager } from '../service/SoundManager.ts';
 import type { ServerEvent } from '../../shared/protocol.ts';
+import type { MissionStanding } from '../../shared/missions.ts';
 
 /**
  * GameRepository
@@ -42,6 +43,10 @@ export class GameRepository extends EventEmitter {
         this.onProperty = this.onProperty.bind(this);
         this.onRoundNew = this.onRoundNew.bind(this);
         this.onRoundEnd = this.onRoundEnd.bind(this);
+        this.onRoundInfo = this.onRoundInfo.bind(this);
+        this.onRoundMissions = this.onRoundMissions.bind(this);
+        this.onMissionProgress = this.onMissionProgress.bind(this);
+        this.onRoundSummary = this.onRoundSummary.bind(this);
         this.onClear = this.onClear.bind(this);
         this.onBorderless = this.onBorderless.bind(this);
         this.onEnd = this.onEnd.bind(this);
@@ -92,6 +97,10 @@ export class GameRepository extends EventEmitter {
         this.client.on('bonus:stack', this.onBonusStack);
         this.client.on('round:new', this.onRoundNew);
         this.client.on('round:end', this.onRoundEnd);
+        this.client.on('round:info', this.onRoundInfo);
+        this.client.on('round:missions', this.onRoundMissions);
+        this.client.on('mission:progress', this.onMissionProgress);
+        this.client.on('round:summary', this.onRoundSummary);
         this.client.on('clear', this.onClear);
         this.client.on('borderless', this.onBorderless);
         this.client.on('end', this.onEnd);
@@ -117,6 +126,10 @@ export class GameRepository extends EventEmitter {
         this.client.off('bonus:stack', this.onBonusStack);
         this.client.off('round:new', this.onRoundNew);
         this.client.off('round:end', this.onRoundEnd);
+        this.client.off('round:info', this.onRoundInfo);
+        this.client.off('round:missions', this.onRoundMissions);
+        this.client.off('mission:progress', this.onMissionProgress);
+        this.client.off('round:summary', this.onRoundSummary);
         this.client.off('clear', this.onClear);
         this.client.off('borderless', this.onBorderless);
         this.client.off('end', this.onEnd);
@@ -239,7 +252,9 @@ export class GameRepository extends EventEmitter {
             e.detail[0],
             this.compressor.decompress(e.detail[1]),
             this.compressor.decompress(e.detail[2]),
-            e.detail[3]
+            e.detail[3],
+            e.detail[4],
+            e.detail[5]
         );
 
         this.game.bonusManager.add(bonus);
@@ -274,11 +289,50 @@ export class GameRepository extends EventEmitter {
      */
     onRoundNew(e: ServerEvent<'round:new'>) {
         this.game.newRound();
+        // A mode with missions tells them right after
+        this.game.missions = [];
+        this.game.summary = null;
         this.emit('round:new');
     }
 
     /**
-     * On round new
+     * On round info: where the round is on the way to the end of the game
+     */
+    onRoundInfo(e: ServerEvent<'round:info'>) {
+        this.game.round = e.detail;
+        this.emit('round:info', e.detail);
+    }
+
+    /**
+     * On round missions: the missions of the round, with their standing
+     */
+    onRoundMissions(e: ServerEvent<'round:missions'>) {
+        this.game.missions = e.detail;
+        this.emit('round:missions');
+    }
+
+    /**
+     * On mission progress: only the missions whose standing changed
+     */
+    onMissionProgress(e: ServerEvent<'mission:progress'>) {
+        const changed = new Map(e.detail.map((standing): [string, MissionStanding] => [standing.id, standing]));
+
+        this.game.missions = this.game.missions.map(
+            (standing: MissionStanding) => changed.get(standing.id) ?? standing
+        );
+        this.emit('mission:progress');
+    }
+
+    /**
+     * On round summary: what every player got in the round
+     */
+    onRoundSummary(e: ServerEvent<'round:summary'>) {
+        this.game.summary = e.detail;
+        this.emit('round:summary');
+    }
+
+    /**
+     * On round end
      */
     onRoundEnd(e: ServerEvent<'round:end'>) {
         this.game.endRound();
@@ -365,6 +419,9 @@ export class GameRepository extends EventEmitter {
         const data = e.detail;
 
         this.game.maxScore = data.maxScore;
+        this.game.winCondition = data.winCondition;
+        this.game.rounds = data.rounds;
+        this.game.minutes = data.minutes;
 
         // The size of the map depends on who takes part
         if (data.size !== this.game.size) {

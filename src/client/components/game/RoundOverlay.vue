@@ -5,12 +5,13 @@ import { useServices } from '../../services';
 import { useEvents } from '../../composables/useEmitter';
 import GameStats from './GameStats.vue';
 import FeatList from './FeatList.vue';
+import RoundSummary from './RoundSummary.vue';
 import type { Avatar, Game } from '../../types';
 
 const props = defineProps<{ game: Game }>();
 const emit = defineEmits<{ backToRoom: [] }>();
 
-const { client, notifier } = useServices();
+const { client, gameRepository, notifier } = useServices();
 
 const game = shallowRef(props.game);
 const warmup = ref(false);
@@ -85,6 +86,8 @@ useEvents(client, ['round:end'], () => {
     triggerRef(game);
 });
 
+useEvents(gameRepository, ['round:summary'], () => triggerRef(game));
+
 useEvents(client, ['game:stats'], () => {
     statsFresh.value = true;
     triggerRef(game);
@@ -123,6 +126,7 @@ onBeforeUnmount(clearWarmup);
                     <i class="icon-dead"></i>
                     Oops, everybody died...
                 </p>
+                <RoundSummary v-if="game.started" :game="game" />
                 <FeatList v-if="game.started && game.stats" :feats="roundFeats" :players="game.stats.players" />
                 <div v-if="!game.started">
                     <button type="button" class="btn btn-hero btn-back-to-room" @click="emit('backToRoom')">

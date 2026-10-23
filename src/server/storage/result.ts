@@ -3,9 +3,6 @@ import type { GameResult, PlayerCounters } from '../../shared/model/GameResult.t
 import type { Avatar } from '../model/Avatar.ts';
 import type { Game } from '../model/Game.ts';
 
-/** The game mode, until there is more than one */
-const mode = 'classic';
-
 /** A game needs this many players to count, so that nobody collects points alone */
 export const minPlayers = 2;
 
@@ -48,7 +45,7 @@ export function buildGameResult(game: Game, endedAt: number = Date.now()): GameR
         startedAt: game.stats.startedAt ?? endedAt,
         endedAt,
         room: game.room.name,
-        mode,
+        mode: game.room.config.mode,
         tag: game.room.tag,
         rounds: all.rounds.length,
         maxScore: game.maxScore,
@@ -84,7 +81,8 @@ export function buildGameResult(game: Game, endedAt: number = Date.now()): GameR
         roundResults: all.rounds.map((round) => ({
             round: round.round,
             winner: slotOf(round.winner),
-            duration: round.duration
+            duration: round.duration,
+            size: round.size
         })),
         feats: all.feats.flatMap((feat) => {
             const slot = slotOf(feat.player);
