@@ -1,18 +1,25 @@
-import { continuousMissions, missionCount, missionIds, missions } from '../../shared/missions.ts';
+import { continuousMissions, isMissionAvailable, missionCount, missionIds, missions } from '../../shared/missions.ts';
 import type { MissionId, MissionResult, MissionStanding, MissionState } from '../../shared/missions.ts';
+import { bonusDefinitions } from '../../shared/bonuses.ts';
 import type { RoundCounters } from '../../shared/model/GameStats.ts';
 import type { Game } from '../model/Game.ts';
 
+const bonusNames = Object.fromEntries(bonusDefinitions.map(({ name }) => [name, true]));
+
 /**
  * Draw the missions of a round: the number depends on the players, a mission that makes no sense with so few players
- * is left out, and the missions of the round before do not come again right away.
+ * is left out, so is one that needs bonuses the room does not have, and the missions of the round before do not come
+ * again right away.
  */
 export function drawMissions(
     players: number,
     previous: readonly MissionId[] = [],
-    random: () => number = Math.random
+    random: () => number = Math.random,
+    enabledBonuses: readonly string[] = Object.keys(bonusNames)
 ): MissionId[] {
-    const fits = missionIds.filter((id) => missions[id].minPlayers <= players);
+    const fits = missionIds.filter(
+        (id) => missions[id].minPlayers <= players && isMissionAvailable(id, enabledBonuses)
+    );
     const fresh = fits.filter((id) => !previous.includes(id));
     const count = missionCount(players);
     const drawn: MissionId[] = [];

@@ -5,6 +5,7 @@ import { metrics } from './Metrics.ts';
 import { Body } from '../core/Body.ts';
 import { World } from '../core/World.ts';
 import { Feats, isNearWall } from './Feats.ts';
+import { harmfulBonuses } from '../../shared/missions.ts';
 import { computeAwards } from '../../shared/awards.ts';
 import type { Award, GameStatsData, PlayerStats, RoundCounters, RoundResult } from '../../shared/model/GameStats.ts';
 
@@ -189,11 +190,11 @@ export class GameStats {
     }
 
     /**
-     * A bonus that harms the others (the enemies, the leader) was caught: whoever is still alive when the effect runs out
+     * A bonus that harms the others (see `harmfulBonuses`) was caught: whoever is still alive when the effect runs out
      * lived through a malus. Not for an avatar that is invincible, it takes no courage.
      */
     trackMaluses(bonus: Bonus) {
-        if (bonus.affect !== 'enemy' && bonus.affect !== 'leader') {
+        if (!harmfulBonuses.includes(bonus.constructor.name)) {
             return;
         }
 

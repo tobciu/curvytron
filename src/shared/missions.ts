@@ -38,6 +38,35 @@ export const missions: Record<MissionId, MissionDefinition> = {
     stubborn: { id: 'stubborn', kind: 'flag', minPlayers: 3 }
 };
 
+/**
+ * The bonuses of the others that do harm to whoever is hit by them. The slow ones are left out: they help the one they
+ * hit. The leader bonuses count too, they hit one player.
+ */
+export const harmfulBonuses: readonly string[] = [
+    'BonusEnemyFast',
+    'BonusEnemyBig',
+    'BonusEnemyInverse',
+    'BonusEnemyStraightAngle',
+    'BonusEnemyRandom',
+    'BonusLeaderFast',
+    'BonusLeaderInverse',
+    'BonusLeaderRandom'
+];
+
+/** A mission is drawn only if the room has what it needs: the bonuses that are enabled decide */
+export function isMissionAvailable(id: MissionId, enabledBonuses: readonly string[]): boolean {
+    if (id === 'collector') {
+        return enabledBonuses.length > 0;
+    }
+
+    if (id === 'stubborn') {
+        // With one harmful bonus it is too rare to be a goal
+        return enabledBonuses.filter((name) => harmfulBonuses.includes(name)).length >= 2;
+    }
+
+    return true;
+}
+
 /** Missions that count something that goes on all the time: they are told at most once per second */
 export const continuousMissions: readonly MissionId[] = ['wallRunner', 'marathon'];
 

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BonusEnemyBig } from '../../src/server/model/Bonus/BonusEnemyBig.ts';
+import { BonusEnemySlow } from '../../src/server/model/Bonus/BonusEnemySlow.ts';
 import { BonusSelfFast } from '../../src/server/model/Bonus/BonusSelfFast.ts';
 import { drawMissions } from '../../src/server/scoring/Missions.ts';
 import { missionCount, missionPoints, missions, starPoints } from '../../src/shared/missions.ts';
@@ -93,6 +94,19 @@ describe('drawing the missions', () => {
             expect(rest).toEqual([]);
             expect(missions[id].minPlayers).toBeLessThanOrEqual(2);
         }
+    });
+
+    it('leaves out what needs bonuses that the room does not have', () => {
+        const drawn = (bonuses) =>
+            new Set(Array.from({ length: 200 }, () => drawMissions(10, [], Math.random, bonuses)).flat());
+
+        expect(drawn([])).not.toContain('collector');
+        expect(drawn([])).not.toContain('stubborn');
+        expect(drawn(['BonusSelfFast'])).toContain('collector');
+        expect(drawn(['BonusSelfFast', 'BonusEnemyBig'])).not.toContain('stubborn');
+        // The slow ones help whoever they hit
+        expect(drawn(['BonusEnemySlow', 'BonusLeaderSlow', 'BonusEnemyBig'])).not.toContain('stubborn');
+        expect(drawn(['BonusEnemyFast', 'BonusEnemyBig'])).toContain('stubborn');
     });
 
     it('takes back missions of the round before when the pool is too small', () => {
@@ -267,6 +281,17 @@ describe('the missions with a yes or no', () => {
         expect(game.stats.round.get(alice.id).malusesSurvived).toBe(2);
         expect(game.stats.round.get(carl.id).malusesSurvived).toBe(0);
         expect(game.missions.standing('stubborn').leaders.toSorted()).toEqual([alice.id, bob.id].toSorted());
+    });
+
+    it('stubborn: a bonus that slows the others down is no malus', () => {
+        startRound(['stubborn', 'comeback']);
+
+        game.bonusManager.add(new BonusEnemySlow(50, 50));
+        place(carl, 50, 50, 0);
+        game.bonusManager.testCatch(carl);
+        vi.advanceTimersByTime(10000);
+
+        expect(game.stats.round.get(alice.id).malusesSurvived).toBe(0);
     });
 
     it('stubborn: a malus that is not survived does not count', () => {

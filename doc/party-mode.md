@@ -76,6 +76,9 @@ Beim **Finale** (siehe Abschnitt 6) zählt jede Quelle doppelt.
   Spielern vergleicht.
 - Jede Mission zählt pro Runde für einen Spieler nur einmal. Dieselbe Mission kann in späteren Runden wieder gezogen
   werden, aber nicht in der direkt folgenden.
+- Die Ziehung richtet sich auch nach den Bonis des Raums: „Sammler" braucht mindestens einen aktiven Bonus, „Hartnäckig"
+  mindestens zwei aktive schädliche Bonis (`harmfulBonuses` in `src/shared/missions.ts`: die Bonis der anderen, die
+  schneller, dicker, invertiert oder eckig machen; die langsamen helfen dem Getroffenen und zählen nicht).
 - Die Ziehung richtet sich nach der Spielerzahl: Missionen, die mit wenigen Spielern sinnlos sind (zum Beispiel
   Nadelöhr), werden dann nicht gezogen. Bei 2 Spielern wird nur 1 Mission gezogen.
 - Nichts zählt, solange ein Avatar unverwundbar ist (wie bei den Statistiken); gemeint sind Beinahe-Treffer, Engstellen,

@@ -17,7 +17,10 @@ export const starChaseMode: ScoringMode = {
 
     onRoundStart(game) {
         const players = game.getPresentAvatars().count();
-        const ids = drawMissions(players, game.missions?.ids ?? []);
+        const enabled = Object.entries(game.room.config.bonuses)
+            .filter(([, on]) => on)
+            .map(([name]) => name);
+        const ids = drawMissions(players, game.missions?.ids ?? [], Math.random, enabled);
 
         game.missions = new MissionRound(game, ids);
         game.summary = null;
