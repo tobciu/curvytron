@@ -29,12 +29,3 @@ jobs:
               with:
                   name: playwright-results
                   path: test-results/
-            # Baseline-Analyse von main (neuer Code der lokalen Scans in tools/pre-pr-check.sh
-            # vergleicht gegen main). Dafür das GitHub-Secret SONAR_TOKEN anlegen.
-            - name: SonarQube (main)
-              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-              continue-on-error: true
-              env:
-                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                  SONAR_HOST_URL: https://sonarqube.tobciu08.de
-              run: npx --yes @sonar/scan -Dsonar.qualitygate.wait=false
