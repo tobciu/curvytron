@@ -468,11 +468,15 @@ describe('counters of the round', () => {
     it('count the kills and the distance of the round', () => {
         startRound();
         alice.emit('die', { avatar: bob, killer: carl, old: false });
+        // The avatar starts anywhere: what it drove before the move does not matter
         place(alice, 50, 50, 0);
+
+        const before = round(alice).distance;
+
         alice.setPosition(50, 53);
 
         expect(round(carl).kills).toBe(1);
-        expect(round(alice).distance).toBeCloseTo(3);
+        expect(round(alice).distance - before).toBeCloseTo(3);
     });
 
     it('add up the time close to a border, but not while the borders are no danger', () => {

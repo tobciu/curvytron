@@ -208,15 +208,17 @@ describe('players that come back', () => {
         startRound();
         game.update(16);
         game.stars.spawn();
+
+        // A star of the plan may come in these seconds too: look at the one that was put there
+        const [star] = starsOnMap();
+
         vi.advanceTimersByTime(4000);
 
         const addEvents = vi.fn();
 
         game.controller.attachSpectator({ addEvents });
 
-        const pop = addEvents.mock.calls[0][0].find(
-            ([name, data]) => name === 'bonus:pop' && data[3] === 'BonusStar'
-        )[1];
+        const pop = addEvents.mock.calls[0][0].find(([name, data]) => name === 'bonus:pop' && data[0] === star.id)[1];
 
         expect(pop[3]).toBe('BonusStar');
         expect(pop[4]).toBe(starLifetime(game.size, game.getSize(2)));

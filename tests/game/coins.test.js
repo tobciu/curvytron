@@ -36,6 +36,11 @@ function startRound(ids) {
     game.emit('game:start', { game });
 }
 
+/** Nobody catches a coin by chance in the tests that count them (an avatar may start on one) */
+const noCatch = () => {
+    game.bonusManager.testCatch = vi.fn();
+};
+
 const coinsOnMap = () => game.bonusManager.bonuses.items.filter((bonus) => bonus instanceof BonusCoin);
 
 beforeEach(() => {
@@ -78,6 +83,7 @@ describe('the coins', () => {
 describe('the mission of the coins', () => {
     it('puts some bronze coins on the map when the round runs, and the others come one by one', () => {
         startRound(['coinHunter', 'comeback']);
+        noCatch();
 
         expect(coinsOnMap()).toHaveLength(0);
 
@@ -112,6 +118,7 @@ describe('the mission of the coins', () => {
 
     it('lets the gold come late, not in the first third of the round', () => {
         startRound(['coinHunter', 'comeback']);
+        noCatch();
         game.update(16);
 
         const gold = [];
@@ -181,6 +188,7 @@ describe('the mission of the coins', () => {
 
     it('takes the coins that are left off the map when the round ends, and no new ones come', () => {
         startRound(['coinHunter', 'comeback']);
+        noCatch();
         game.update(16);
 
         expect(coinsOnMap().length).toBeGreaterThan(0);
@@ -198,6 +206,7 @@ describe('the mission of the coins', () => {
 
     it('puts the gold close to a border or to a trail', () => {
         startRound(['coinHunter', 'comeback']);
+        noCatch();
         game.update(16);
         vi.advanceTimersByTime(40000);
 
@@ -213,6 +222,7 @@ describe('the mission of the coins', () => {
 
     it('is told to a player that comes in the middle of the round, with the coins', () => {
         startRound(['coinHunter', 'comeback']);
+        noCatch();
         game.update(16);
         vi.advanceTimersByTime(40000);
 
