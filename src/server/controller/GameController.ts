@@ -261,8 +261,10 @@ export class GameController {
             events.push(...this.describeAvatar(this.game.avatars.items[i]));
         }
 
-        events.push(['round:info', this.game.round], ...this.describeRound());
-        events.push(['game:spectators', this.countSpectators()]);
+        events.push(['round:info', this.game.round], ...this.describeRound(), [
+            'game:spectators',
+            this.countSpectators()
+        ]);
 
         client.addEvents(events);
     }
