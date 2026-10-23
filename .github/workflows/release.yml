@@ -1,7 +1,7 @@
 name: Release
 
-# After a merge to main (a push with changes of the app sources): next version from the labels of the merged PR,
-# image to GHCR, tag, GitHub release. The same result as `tools/local-release.sh`, same tag namespace `vX.Y.Z`.
+# After a pull request was merged to main (a push with changes of the app sources): next version from the labels of
+# the PR, image to GHCR, tag, GitHub release. A push to main without a PR makes no release. The same result as `tools/local-release.sh`, same tag namespace `vX.Y.Z`.
 on:
     push:
         branches: [main]
@@ -39,6 +39,8 @@ jobs:
         outputs:
             tag: ${{ steps.version.outputs.tag }}
             version: ${{ steps.version.outputs.version }}
+            # Number of the merged PR, empty for a push without one
+            pr: ${{ steps.version.outputs.pr }}
 
         steps:
             - name: Next version
@@ -54,6 +56,7 @@ jobs:
                       });
                       const pr = prs.find(p => p.merged_at !== null);
                       const labels = pr ? pr.labels.map(l => l.name) : [];
+                      core.setOutput('pr', pr ? String(pr.number) : '');
 
                       // Kind of bump from the labels of the PR (patch without a label)
                       let bump = 'patch';
@@ -92,6 +95,8 @@ jobs:
     release:
         name: Build and publish the image
         needs: version
+        # Only after a pull request
+        if: ${{ needs.version.outputs.pr != '' }}
         runs-on: ubuntu-latest
 
         steps:

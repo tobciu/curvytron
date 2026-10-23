@@ -1,7 +1,7 @@
 name: CI
 
+# Only for pull requests (a push to a branch alone does not run it, and not twice for a branch with a PR)
 on:
-    push:
     pull_request:
 
 jobs:
