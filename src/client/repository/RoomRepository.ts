@@ -4,7 +4,7 @@ import { Player } from '../model/Player.ts';
 import { Room } from '../model/Room.ts';
 import { Collection } from '../../shared/Collection.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
-import type { ServerEvent } from '../../shared/protocol.ts';
+import type { Reply, ServerEvent } from '../../shared/protocol.ts';
 
 /**
  * RoomRepository
@@ -37,6 +37,7 @@ export class RoomRepository extends EventEmitter {
         this.onPlayerName = this.onPlayerName.bind(this);
         this.onConfigOpen = this.onConfigOpen.bind(this);
         this.onConfigMaxScore = this.onConfigMaxScore.bind(this);
+        this.onConfigTag = this.onConfigTag.bind(this);
         this.onConfigVariable = this.onConfigVariable.bind(this);
         this.onConfigBonus = this.onConfigBonus.bind(this);
         this.onKick = this.onKick.bind(this);
@@ -62,6 +63,7 @@ export class RoomRepository extends EventEmitter {
         this.client.on('player:connection', this.onPlayerConnection);
         this.client.on('room:config:open', this.onConfigOpen);
         this.client.on('room:config:max-score', this.onConfigMaxScore);
+        this.client.on('room:config:tag', this.onConfigTag);
         this.client.on('room:config:variable', this.onConfigVariable);
         this.client.on('room:config:bonus', this.onConfigBonus);
         this.client.on('room:launch:start', this.forwardEvent);
@@ -88,6 +90,7 @@ export class RoomRepository extends EventEmitter {
         this.client.off('player:connection', this.onPlayerConnection);
         this.client.off('room:config:open', this.onConfigOpen);
         this.client.off('room:config:max-score', this.onConfigMaxScore);
+        this.client.off('room:config:tag', this.onConfigTag);
         this.client.off('room:config:variable', this.onConfigVariable);
         this.client.off('room:config:bonus', this.onConfigBonus);
         this.client.off('room:launch:start', this.forwardEvent);
@@ -315,6 +318,13 @@ export class RoomRepository extends EventEmitter {
     }
 
     /**
+     * Set config tag (the server cleans it)
+     */
+    setConfigTag(tag: string, callback: Reply<'room:config:tag'>) {
+        this.client.addEvent('room:config:tag', { tag: tag.trim() }, callback);
+    }
+
+    /**
      * Set config max score
      */
     setConfigMaxScore(maxScore: number, callback: (...args: any[]) => any) {
@@ -484,6 +494,14 @@ export class RoomRepository extends EventEmitter {
 
         this.room.config.setMaxScore(data.maxScore);
         this.emit('config:max-score', { maxScore: data.maxScore });
+    }
+
+    /**
+     * On config tag
+     */
+    onConfigTag(e: ServerEvent<'room:config:tag'>) {
+        this.room.tag = e.detail.tag;
+        this.emit('config:tag', { tag: e.detail.tag });
     }
 
     /**

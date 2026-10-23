@@ -109,6 +109,7 @@ export interface ClientEvents {
         data: { maxScore: number | string };
         reply: Failure | (Result & { maxScore: number | null });
     };
+    'room:config:tag': { data: { tag: string }; reply: Failure | (Result & { tag: string | null }) };
     'room:config:variable': {
         data: { variable: string; value: number | string };
         reply: Failure | (Result & { value?: number });
@@ -135,6 +136,8 @@ export interface ServerEvents {
     'room:players': { name: string; players: number };
     'room:config:open': { name?: string; open: boolean; password?: string | null };
     'room:config:max-score': { maxScore: number | null };
+    /** In the room: the new tag of the room. In the list of the rooms (with the name): the same, for the room named */
+    'room:config:tag': { name?: string; tag: string | null };
     'room:config:variable': { variable: string; value: number | undefined };
     'room:config:bonus': { bonus: string; enabled: boolean | undefined };
     'room:join': { player: PlayerData };

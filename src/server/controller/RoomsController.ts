@@ -26,6 +26,7 @@ export class RoomsController extends EventEmitter {
         this.onRoomPlayer = this.onRoomPlayer.bind(this);
         this.onRoomGame = this.onRoomGame.bind(this);
         this.onRoomConfigOpen = this.onRoomConfigOpen.bind(this);
+        this.onRoomTag = this.onRoomTag.bind(this);
         this.detach = this.detach.bind(this);
 
         this.callbacks = this.createCallbacks(this);
@@ -156,6 +157,7 @@ export class RoomsController extends EventEmitter {
         room.on('player:join', this.onRoomPlayer);
         room.on('player:leave', this.onRoomPlayer);
         room.config.on('room:config:open', this.onRoomConfigOpen);
+        room.on('room:tag', this.onRoomTag);
 
         this.socketGroup.addEvent('room:open', room.serialize(false));
     }
@@ -171,6 +173,7 @@ export class RoomsController extends EventEmitter {
         room.removeListener('player:join', this.onRoomPlayer);
         room.removeListener('player:leave', this.onRoomPlayer);
         room.config.on('room:config:open', this.onRoomConfigOpen);
+        room.removeListener('room:tag', this.onRoomTag);
 
         this.socketGroup.addEvent('room:close', { name: room.name });
     }
@@ -180,6 +183,13 @@ export class RoomsController extends EventEmitter {
      */
     onRoomConfigOpen(data: any) {
         this.socketGroup.addEvent('room:config:open', { name: data.room.name, open: data.open });
+    }
+
+    /**
+     * On room tag
+     */
+    onRoomTag(data: { room: Room; tag: string | null }) {
+        this.socketGroup.addEvent('room:config:tag', { name: data.room.name, tag: data.tag });
     }
 
     /**

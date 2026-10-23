@@ -443,6 +443,21 @@
             }
         }
 
+        // The tag groups the games of the room (daily, launch...)
+        .room-tag {
+            margin-bottom: 35px;
+
+            h2 {
+                margin-bottom: 10px;
+            }
+
+            #room-tag {
+                width: 200px;
+                margin: 0 auto;
+                text-align: center;
+            }
+        }
+
         .public-room {
             h2 {
                 margin-bottom: 20px;
