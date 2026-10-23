@@ -106,6 +106,8 @@ describe('drawing the missions', () => {
         expect(drawn(['BonusSelfFast', 'BonusEnemyBig'])).not.toContain('stubborn');
         // The slow ones help whoever they hit
         expect(drawn(['BonusEnemySlow', 'BonusLeaderSlow', 'BonusEnemyBig'])).not.toContain('stubborn');
+        // The leader bonuses hit only the one in front
+        expect(drawn(['BonusEnemyBig', 'BonusLeaderFast', 'BonusLeaderInverse'])).not.toContain('stubborn');
         expect(drawn(['BonusEnemyFast', 'BonusEnemyBig'])).toContain('stubborn');
     });
 

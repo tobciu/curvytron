@@ -39,18 +39,15 @@ export const missions: Record<MissionId, MissionDefinition> = {
 };
 
 /**
- * The bonuses of the others that do harm to whoever is hit by them. The slow ones are left out: they help the one they
- * hit. The leader bonuses count too, they hit one player.
+ * The bonuses of the others that do harm to every other player. The slow ones are left out: they help whoever they
+ * hit. The leader bonuses are left out too: they hit only the player in front, who would get a mission for it.
  */
 export const harmfulBonuses: readonly string[] = [
     'BonusEnemyFast',
     'BonusEnemyBig',
     'BonusEnemyInverse',
     'BonusEnemyStraightAngle',
-    'BonusEnemyRandom',
-    'BonusLeaderFast',
-    'BonusLeaderInverse',
-    'BonusLeaderRandom'
+    'BonusEnemyRandom'
 ];
 
 /** A mission is drawn only if the room has what it needs: the bonuses that are enabled decide */
