@@ -319,6 +319,32 @@ describe('RoomRepository', () => {
         expect(seen).toHaveLength(4);
     });
 
+    it('mirrors the mode and when the game is over, and sets them as the room master', () => {
+        room.join('arena', null, vi.fn());
+        client.answer('room:join', structuredClone(roomPayload));
+
+        const seen: string[] = [];
+
+        for (const name of ['config:mode', 'config:win']) {
+            room.on(name, () => seen.push(name));
+        }
+
+        client.receive('room:config:mode', { mode: 'starchase' });
+        client.receive('room:config:win', { condition: 'rounds', maxScore: null, rounds: 5, minutes: null });
+
+        expect(room.room.config.mode).toBe('starchase');
+        expect(room.room.config.winCondition).toBe('rounds');
+        expect(room.room.config.getRounds()).toBe(5);
+        expect(room.room.config.getMinutes()).toBe(15);
+        expect(seen).toEqual(['config:mode', 'config:win']);
+
+        room.setConfigMode('classic', vi.fn());
+        room.setConfigWin('time', 20, vi.fn());
+
+        expect(client.last('room:config:mode').data).toEqual({ mode: 'classic' });
+        expect(client.last('room:config:win').data).toEqual({ condition: 'time', value: 20 });
+    });
+
     it('starts a new game in the room and forwards launch events', () => {
         room.join('arena', null, vi.fn());
         client.answer('room:join', structuredClone(roomPayload));
@@ -668,6 +694,39 @@ describe('GameRepository', () => {
         expect(game.setBorderless).toHaveBeenCalledWith(true);
         expect(game.stats).toEqual({ total: 1 });
         expect(emitted).toEqual(expect.arrayContaining(['round:new', 'round:end', 'borderless', 'stats']));
+    });
+
+    it('keeps the missions of the round, merges the changes of the standing and keeps the summary', () => {
+        const collector = { id: 'collector', leaders: [], values: [[1, 0]] };
+        const hunter = { id: 'hunter', leaders: [], values: [[1, 0]] };
+
+        client.receive('round:missions', [collector, hunter]);
+
+        expect(game.missions).toEqual([collector, hunter]);
+
+        const changed = { id: 'hunter', leaders: [1], values: [[1, 2]] };
+
+        client.receive('mission:progress', [changed]);
+
+        expect(game.missions).toEqual([collector, changed]);
+
+        const summary = { missions: [{ id: 'hunter', winners: [1] }], players: [] };
+
+        client.receive('round:summary', summary);
+
+        expect(game.summary).toEqual(summary);
+
+        // A new round starts with nothing: a mode without missions does not tell any
+        client.receive('round:new', undefined);
+
+        expect(game.missions).toEqual([]);
+        expect(game.summary).toBeNull();
+    });
+
+    it('keeps where the round is on the way to the end of the game', () => {
+        client.receive('round:info', { round: 3, last: false, finale: true, tiebreak: false });
+
+        expect(game.round).toEqual({ round: 3, last: false, finale: true, tiebreak: false });
     });
 
     it('handles game end and avatar leave', () => {

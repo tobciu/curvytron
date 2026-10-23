@@ -15,10 +15,15 @@ export function drawMissions(
     players: number,
     previous: readonly MissionId[] = [],
     random: () => number = Math.random,
-    enabledBonuses: readonly string[] = Object.keys(bonusNames)
+    enabledBonuses: readonly string[] = Object.keys(bonusNames),
+    hasPreviousRound: boolean = true
 ): MissionId[] {
     const fits = missionIds.filter(
-        (id) => missions[id].minPlayers <= players && isMissionAvailable(id, enabledBonuses)
+        (id) =>
+            missions[id].minPlayers <= players &&
+            isMissionAvailable(id, enabledBonuses) &&
+            // Nobody was last in a round that did not happen
+            (id !== 'comeback' || hasPreviousRound)
     );
     const fresh = fits.filter((id) => !previous.includes(id));
     const count = missionCount(players);

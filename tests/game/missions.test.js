@@ -111,6 +111,14 @@ describe('drawing the missions', () => {
         expect(drawn(['BonusEnemyFast', 'BonusEnemyBig'])).toContain('saboteur');
     });
 
+    it('draws the comeback only when there was a round before', () => {
+        const drawn = (before) =>
+            new Set(Array.from({ length: 200 }, () => drawMissions(10, [], Math.random, undefined, before)).flat());
+
+        expect(drawn(false)).not.toContain('comeback');
+        expect(drawn(true)).toContain('comeback');
+    });
+
     it('takes back missions of the round before when the pool is too small', () => {
         const all = drawMissions(2, ['closeCombat', 'collector', 'hunter', 'wallRunner', 'marathon']);
 

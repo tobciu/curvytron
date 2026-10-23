@@ -764,3 +764,120 @@
     z-index: 1;
     @include transition(all 0.25s cubic-bezier(0.785, 0.135, 0.15, 0.86));
 }
+
+// Star Chase: the missions at the edge of the field, the star in the list of the players, the recap of the round
+#game-wrapper {
+    .mission-panel {
+        position: fixed;
+        top: 8px;
+        left: $aside-width + 12px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        z-index: 100;
+        font-size: 13px;
+        line-height: 1.3;
+        color: #fff;
+        text-align: left;
+        pointer-events: none;
+
+        .mission {
+            margin-bottom: 4px;
+            padding: 3px 8px;
+            border-left: 3px solid transparentize(#fff, 0.6);
+            background: transparentize(#000, 0.45);
+
+            .mission-name {
+                display: block;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-size: 11px;
+                opacity: 0.8;
+            }
+
+            &.mission-leading,
+            &.mission-done {
+                border-left-color: $color-success;
+            }
+
+            &.mission-tied {
+                border-left-color: $color-warning;
+            }
+
+            &.mission-behind,
+            &.mission-missed {
+                border-left-color: $color-danger;
+            }
+        }
+    }
+
+    .game-players .player .mission-star {
+        color: #ffd700;
+        position: absolute;
+        right: 8px;
+        top: 4px;
+        font-size: 14px;
+    }
+
+    .round-summary {
+        margin: 0 auto 20px;
+        max-width: 640px;
+
+        h3 {
+            color: #fff;
+        }
+
+        .mission-results {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 10px;
+
+            li {
+                font-size: 18px;
+                padding: 2px 0;
+            }
+
+            .label {
+                display: inline-block;
+                min-width: 140px;
+                text-transform: uppercase;
+                font-size: 13px;
+                letter-spacing: 1px;
+                opacity: 0.7;
+            }
+
+            .strong {
+                margin-right: 10px;
+            }
+
+            .nobody {
+                opacity: 0.5;
+            }
+        }
+
+        table.recap {
+            width: 100%;
+            font-size: 20px;
+            text-align: left;
+
+            th {
+                font-weight: 400;
+                font-size: 13px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                opacity: 0.7;
+            }
+
+            td,
+            th {
+                padding: 4px 10px;
+            }
+
+            td.points,
+            th.points {
+                text-align: right;
+            }
+        }
+    }
+}

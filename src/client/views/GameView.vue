@@ -8,6 +8,7 @@ import { useServices } from '../services';
 import { useEvents } from '../composables/useEmitter';
 import ChatPanel from '../components/ChatPanel.vue';
 import KillLog from '../components/game/KillLog.vue';
+import MissionPanel from '../components/game/MissionPanel.vue';
 import MetricsFooter from '../components/game/MetricsFooter.vue';
 import PlayerList from '../components/game/PlayerList.vue';
 import RoundOverlay from '../components/game/RoundOverlay.vue';
@@ -212,6 +213,7 @@ function backToRoom(): void {
             </aside>
             <div id="col-right">
                 <KillLog :game="game" />
+                <MissionPanel :game="game" />
 
                 <WaitingList v-if="!spectating && !game.isReady()" :game="game" />
                 <RoundOverlay :game="game" @back-to-room="backToRoom" />

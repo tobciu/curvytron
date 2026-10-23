@@ -2,6 +2,7 @@
 /** Configuration of a room: victory score, public / private, bonuses. Only the room master can change it. */
 import { computed } from 'vue';
 import { normalizeTag, tagMaxLength } from '../../shared/tag';
+import { gameModes } from '../content/modes';
 import { useServices } from '../services';
 import { useLive } from '../composables/useEmitter';
 import { spritePosition } from '../../shared/bonuses';
@@ -15,6 +16,7 @@ const { live: config, bump } = useLive(props.room.config, repository, [
     'room:config:open',
     'config:max-score',
     'config:win',
+    'config:mode',
     'config:tag',
     'config:variable',
     'config:bonus'
@@ -111,6 +113,22 @@ function setMaxScore(event: Event): void {
     }
 }
 
+function setMode(event: Event): void {
+    const mode = (event.target as HTMLSelectElement).value;
+
+    if (repository.amIMaster()) {
+        const target = config.value;
+
+        repository.setConfigMode(mode, (result) => {
+            if ('mode' in result) {
+                target.setMode(result.mode);
+            }
+
+            bump();
+        });
+    }
+}
+
 function setWinCondition(event: Event): void {
     const condition = (event.target as HTMLSelectElement).value;
 
@@ -181,6 +199,11 @@ function setVariable(variable: string, event: Event): void {
 <template>
     <div class="row">
         <div class="col-lg-4 max-score">
+            <h2>Mode</h2>
+            <select id="scoring-mode" class="form-control" :value="config.mode" :disabled="!master" @change="setMode">
+                <option v-for="mode in gameModes" :key="mode.id" :value="mode.id">{{ mode.name }}</option>
+            </select>
+
             <h2>The game is over</h2>
             <select
                 id="win-condition"

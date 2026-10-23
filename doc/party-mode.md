@@ -237,13 +237,13 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
 2. Interface `ScoringMode`, der klassische Modus dahinter, unverändert und getestet; die Siegbedingung getrennt davon
    (`src/server/scoring`). **Erledigt.**
 3. Raum-Einstellungen für Modus (`room:config:mode`) und Siegbedingung (`room:config:win`) mit Rundenzahl, Zeitlimit,
-   Finale und Stichrunde, in beiden Modi nutzbar. Bisher kennt `scoringModes` nur `classic`: `starchase` wird mit den
-   Missionen eingetragen, mit der Pause von 8 s und den Standardwerten. Die Wahl des Modus hat noch keine Oberfläche, weil
-   es nichts zu wählen gibt. **Erledigt.**
+   Finale und Stichrunde, in beiden Modi nutzbar. **Erledigt.**
 4. Missionen mit Protokoll (`round:missions`, `mission:progress`, `round:summary`), Modus `starchase` mit Pause von 8 s,
-   Ziehung, Auswertung, Deckel und Wiederherstellung bei Reconnect und Late Join. Die Moduswahl hat noch keine
-   Oberfläche, bis die Anzeige da ist. **Erledigt (Server).**
-5. Missionsanzeige und Overlay zwischen den Runden.
+   Ziehung, Auswertung, Deckel und Wiederherstellung bei Reconnect und Late Join. **Erledigt.**
+5. Missionsanzeige (`MissionPanel.vue`, mit Status führt / gleichauf / hinten und offen / geschafft / verpasst), Stern in
+   der Spielerliste für den, der gerade eine Mission halten würde, Zusammenfassung zwischen den Runden
+   (`RoundSummary.vue`), Moduswahl in den Raumparametern und Regelkarte. „Comeback" wird in der ersten Runde nicht gezogen.
+   **Erledigt.**
 6. Stern-Item mit Ring-Timer.
 7. Erweiterungen aus Abschnitt 7.
 

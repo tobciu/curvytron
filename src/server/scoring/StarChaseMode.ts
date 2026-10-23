@@ -1,6 +1,6 @@
 import { classicMode } from './ClassicMode.ts';
 import { drawMissions, MissionRound } from './Missions.ts';
-import { missionPoints } from '../../shared/missions.ts';
+import { missionPoints, missions } from '../../shared/missions.ts';
 import type { RoundSummary } from '../../shared/missions.ts';
 import type { ScoringMode } from './ScoringMode.ts';
 
@@ -20,7 +20,8 @@ export const starChaseMode: ScoringMode = {
         const enabled = Object.entries(game.room.config.bonuses)
             .filter(([, on]) => on)
             .map(([name]) => name);
-        const ids = drawMissions(players, game.missions?.ids ?? [], Math.random, enabled);
+        const lookBack = game.stats.previousPlaces.size >= missions.comeback.minPlayers;
+        const ids = drawMissions(players, game.missions?.ids ?? [], Math.random, enabled, lookBack);
 
         game.missions = new MissionRound(game, ids);
         game.summary = null;
