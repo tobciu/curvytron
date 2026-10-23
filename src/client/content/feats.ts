@@ -66,3 +66,12 @@ export const featInfo: Record<string, FeatInfo> = {
             'First one out, again and again: five rounds in a row with three players, four with four, three with five or more.'
     }
 };
+
+/** Feats that are not given anymore: the player still has the old ones (`retiredFeats` in `src/shared/model/StatsApi.ts`) */
+export const retiredFeatInfo: Record<string, FeatInfo> = {
+    graveKill: {
+        label: 'From beyond the grave',
+        description:
+            'Somebody crashed on the trail of this player after they were out of the round already. Not a feat anymore: it is a statistic now, with the award “Wall of the dead”.'
+    }
+};
