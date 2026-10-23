@@ -4,7 +4,7 @@
  * Version of the definitions of the statistics: raise it when something is counted in another way (it is stored with
  * the games, so that old and new games are not mixed up)
  */
-export const statsVersion = 1;
+export const statsVersion = 2;
 
 /** Counters of one player */
 export interface PlayerStats {
@@ -23,6 +23,8 @@ export interface PlayerStats {
     trailDeaths: number;
     /** Deaths of others on this player's trail */
     kills: number;
+    /** Deaths of others on the trail of this player after the player was dead already */
+    graveKills: number;
     /** Times the avatar passed very close to the trail of another player without touching it */
     nearMisses: number;
     /** Times the avatar passed between two trails of other players that are close to each other (a gap) */

@@ -7,7 +7,7 @@ import FeatList from './FeatList.vue';
 import { awardInfo, statInfo } from '../../content/stats';
 import type { StatInfo } from '../../content/stats';
 
-const props = defineProps<{ stats: GameStatsData }>();
+const props = defineProps<{ stats: GameStatsData; hiddenFeats?: number }>();
 
 /** The columns of the table: what they count, see `content/stats.ts` */
 const columns: Array<StatInfo & { value: (player: PlayerStats) => number; format?: (value: number) => string }> = [
@@ -162,7 +162,7 @@ function bonusDetails(player: PlayerStats): string[] {
                 </tr>
             </tbody>
         </table>
-        <FeatList :feats="stats.feats" :players="stats.players" show-round />
+        <FeatList :feats="stats.feats" :players="stats.players" :hidden="hiddenFeats" show-round />
         <ol v-if="rounds.length > 1" class="rounds">
             <li v-for="result in rounds" :key="result.round">
                 <span class="label">Round {{ result.round }}</span>

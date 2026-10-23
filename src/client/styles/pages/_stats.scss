@@ -23,7 +23,7 @@
 
         a {
             text-decoration: none;
-            opacity: 0.6;
+            opacity: 0.75;
 
             &.active,
             &:hover {
@@ -52,7 +52,7 @@
         a {
             margin-left: 12px;
             text-decoration: none;
-            opacity: 0.6;
+            opacity: 0.75;
 
             &.active {
                 opacity: 1;
@@ -85,7 +85,7 @@
         .rank {
             width: 40px;
             text-align: left;
-            opacity: 0.6;
+            opacity: 0.75;
         }
 
         tr.mine td {
@@ -120,12 +120,12 @@
 
         .when {
             font-size: 13px;
-            opacity: 0.6;
+            opacity: 0.75;
         }
 
         .tag {
             font-size: 13px;
-            opacity: 0.6;
+            opacity: 0.75;
         }
 
         .players {
@@ -145,7 +145,7 @@
 
         .feats-count {
             font-size: 13px;
-            opacity: 0.6;
+            opacity: 0.75;
         }
 
         .game-detail {
@@ -177,7 +177,7 @@
             display: block;
             font-size: 13px;
             text-transform: uppercase;
-            opacity: 0.6;
+            opacity: 0.75;
         }
 
         .value {
@@ -193,8 +193,12 @@
         .where,
         .description {
             display: block;
-            font-size: 13px;
-            opacity: 0.6;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .description {
+            opacity: 0.9;
         }
     }
 }
@@ -205,7 +209,7 @@
 
         .private {
             font-size: 14px;
-            opacity: 0.6;
+            opacity: 0.75;
         }
     }
 
@@ -227,8 +231,12 @@
         .where,
         .description {
             display: block;
-            font-size: 13px;
-            opacity: 0.6;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .description {
+            opacity: 0.9;
         }
     }
 }

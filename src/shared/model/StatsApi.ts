@@ -10,6 +10,19 @@ export const anonymous = 'Anonymous';
 /** The id of a feat that the viewer may not know: it says that something happened, not what */
 export const secretFeat = '?';
 
+/**
+ * The feats that are rare: the lists show them as `?` for everybody but their owner. The other ones happen all the time,
+ * the lists only count them (`hiddenFeats`).
+ */
+export const highlightFeats: ReadonlySet<string> = new Set([
+    'cleanSweep',
+    'doubleKill',
+    'revenge',
+    'photoFinish',
+    'daredevil',
+    'whitewash'
+]);
+
 export interface ApiGamePlayer {
     slot: number;
     name: string;
@@ -45,6 +58,8 @@ export interface ApiGames {
 /** A game with its statistics as the game showed them at the end (the player ids are the slots) */
 export interface ApiGameDetail extends ApiGame {
     stats: GameStatsData;
+    /** The common feats of the other players: they are counted here and not listed in `stats.feats` */
+    hiddenFeats: number;
 }
 
 export const leaderboardBys = ['wins', 'winRate', 'roundsWon', 'kills', 'games'] as const;

@@ -1,0 +1,144 @@
+name: Release
+
+# After a merge to main (a push with changes of the app sources): next version from the labels of the merged PR,
+# image to GHCR, tag, GitHub release. The same result as `tools/local-release.sh`, same tag namespace `vX.Y.Z`.
+on:
+    push:
+        branches: [main]
+        paths:
+            - 'src/**'
+            - 'public/**'
+            - 'assets/**'
+            - 'Dockerfile'
+            - '.dockerignore'
+            - 'package.json'
+            - 'package-lock.json'
+            - 'vite.config.js'
+            - 'tsconfig.json'
+
+permissions:
+    contents: write # create and push the git tag
+    packages: write # push to GHCR
+    pull-requests: read # read the labels of the PR
+
+# Two merges to main would calculate the same next version and collide on the tag and the registry push.
+# Never cancel a running release.
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    version:
+        name: Next version
+        # The bump commit of `tools/local-release.sh` changes package.json: it is no reason for a release
+        if: ${{ !startsWith(github.event.head_commit.message, 'Bump version to') }}
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: read
+        outputs:
+            tag: ${{ steps.version.outputs.tag }}
+            version: ${{ steps.version.outputs.version }}
+
+        steps:
+            - name: Next version
+              id: version
+              uses: actions/github-script@v9
+              with:
+                  script: |
+                      // The PR of the merge commit
+                      const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        commit_sha: context.sha,
+                      });
+                      const pr = prs.find(p => p.merged_at !== null);
+                      const labels = pr ? pr.labels.map(l => l.name) : [];
+
+                      // Kind of bump from the labels of the PR (patch without a label)
+                      let bump = 'patch';
+                      if (labels.includes('bump:major')) bump = 'major';
+                      else if (labels.includes('bump:minor')) bump = 'minor';
+
+                      // Newest vX.Y.Z tag, paginated: the tags of the local releases are in it
+                      const refs = await github.paginate(github.rest.git.listMatchingRefs, {
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        ref: 'tags/v',
+                        per_page: 100,
+                      });
+                      const tagRegex = /^v(\d+)\.(\d+)\.(\d+)$/;
+                      const semver = refs
+                        .map(r => r.ref.replace(/^refs\/tags\//, ''))
+                        .filter(n => tagRegex.test(n))
+                        .sort((a, b) => {
+                          const pa = a.match(tagRegex).slice(1).map(Number);
+                          const pb = b.match(tagRegex).slice(1).map(Number);
+                          for (let i = 0; i < 3; i++) if (pa[i] !== pb[i]) return pb[i] - pa[i];
+                          return 0;
+                        });
+                      const latest = semver[0] ?? 'v0.0.0';
+                      let [maj, min, pat] = latest.slice(1).split('.').map(Number);
+
+                      if (bump === 'major') { maj++; min = 0; pat = 0; }
+                      else if (bump === 'minor') { min++; pat = 0; }
+                      else { pat++; }
+
+                      const version = `${maj}.${min}.${pat}`;
+                      core.setOutput('tag', `v${version}`);
+                      core.setOutput('version', version);
+                      console.log(`PR #${pr?.number ?? '-'} | labels: [${labels.join(', ')}] | bump: ${bump} | ${latest} -> v${version}`);
+
+    release:
+        name: Build and publish the image
+        needs: version
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v7
+
+            # The version of package.json is what /health reports: set it for the image, without a commit to main
+            - name: Version into package.json (not committed)
+              env:
+                  VERSION: ${{ needs.version.outputs.version }}
+              run: npm version "$VERSION" --no-git-tag-version --allow-same-version
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Log in to GHCR
+              uses: docker/login-action@v4
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build and push the image (version and latest)
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  push: true
+                  tags: |
+                      ghcr.io/tobciu/curvytron:${{ needs.version.outputs.version }}
+                      ghcr.io/tobciu/curvytron:latest
+                  build-args: |
+                      APP_VERSION=${{ needs.version.outputs.version }}
+                      APP_COMMIT=${{ github.sha }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+            - name: Create and push the git tag
+              env:
+                  TAG: ${{ needs.version.outputs.tag }}
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git tag "$TAG" "$GITHUB_SHA"
+                  git push origin "$TAG"
+
+            - name: Create the GitHub release
+              uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+              with:
+                  tag_name: ${{ needs.version.outputs.tag }}
+                  name: Curvytron ${{ needs.version.outputs.tag }}
+                  generate_release_notes: true

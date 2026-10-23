@@ -119,6 +119,12 @@ export const awardInfo: Record<string, StatInfo & { field: keyof PlayerStats }> 
         description: 'Killed the most players on their trail.',
         how: 'Cut off the others in front of you instead of waiting for mistakes.'
     },
+    graveWall: {
+        label: 'Wall of the dead',
+        field: 'graveKills',
+        description: 'The most players crashed on the trail of this player after the player was dead already.',
+        how: 'Die, but leave a long trail in a busy spot: the others still have to get around it.'
+    },
     marathon: {
         label: 'Marathon driver',
         field: 'distance',

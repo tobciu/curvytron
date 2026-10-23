@@ -352,6 +352,10 @@ Die Feats sollen in den Listen **nicht** verraten, was sie sind. Das gilt für d
   nur in der Datenbank.
 - In den **Rekorden** gibt es keinen Rekord, der ein Feat nennt (zum Beispiel "meiste Clean sweeps"), sondern nur
   "meiste Feats" als Zahl.
+- **Nur seltene Feats** erscheinen als "?" (`highlightFeats`: Clean sweep, Double kill, Revenge, Photo finish, Daredevil,
+  Whitewash). Die häufigen (Pacifist, Wall rider, Bad karma, Early exit, Bonus rush, Rookie mistake, Time's up) listet
+  die Schnittstelle nicht, `GET /api/games/:id` zählt sie in `hiddenFeats`, die Seite zeigt "N more hidden feats".
+  Die eigenen Feats sieht man immer mit Namen.
 - Die Feats **im Spiel** (am Rundenende und Spielende) ändern sich nicht: Dort sehen die Mitspielenden Namen und
   Beschreibung, das ist der Moment, in dem man sie entdecken soll.
 

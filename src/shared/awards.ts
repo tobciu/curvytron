@@ -11,6 +11,7 @@ export const awardFields: Record<string, keyof PlayerStats> = {
     needle: 'squeezes',
     gapRunner: 'gapRuns',
     hunter: 'kills',
+    graveWall: 'graveKills',
     marathon: 'distance',
     survivor: 'longestLife',
     streak: 'longestStreak'

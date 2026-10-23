@@ -160,6 +160,31 @@ describe('the games', () => {
         ]);
     });
 
+    it('only counts the common feats of the others, and lists the ones of the viewer', () => {
+        storage.saveGame(
+            result({
+                feats: [
+                    { round: 1, slot: 0, feat: 'cleanSweep' },
+                    { round: 1, slot: 0, feat: 'pacifist' },
+                    { round: 2, slot: 1, feat: 'badKarma' },
+                    { round: 3, slot: 2, feat: 'rookieMistake' }
+                ]
+            })
+        );
+
+        const game = queries.getGame(1);
+
+        expect(game.feats).toBe(4);
+        expect(game.hiddenFeats).toBe(3);
+        expect(game.stats.feats).toEqual([{ id: secretFeat, player: 0, round: 1 }]);
+
+        const bob = queries.playerIdByIdentity(hashIdentity(codes.bob));
+        const own = queries.getGame(1, bob);
+
+        expect(own.hiddenFeats).toBe(2);
+        expect(own.stats.feats.map(({ id }) => id)).toEqual([secretFeat, 'badKarma']);
+    });
+
     it('is nothing when there is no such game', () => {
         expect(queries.getGame(99)).toBeNull();
     });
