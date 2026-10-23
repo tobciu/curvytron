@@ -1,13 +1,10 @@
 import { BonusStar } from '../model/Bonus/BonusStar.ts';
 import { bonusRadius } from '../../shared/bonuses.ts';
-import { findRiskyPosition } from './Placement.ts';
+import { expectedRoundLength, findRiskyPosition } from './Placement.ts';
 import type { Game } from '../model/Game.ts';
 
 /** A star lives at least this long (ms), longer on a larger map */
 export const minStarLifetime = 10000;
-
-/** A round lasts this long (ms) when there is no round to learn it from */
-const defaultRoundLength = 30000;
 
 /**
  * Stars per round: half the players, rounded up, at most 3 (5 from ten players on)
@@ -46,7 +43,7 @@ export class StarSpawner {
         this.started = true;
 
         const count = starCount(players);
-        const length = this.roundLength();
+        const length = expectedRoundLength(this.game);
 
         for (let index = 0; index < count; index++) {
             // One star in every part of the round, not at the very start nor the end
@@ -58,17 +55,6 @@ export class StarSpawner {
 
             this.timers.add(timer);
         }
-    }
-
-    /** What the rounds so far took (ms), as far as the stars can be spread over it */
-    roundLength(): number {
-        const rounds = this.game.stats.rounds;
-
-        if (rounds.length === 0) {
-            return defaultRoundLength;
-        }
-
-        return Math.max(rounds.reduce((sum, { duration }) => sum + duration, 0) / rounds.length, 10000);
     }
 
     /** Put a star on the map */

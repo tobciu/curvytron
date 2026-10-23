@@ -121,8 +121,10 @@ Spielfeld ab: Nur der Stand ändert sich.
 ### 4.4 Münzen der Mission „Münzjäger"
 
 Die Münzen sind Sammel-Bonis ohne eigene Punkte (wie der Stern ein besonderer Eintrag des Bonus-Registers, nicht wählbar im
-Raum) und liegen nur in einer Runde, in der die Mission gezogen wurde. Sie tauchen auf, sobald die Runde läuft, und bleiben
-liegen, bis sie jemand einsammelt oder die Runde endet.
+Raum) und liegen nur in einer Runde, in der die Mission gezogen wurde. Ein Teil liegt gleich zu Beginn der Runde auf der Karte
+(60 % der Bronzemünzen), die übrigen kommen nach und nach zu zufälligen Zeitpunkten über die Runde dazu, die goldenen eher
+spät (frühestens nach 35 % der erwarteten Rundenlänge, Silber nach 15 %). Eine Münze bleibt liegen, bis sie jemand einsammelt
+oder die Runde endet.
 
 - **Werte und Aussehen**: Bronze (1), Silber (2) und Gold (3), jeweils als Münze mit der Zahl.
 - **Anzahl** nach Spielerzahl: Bronze `⌈1,5 · n⌉` (höchstens 8), Silber `n` (höchstens 6), Gold `⌈n/2⌉` (höchstens 4).

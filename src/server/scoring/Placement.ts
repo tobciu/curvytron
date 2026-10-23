@@ -48,3 +48,19 @@ export function findRiskyPosition(game: Game, radius: number): [number, number] 
 
     return best ?? findFreePosition(game, radius);
 }
+
+/** A round lasts this long (ms) when there is no round to learn it from */
+const defaultRoundLength = 30000;
+
+/**
+ * How long a round lasts (ms), as the rounds so far show: the bonuses of a mode are spread over it
+ */
+export function expectedRoundLength(game: Game): number {
+    const rounds = game.stats.rounds;
+
+    if (rounds.length === 0) {
+        return defaultRoundLength;
+    }
+
+    return Math.max(rounds.reduce((sum, { duration }) => sum + duration, 0) / rounds.length, 10000);
+}

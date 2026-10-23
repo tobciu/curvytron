@@ -76,7 +76,7 @@ describe('the coins', () => {
 });
 
 describe('the mission of the coins', () => {
-    it('puts the coins on the map once the round runs, as many as the players allow', () => {
+    it('puts some bronze coins on the map when the round runs, and the others come one by one', () => {
         startRound(['coinHunter', 'comeback']);
 
         expect(coinsOnMap()).toHaveLength(0);
@@ -86,12 +86,49 @@ describe('the mission of the coins', () => {
 
         const kinds = (Coin) => coinsOnMap().filter((bonus) => bonus instanceof Coin).length;
         const counts = coinCounts(3);
+        const atStart = Math.ceil(counts.bronze * 0.6);
+
+        // At the start only bronze lies there
+        expect([kinds(BonusCoinBronze), kinds(BonusCoinSilver), kinds(BonusCoinGold)]).toEqual([atStart, 0, 0]);
+
+        // The others come over the round, silver and gold included
+        const moments = [];
+
+        game.bonusManager.on('bonus:pop', (bonus) => {
+            if (bonus instanceof BonusCoin) {
+                moments.push(Date.now());
+            }
+        });
+        vi.advanceTimersByTime(40000);
 
         expect([kinds(BonusCoinBronze), kinds(BonusCoinSilver), kinds(BonusCoinGold)]).toEqual([
             counts.bronze,
             counts.silver,
             counts.gold
         ]);
+        expect(moments).toHaveLength(counts.bronze - atStart + counts.silver + counts.gold);
+        expect(new Set(moments).size).toBeGreaterThan(1);
+    });
+
+    it('lets the gold come late, not in the first third of the round', () => {
+        startRound(['coinHunter', 'comeback']);
+        game.update(16);
+
+        const gold = [];
+
+        game.bonusManager.on('bonus:pop', (bonus) => {
+            if (bonus instanceof BonusCoinGold) {
+                gold.push(Date.now() - start);
+            }
+        });
+
+        const start = Date.now();
+
+        vi.advanceTimersByTime(40000);
+
+        expect(gold.length).toBe(coinCounts(3).gold);
+        // The round length of a first round is 30 s: gold comes after 35 % of it
+        expect(Math.min(...gold)).toBeGreaterThanOrEqual(0.35 * 30000 - 1);
     });
 
     it('has no coins in a round without the mission', () => {
@@ -142,7 +179,7 @@ describe('the mission of the coins', () => {
         expect(game.stats.round.get(alice.id).coins).toBe(0);
     });
 
-    it('takes the coins that are left off the map when the round ends', () => {
+    it('takes the coins that are left off the map when the round ends, and no new ones come', () => {
         startRound(['coinHunter', 'comeback']);
         game.update(16);
 
@@ -154,11 +191,15 @@ describe('the mission of the coins', () => {
 
         expect(game.inRound).toBe(false);
         expect(coinsOnMap()).toHaveLength(0);
+
+        vi.advanceTimersByTime(60000);
+        expect(coinsOnMap()).toHaveLength(0);
     });
 
     it('puts the gold close to a border or to a trail', () => {
         startRound(['coinHunter', 'comeback']);
         game.update(16);
+        vi.advanceTimersByTime(40000);
 
         const gold = coinsOnMap().filter((bonus) => bonus instanceof BonusCoinGold);
 
@@ -173,6 +214,7 @@ describe('the mission of the coins', () => {
     it('is told to a player that comes in the middle of the round, with the coins', () => {
         startRound(['coinHunter', 'comeback']);
         game.update(16);
+        vi.advanceTimersByTime(40000);
 
         const addEvents = vi.fn();
 
