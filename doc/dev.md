@@ -42,9 +42,8 @@ of the database, `src/shared/model/StatsApi.ts` the types of the answers (the pa
 
 The four `/api/me` calls need the identity code in the header `X-Identity` (a page of another site can not send it) and are not cached.
 
-The answers are public: names of players who keep out of the lists are `Anonymous`, and the rare special feats
-(`highlightFeats` in `src/shared/model/StatsApi.ts`) are `?` (no id, no text) for everybody but their owner. The common
-ones are not listed, `GET /api/games/:id` only counts them in `hiddenFeats`. A request with the header `X-Identity: <code>` is told its own name and its own
+The answers are public: names of players who keep out of the lists are `Anonymous`, and the special feats of the others are only counted
+(`hiddenFeats` of `GET /api/games/:id`), nothing says what they were or who has them. A request with the header `X-Identity: <code>` is told its own name and its own
 feats and is not cached. 120 requests per minute and address (`apiLimit`), `503` when nothing is kept.
 
 ### Client

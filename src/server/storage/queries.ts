@@ -4,8 +4,7 @@ import type { PlayerCounters } from '../../shared/model/GameResult.ts';
 import type { Feat, PlayerStats, RoundResult } from '../../shared/model/GameStats.ts';
 import {
     anonymous,
-    highlightFeats,
-    secretFeat,
+    retiredFeats,
     type ApiGame,
     type ApiGameDetail,
     type ApiGamePlayer,
@@ -19,6 +18,9 @@ import {
     type LeaderboardBy
 } from '../../shared/model/StatsApi.ts';
 import { addGame, emptyTotals, totalsFromRow, type Totals } from './totals.ts';
+
+/** SQL: the feats that are given today (the retired ones are kept in the games but not counted) */
+const currentFeats = `feat NOT IN (${retiredFeats.map((id) => `'${id}'`).join(', ')})`;
 
 /** The records, in the order they are shown (the texts are in `src/client/content/stats.ts`) */
 export const recordIds = [
@@ -172,7 +174,7 @@ export class StatsQueries {
             const counts = this.db
                 .prepare(
                     `SELECT game_id, COUNT(*) AS feats FROM feats
-                     WHERE game_id IN (${ids.map(() => '?').join(',')}) GROUP BY game_id`
+                     WHERE ${currentFeats} AND game_id IN (${ids.map(() => '?').join(',')}) GROUP BY game_id`
                 )
                 .all(...ids) as Array<{ game_id: number; feats: number }>;
 
@@ -219,21 +221,20 @@ export class StatsQueries {
         const feats: Feat[] = [];
         let hiddenFeats = 0;
         const featRows = this.db
-            .prepare('SELECT round, slot, feat, other_slot FROM feats WHERE game_id = ? ORDER BY round, rowid')
+            .prepare(
+                `SELECT round, slot, feat, other_slot FROM feats WHERE game_id = ? AND ${currentFeats} ORDER BY round, rowid`
+            )
             .all(id) as Array<{ round: number; slot: number; feat: string; other_slot: number | null }>;
 
         for (const feat of featRows) {
             if (mine.has(feat.slot)) {
-                // The owner of a feat knows it already
+                // The owner of a feat knows it already, nobody else is told what it was: the others only get the number
                 feats.push({
                     id: feat.feat,
                     player: feat.slot,
                     round: feat.round,
                     ...(feat.other_slot === null ? {} : { other: feat.other_slot })
                 });
-            } else if (highlightFeats.has(feat.feat)) {
-                // Nobody else is told what a rare feat was
-                feats.push({ id: secretFeat, player: feat.slot, round: feat.round });
             } else {
                 hiddenFeats++;
             }
@@ -378,7 +379,7 @@ export class StatsQueries {
         const feats = this.db
             .prepare(
                 `SELECT f.game_id, f.slot, COUNT(*) AS feats FROM feats f JOIN games g ON g.id = f.game_id
-                 WHERE (?1 IS NULL OR g.tag = ?1) GROUP BY f.game_id, f.slot ORDER BY g.ended_at, g.id, f.slot`
+                 WHERE (?1 IS NULL OR g.tag = ?1) AND f.${currentFeats} GROUP BY f.game_id, f.slot ORDER BY g.ended_at, g.id, f.slot`
             )
             .all(tag) as Array<{ game_id: number; slot: number; feats: number }>;
 
