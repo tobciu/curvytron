@@ -155,6 +155,11 @@ export class Game extends BaseGame {
      * Is tie break
      */
     isTieBreak(): boolean {
+        // Played for rounds or time: the game goes on after the last round only when the score is tied
+        if (this.winCondition !== 'points') {
+            return this.round.last;
+        }
+
         const maxScore = this.maxScore;
 
         return (

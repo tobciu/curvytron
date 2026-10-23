@@ -130,10 +130,13 @@ vorbei, andere ziehen sich), und sie hängt von der Spielerzahl und der Kartengr
 Siegbedingungen:
 
 - **Feste Rundenzahl** (Standard in der Star Chase: 8 Runden, als Startwert): Der Ausgang bleibt bis zum Schluss offen,
-  weil Sterne alles drehen können. Es gilt das Finale. Bei Gleichstand nach der letzten Runde folgt eine Stichrunde
-  unter den Gleichplatzierten.
-- **Zeitlimit** (Standard 15 Minuten): Läuft die Zeit ab, wird die laufende Runde noch zu Ende gespielt, danach endet das
-  Spiel. Die letzte Runde wird vorher angesagt. Die Dauer stimmt unabhängig von Spielerzahl und Rundenlänge, die Zahl der
+  weil Sterne alles drehen können. Es gilt das Finale. Bei Gleichstand nach der letzten Runde folgt eine Stichrunde.
+  In ihr spielen alle mit (die anderen sind Hindernisse), punkten aber nur die Gleichplatzierten, ohne Finale. Bleibt es
+  gleich, folgt die nächste Stichrunde.
+- **Zeitlimit** (Standard 15 Minuten): Eine Runde wird nie abgebrochen. Die letzte Runde ist die erste, die mit weniger
+  Restzeit beginnt, als eine Runde im Schnitt dauert (die bisherigen Runden samt Pausen, am Anfang 60 s plus Pausen). Sie
+  steht beim Start fest und wird angesagt, danach endet das Spiel. Das Finale gilt für sie und für die Runde davor, die mit
+  weniger als zwei Rundenlängen Restzeit beginnt. Die Dauer stimmt unabhängig von Spielerzahl und Rundenlänge, die Zahl der
   Runden liegt nicht fest. Es gilt das Finale. Gleichstand wie bei der festen Rundenzahl.
 - **Punktelimit**: wie heute (`maxScore`), kein Finale. Der Standardwert `(n-1)·10` ergibt für einen durchschnittlichen
   Spieler etwa 20 Runden und ist für 15 Minuten zu hoch. In der Star Chase, wo die Sonderpunkte den Stand zusätzlich
@@ -224,12 +227,17 @@ Der Führende trägt wie bisher einen goldenen Rand (`Game.onRoundNew`), das ble
 
 ### 8.4 Reihenfolge
 
-1. Zähler pro Runde, dazu die Kartengröße pro Runde (beides auch ohne den neuen Modus nützlich).
-2. Interface `ScoringMode`, der klassische Modus dahinter, unverändert und getestet.
-3. Missionen mit Protokoll und Raum-Einstellung.
-4. Missionsanzeige und Overlay zwischen den Runden.
-5. Stern-Item mit Ring-Timer.
-6. Erweiterungen aus Abschnitt 7.
+1. Zähler pro Runde, dazu die Kartengröße pro Runde (beides auch ohne den neuen Modus nützlich). **Erledigt.**
+2. Interface `ScoringMode`, der klassische Modus dahinter, unverändert und getestet; die Siegbedingung getrennt davon
+   (`src/server/scoring`). **Erledigt.**
+3. Raum-Einstellungen für Modus (`room:config:mode`) und Siegbedingung (`room:config:win`) mit Rundenzahl, Zeitlimit,
+   Finale und Stichrunde, in beiden Modi nutzbar. Bisher kennt `scoringModes` nur `classic`: `starchase` wird mit den
+   Missionen eingetragen, mit der Pause von 8 s und den Standardwerten. Die Wahl des Modus hat noch keine Oberfläche, weil
+   es nichts zu wählen gibt. **Erledigt.**
+4. Missionen mit Protokoll.
+5. Missionsanzeige und Overlay zwischen den Runden.
+6. Stern-Item mit Ring-Timer.
+7. Erweiterungen aus Abschnitt 7.
 
 ## 9. Risiken
 

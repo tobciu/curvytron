@@ -14,6 +14,7 @@ const { live: config, bump } = useLive(props.room.config, repository, [
     'config:open',
     'room:config:open',
     'config:max-score',
+    'config:win',
     'config:tag',
     'config:variable',
     'config:bonus'
@@ -110,6 +111,42 @@ function setMaxScore(event: Event): void {
     }
 }
 
+function setWinCondition(event: Event): void {
+    const condition = (event.target as HTMLSelectElement).value;
+
+    if (repository.amIMaster()) {
+        const target = config.value;
+
+        repository.setConfigWin(condition, undefined, (result) => {
+            if ('condition' in result) {
+                target.setWinCondition(result.condition);
+            }
+
+            bump();
+        });
+    }
+}
+
+function setWinValue(condition: 'rounds' | 'minutes', event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    const number = value === '' ? null : Number(value);
+
+    config.value[condition] = number;
+
+    if (repository.amIMaster()) {
+        const target = config.value;
+
+        repository.setConfigWin(condition === 'rounds' ? 'rounds' : 'time', number, (result) => {
+            if ('condition' in result) {
+                target.rounds = result.rounds;
+                target.minutes = result.minutes;
+            }
+
+            bump();
+        });
+    }
+}
+
 function setTag(event: Event): void {
     const input = event.target as HTMLInputElement;
 
@@ -144,8 +181,21 @@ function setVariable(variable: string, event: Event): void {
 <template>
     <div class="row">
         <div class="col-lg-4 max-score">
-            <h2>Victory score</h2>
+            <h2>The game is over</h2>
+            <select
+                id="win-condition"
+                class="form-control"
+                :value="config.winCondition"
+                :disabled="!master"
+                @change="setWinCondition"
+            >
+                <option value="points">at a score</option>
+                <option value="rounds">after rounds</option>
+                <option value="time">after some time</option>
+            </select>
+
             <input
+                v-if="config.winCondition === 'points'"
                 id="max-score"
                 type="number"
                 class="form-control"
@@ -154,6 +204,30 @@ function setVariable(variable: string, event: Event): void {
                 maxlength="3"
                 :disabled="!master"
                 @input="setMaxScore"
+            />
+            <input
+                v-else-if="config.winCondition === 'rounds'"
+                id="win-rounds"
+                type="number"
+                class="form-control"
+                :value="config.rounds"
+                :placeholder="String(config.getRounds())"
+                min="1"
+                max="99"
+                :disabled="!master"
+                @input="setWinValue('rounds', $event)"
+            />
+            <input
+                v-else
+                id="win-minutes"
+                type="number"
+                class="form-control"
+                :value="config.minutes"
+                :placeholder="String(config.getMinutes())"
+                min="1"
+                max="120"
+                :disabled="!master"
+                @input="setWinValue('minutes', $event)"
             />
 
             <div class="room-tag">

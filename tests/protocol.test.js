@@ -198,6 +198,73 @@ describe('the tag of a room', () => {
     });
 });
 
+describe('when the game is over', () => {
+    it('is set by the room master and reaches the room', async () => {
+        const master = { client: await connect() };
+        const guest = { client: await connect() };
+
+        await createRoom('endings', [
+            { ...master, player: 'Alice' },
+            { ...guest, player: 'Bob' }
+        ]);
+
+        const told = guest.client.waitFor('room:config:win');
+
+        expect(await master.client.request('room:config:win', { condition: 'rounds', value: '5' })).toEqual({
+            success: true,
+            condition: 'rounds',
+            maxScore: null,
+            rounds: 5,
+            minutes: null
+        });
+        expect(await told).toMatchObject({ condition: 'rounds', rounds: 5 });
+        // The condition alone keeps the values, null takes the value back to the default
+        expect(await master.client.request('room:config:win', { condition: 'time' })).toMatchObject({
+            condition: 'time',
+            rounds: 5
+        });
+        expect(await master.client.request('room:config:win', { condition: 'rounds', value: null })).toMatchObject({
+            rounds: null
+        });
+        expect(await master.client.request('room:config:win', { condition: 'points', value: 30 })).toMatchObject({
+            condition: 'points',
+            maxScore: 30
+        });
+    });
+
+    it('refuses a condition that does not exist, and a value that is not a number', async () => {
+        const master = { client: await connect() };
+        const guest = { client: await connect() };
+
+        await createRoom('refused', [
+            { ...master, player: 'Alice' },
+            { ...guest, player: 'Bob' }
+        ]);
+
+        expect(await master.client.request('room:config:win', { condition: 'forever' })).toMatchObject({
+            success: false
+        });
+        expect(await master.client.request('room:config:win', { condition: 'rounds', value: 'many' })).toMatchObject({
+            success: false
+        });
+    });
+
+    it('keeps the mode of the room, and knows only the modes that exist', async () => {
+        const master = { client: await connect() };
+
+        await createRoom('modes', [{ ...master, player: 'Alice' }]);
+
+        expect(await master.client.request('room:config:mode', { mode: 'classic' })).toEqual({
+            success: true,
+            mode: 'classic'
+        });
+        expect(await master.client.request('room:config:mode', { mode: 'chaos' })).toEqual({
+            success: false,
+            mode: 'classic'
+        });
+    });
+});
+
 describe('wrong data from the clients', () => {
     const payloads = [
         'null',
@@ -351,6 +418,9 @@ describe('validation of the events', () => {
         ['player:kick', { player: null }],
         ['room:config:open', { open: 'yes' }],
         ['room:config:max-score', { maxScore: {} }],
+        ['room:config:win', { condition: {} }],
+        ['room:config:win', { condition: 'rounds', value: {} }],
+        ['room:config:mode', { mode: 5 }],
         ['room:config:variable', { variable: 5, value: 1 }],
         ['room:config:variable', { variable: 'bonusRate', value: 'x'.repeat(50) }],
         ['room:config:bonus', { bonus: [] }]

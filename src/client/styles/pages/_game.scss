@@ -107,6 +107,23 @@
                 font-size: 116px;
                 font-weight: bold;
             }
+
+            // "3 / 8" and "15 min" are longer than a score
+            &.long span {
+                font-size: 56px;
+                bottom: 8px;
+            }
+
+            .round-note {
+                position: absolute;
+                left: 70px;
+                bottom: 4px;
+                font-size: 13px;
+                line-height: 1;
+                color: #fff;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
         }
 
         h3 {

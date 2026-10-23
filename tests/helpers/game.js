@@ -18,8 +18,10 @@ export function createClient(id) {
 }
 
 /** A room with the given players, and the game created from it (not started). */
-export function createGame(names = ['Alice', 'Bob', 'Carl']) {
+export function createGame(names = ['Alice', 'Bob', 'Carl'], configure = null) {
     const room = new Room('test');
+
+    configure?.(room.config);
     const players = names.map((name, index) => {
         const player = new Player(createClient(index + 1), name, '#ff0000');
 

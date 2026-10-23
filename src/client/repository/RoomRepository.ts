@@ -38,6 +38,8 @@ export class RoomRepository extends EventEmitter {
         this.onConfigOpen = this.onConfigOpen.bind(this);
         this.onConfigMaxScore = this.onConfigMaxScore.bind(this);
         this.onConfigTag = this.onConfigTag.bind(this);
+        this.onConfigMode = this.onConfigMode.bind(this);
+        this.onConfigWin = this.onConfigWin.bind(this);
         this.onConfigVariable = this.onConfigVariable.bind(this);
         this.onConfigBonus = this.onConfigBonus.bind(this);
         this.onKick = this.onKick.bind(this);
@@ -64,6 +66,8 @@ export class RoomRepository extends EventEmitter {
         this.client.on('room:config:open', this.onConfigOpen);
         this.client.on('room:config:max-score', this.onConfigMaxScore);
         this.client.on('room:config:tag', this.onConfigTag);
+        this.client.on('room:config:mode', this.onConfigMode);
+        this.client.on('room:config:win', this.onConfigWin);
         this.client.on('room:config:variable', this.onConfigVariable);
         this.client.on('room:config:bonus', this.onConfigBonus);
         this.client.on('room:launch:start', this.forwardEvent);
@@ -91,6 +95,8 @@ export class RoomRepository extends EventEmitter {
         this.client.off('room:config:open', this.onConfigOpen);
         this.client.off('room:config:max-score', this.onConfigMaxScore);
         this.client.off('room:config:tag', this.onConfigTag);
+        this.client.off('room:config:mode', this.onConfigMode);
+        this.client.off('room:config:win', this.onConfigWin);
         this.client.off('room:config:variable', this.onConfigVariable);
         this.client.off('room:config:bonus', this.onConfigBonus);
         this.client.off('room:launch:start', this.forwardEvent);
@@ -180,6 +186,10 @@ export class RoomRepository extends EventEmitter {
         room.config.setOpen(data.config.open);
         room.config.setPassword(data.config.password);
         room.config.setMaxScore(data.config.maxScore);
+        room.config.setMode(data.config.mode);
+        room.config.setWinCondition(data.config.winCondition);
+        room.config.rounds = data.config.rounds ?? null;
+        room.config.minutes = data.config.minutes ?? null;
 
         for (const variable in data.config.variables) {
             if (Object.hasOwn(data.config.variables, variable)) {
@@ -322,6 +332,20 @@ export class RoomRepository extends EventEmitter {
      */
     setConfigTag(tag: string, callback: Reply<'room:config:tag'>) {
         this.client.addEvent('room:config:tag', { tag: tag.trim() }, callback);
+    }
+
+    /**
+     * Set the way the game is scored
+     */
+    setConfigMode(mode: string, callback: Reply<'room:config:mode'>) {
+        this.client.addEvent('room:config:mode', { mode }, callback);
+    }
+
+    /**
+     * Set when the game is over, and the score, the rounds or the minutes that go with it
+     */
+    setConfigWin(condition: string, value: number | null | undefined, callback: Reply<'room:config:win'>) {
+        this.client.addEvent('room:config:win', { condition, value }, callback);
     }
 
     /**
@@ -494,6 +518,28 @@ export class RoomRepository extends EventEmitter {
 
         this.room.config.setMaxScore(data.maxScore);
         this.emit('config:max-score', { maxScore: data.maxScore });
+    }
+
+    /**
+     * On config mode
+     */
+    onConfigMode(e: ServerEvent<'room:config:mode'>) {
+        this.room.config.setMode(e.detail.mode);
+        this.emit('config:mode', { mode: e.detail.mode });
+    }
+
+    /**
+     * On config win
+     */
+    onConfigWin(e: ServerEvent<'room:config:win'>) {
+        const data = e.detail;
+        const config = this.room.config;
+
+        config.setWinCondition(data.condition);
+        config.setMaxScore(data.maxScore ?? 0);
+        config.rounds = data.rounds;
+        config.minutes = data.minutes;
+        this.emit('config:win', data);
     }
 
     /**

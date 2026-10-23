@@ -33,6 +33,18 @@ test('master changes are synchronized to other players', async ({ browser }) => 
     await alice.locator('#max-score').fill('42');
     await expect(bob.locator('#max-score')).toHaveValue('42');
 
+    // When the game is over: the value that goes with the condition changes with it
+    await expect(bob.locator('#win-condition')).toBeDisabled();
+    await alice.locator('#win-condition').selectOption('rounds');
+    await expect(bob.locator('#win-condition')).toHaveValue('rounds');
+    await expect(bob.locator('#max-score')).toHaveCount(0);
+    await alice.locator('#win-rounds').fill('5');
+    await expect(bob.locator('#win-rounds')).toHaveValue('5');
+    await alice.locator('#win-condition').selectOption('time');
+    await expect(bob.locator('#win-minutes')).toHaveAttribute('placeholder', '15');
+    await alice.locator('#win-condition').selectOption('points');
+    await expect(bob.locator('#max-score')).toHaveValue('42');
+
     // Public / private
     await expect(alice.locator('#is-open')).toHaveClass(/active/);
     await alice.locator('#is-private').click();

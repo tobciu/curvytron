@@ -84,6 +84,21 @@ function onMove({ detail }: { detail: { avatar: Avatar; move: -1 | 0 | 1 | boole
     client.addEvent('player:move', { avatar: detail.avatar.id, move: detail.move ? (detail.move as -1 | 1) : 0 });
 }
 
+/** What the game is played for: the score, the rounds or the minutes */
+const goal = computed(() => {
+    const current = game.value;
+
+    if (!current) {
+        return '';
+    }
+
+    if (current.winCondition === 'rounds') {
+        return `${Math.max(current.round.round, 1)} / ${current.rounds}`;
+    }
+
+    return current.winCondition === 'time' ? `${current.minutes} min` : String(current.maxScore);
+});
+
 function updateBorders(): void {
     borderless.value = Boolean(game.value?.borderless);
 }
@@ -103,6 +118,7 @@ useEvents(repository, ['game:join', 'game:leave', 'game:player'], refreshPlayers
 useEvents(client, ['ready'], bump);
 useEvents(client, ['borderless', 'round:new'], updateBorders);
 useEvents(repository, ['round:new'], onFirstRound);
+useEvents(repository, ['round:info', 'spectate'], bump);
 useEvents(client, ['round:new'], refreshPlayers);
 
 onMounted(() => {
@@ -172,8 +188,11 @@ function backToRoom(): void {
                         ><img id="logo" :src="asset('images/logo.svg')" alt="Curvytron" /> Curvytron</RouterLink
                     >
                 </header>
-                <div class="maxScore">
-                    <i class="icon-trophy"></i><span>{{ game.maxScore }}</span>
+                <div class="maxScore" :class="{ long: game.winCondition !== 'points' }">
+                    <i class="icon-trophy"></i><span>{{ goal }}</span>
+                    <small v-if="game.round.tiebreak" class="round-note">Tie break</small>
+                    <small v-else-if="game.round.last" class="round-note">Last round</small>
+                    <small v-else-if="game.round.finale" class="round-note">Finale: points count twice</small>
                 </div>
                 <h3 :title="game.name">{{ game.name }}</h3>
 

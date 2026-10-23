@@ -249,6 +249,9 @@ export class GameController {
                     inRound: this.game.inRound,
                     rendered: !!this.game.rendered,
                     maxScore: this.game.maxScore,
+                    winCondition: this.game.winCondition,
+                    rounds: this.game.rounds,
+                    minutes: this.game.minutes,
                     size: this.game.size,
                     away: this.game.avatars.items.filter((avatar) => !avatar.present).map((avatar) => avatar.id)
                 }
@@ -276,6 +279,8 @@ export class GameController {
                 events.push(['die', [avatar.id, null, null]]);
             }
         }
+
+        events.push(['round:info', this.game.round]);
 
         if (this.game.inRound) {
             for (i = this.game.bonusManager.bonuses.items.length - 1; i >= 0; i--) {
@@ -482,6 +487,7 @@ export class GameController {
      */
     onRoundNew(data?: unknown) {
         this.socketGroup.addEvent('round:new');
+        this.socketGroup.addEvent('round:info', this.game.round);
     }
 
     /**

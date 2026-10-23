@@ -10,7 +10,12 @@ import { BonusManager } from '../manager/BonusManager.ts';
 import { GameStats } from '../service/GameStats.ts';
 import { metrics } from '../service/Metrics.ts';
 import { buildGameResult, minPlayers } from '../storage/result.ts';
+import { getScoringMode, winConditions } from '../scoring/index.ts';
+import { finaleFactor } from '../../shared/scoring.ts';
+import { defaultRoundTime } from '../scoring/WinCondition.ts';
+import type { ScoringMode, WinCondition } from '../scoring/index.ts';
 import type { Body } from '../core/Body.ts';
+import type { Bonus } from './Bonus/Bonus.ts';
 import type { Room } from './Room.ts';
 import type { Player } from './Player.ts';
 
@@ -32,10 +37,26 @@ export class Game extends BaseGame {
     deathInFrame: boolean;
     /** The players that did not load the game in time are not waited for any more */
     loadingOver: boolean = false;
+    /** How points are given, and when the game is over */
+    scoring: ScoringMode;
+    winRule: WinCondition;
+    /** Rounds that are over */
+    roundsPlayed: number = 0;
+    /** When the first round started (ms), null before */
+    startedAt: number | null = null;
+    /** The last round of the game was played: the game is over, unless the score is tied */
+    finalPlayed: boolean = false;
+    /** The avatars that are tied after the last round: only they score in the tie break */
+    tiebreakers: Set<Avatar> | null = null;
+    /** Points count this many times in the running round (2 in the finale) */
+    scoreFactor: number = 1;
 
     constructor(room: Room) {
         super(room);
 
+        this.scoring = getScoringMode(room.config.mode);
+        this.winRule = winConditions[this.winCondition];
+        this.warmdownTime = this.scoring.warmdownTime;
         this.world = new World(this.size);
         this.deaths = new Collection<Avatar>([], 'id');
         // Before the controller: it sends the statistics when the round ends, after they are updated
@@ -48,10 +69,12 @@ export class Game extends BaseGame {
         this.deathInFrame = false;
 
         this.onPoint = this.onPoint.bind(this);
+        this.onBonusCatch = this.onBonusCatch.bind(this);
         this.saveResult = this.saveResult.bind(this);
 
         // Before the end releases the avatars
         this.on('end', this.saveResult);
+        this.bonusManager.on('bonus:catch', this.onBonusCatch);
 
         let avatar, i;
 
@@ -237,7 +260,7 @@ export class Game extends BaseGame {
      */
     kill(avatar: Avatar, killer: Body | null, score: number) {
         avatar.die(killer);
-        avatar.addScore(score);
+        this.scoring.onKill(this, avatar, score);
         this.deaths.add(avatar);
         this.deathInFrame = true;
     }
@@ -261,6 +284,68 @@ export class Game extends BaseGame {
     }
 
     /**
+     * Give points to an avatar: the finale counts twice, the tie break only for the avatars that are tied
+     */
+    award(avatar: Avatar, points: number) {
+        if (this.tiebreakers && !this.tiebreakers.has(avatar)) {
+            return;
+        }
+
+        avatar.addScore(points * this.scoreFactor);
+    }
+
+    /**
+     * An avatar caught a bonus
+     */
+    onBonusCatch(data: { avatar: Avatar; bonus: Bonus }) {
+        this.scoring.onBonusCatch(this, data.avatar, data.bonus);
+    }
+
+    /**
+     * How long a round takes with its pauses (ms), as the rounds so far show
+     */
+    averageRoundTime(): number {
+        const rounds = this.stats.rounds;
+
+        if (rounds.length === 0) {
+            return defaultRoundTime + this.warmupTime + this.warmdownTime;
+        }
+
+        const total = rounds.reduce((sum, { duration }) => sum + duration, 0);
+
+        return total / rounds.length + this.warmupTime + this.warmdownTime;
+    }
+
+    /**
+     * Where the round that starts now is on the way to the end of the game
+     */
+    planRound() {
+        this.startedAt ??= Date.now();
+
+        const tied = this.finalPlayed ? this.getTiedAvatars() : null;
+        const plan = tied ? { last: true, finale: false } : this.winRule.plan(this);
+
+        this.tiebreakers = tied;
+        this.scoreFactor = plan.finale ? finaleFactor : 1;
+        this.round = { round: this.roundsPlayed + 1, last: plan.last, finale: plan.finale, tiebreak: tied !== null };
+    }
+
+    /**
+     * The avatars with the highest score, when the game is over but they are tied (null when the condition is points:
+     * the game just goes on)
+     */
+    getTiedAvatars(): Set<Avatar> | null {
+        if (this.winCondition === 'points') {
+            return null;
+        }
+
+        const present = this.sortAvatars(this.getPresentAvatars()).items as Avatar[];
+        const top = present[0]?.score;
+
+        return new Set(present.filter(({ score }) => score === top));
+    }
+
+    /**
      * Is done
      */
     isWon(): boolean | Avatar | null {
@@ -273,10 +358,7 @@ export class Game extends BaseGame {
             return true;
         }
 
-        const maxScore = this.maxScore,
-            players = this.avatars.filter(function () {
-                return this.present && this.score >= maxScore;
-            });
+        const players = this.winRule.candidates(this);
 
         if (players.count() === 0) {
             return null;
@@ -328,8 +410,9 @@ export class Game extends BaseGame {
             });
         }
 
+        this.scoring.onRoundEnd(this, winner ?? null);
+
         if (winner) {
-            winner.addScore(Math.max(this.avatars.count() - 1, 1));
             this.roundWinner = winner;
         }
 
@@ -364,6 +447,8 @@ export class Game extends BaseGame {
      */
     override onRoundEnd() {
         this.resolveScores();
+        this.roundsPlayed++;
+        this.finalPlayed ||= this.round.last;
         this.emit('round:end', { winner: this.roundWinner });
     }
 
@@ -372,6 +457,7 @@ export class Game extends BaseGame {
      */
     override onRoundNew() {
         metrics.rounds.inc();
+        this.planRound();
         this.emit('round:new', { game: this });
         super.onRoundNew();
 

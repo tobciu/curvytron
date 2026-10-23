@@ -4,6 +4,7 @@ import type { BaseBonusManager } from '../manager/BaseBonusManager.ts';
 import type { BaseFPSLogger } from '../service/BaseFPSLogger.ts';
 import type { BaseAvatar } from './BaseAvatar.ts';
 import type { BaseRoom } from './BaseRoom.ts';
+import type { RoundInfo, WinConditionId } from '../scoring.ts';
 
 /**
  * BaseGame
@@ -16,6 +17,12 @@ export abstract class BaseGame extends EventEmitter {
     size: number;
     rendered: number | null;
     maxScore: number;
+    /** When the game is over: the score, the number of rounds or the minutes */
+    winCondition: WinConditionId;
+    rounds: number;
+    minutes: number;
+    /** Where the running round is on the way to the end of the game */
+    round: RoundInfo = { round: 0, last: false, finale: false, tiebreak: false };
     fps: BaseFPSLogger;
     started: boolean;
     bonusManager: BaseBonusManager;
@@ -74,6 +81,9 @@ export abstract class BaseGame extends EventEmitter {
         this.size = this.getSize(this.avatars.count());
         this.rendered = null;
         this.maxScore = room.config.getMaxScore();
+        this.winCondition = room.config.winCondition;
+        this.rounds = room.config.getRounds();
+        this.minutes = room.config.getMinutes();
         this.fps = this.createFPSLogger();
         this.started = false;
         this.bonusManager = this.createBonusManager();
@@ -288,7 +298,10 @@ export abstract class BaseGame extends EventEmitter {
             players: this.avatars.map(function () {
                 return this.serialize();
             }).items,
-            maxScore: this.maxScore
+            maxScore: this.maxScore,
+            winCondition: this.winCondition,
+            rounds: this.rounds,
+            minutes: this.minutes
         };
     }
 
