@@ -18,6 +18,8 @@ export interface GameResultPlayer {
     counters: PlayerCounters;
     /** SHA-256 of the identity code of the browser, null when it has none or when it is there twice in the game */
     identity: string | null;
+    /** The tag of the player at the end of the game, a snapshot: it is copied here and not recalculated, a later tag does not rewrite this game */
+    tag: string | null;
 }
 
 export interface GameResultRound {

@@ -93,6 +93,9 @@ export class RoomController extends EventEmitter {
             onColor: function (this: SocketClient, data: any) {
                 controller.onColor(this, data[0], data[1]);
             },
+            onTag: function (this: SocketClient, data: any) {
+                controller.onTag(this, data[0], data[1]);
+            },
             onLeave: function () {
                 controller.onLeave(this);
             },
@@ -263,6 +266,7 @@ export class RoomController extends EventEmitter {
         client.on('room:ready', this.callbacks.onReady);
         client.on('room:color', this.callbacks.onColor);
         client.on('room:name', this.callbacks.onName);
+        client.on('room:tag', this.callbacks.onTag);
         client.on('players:clear', this.onPlayersClear);
         client.canSuspend = () => this.canSuspend(client);
     }
@@ -282,6 +286,7 @@ export class RoomController extends EventEmitter {
         client.removeListener('room:ready', this.callbacks.onReady);
         client.removeListener('room:color', this.callbacks.onColor);
         client.removeListener('room:name', this.callbacks.onName);
+        client.removeListener('room:tag', this.callbacks.onTag);
         client.removeListener('players:clear', this.onPlayersClear);
         client.canSuspend = null;
     }
@@ -509,7 +514,7 @@ export class RoomController extends EventEmitter {
      * On add player to room
      */
     onPlayerAdd(client: SocketClient, data: ClientEvents['player:add']['data'], callback?: Reply<'player:add'>) {
-        if (!isShape(data, { name: rules.string(), color: rules.optional(rules.string(40)) })) {
+        if (!isShape(data, { name: rules.string(), color: rules.optional(rules.string(40)), tag: rules.optional(rules.string(100)) })) {
             return callback?.(invalidData);
         }
 
@@ -537,6 +542,8 @@ export class RoomController extends EventEmitter {
         }
 
         const player = new Player(client, name, color);
+
+        player.setTag(data.tag ?? null);
 
         if (this.room.addPlayer(player)) {
             client.players.add(player);
@@ -639,6 +646,25 @@ export class RoomController extends EventEmitter {
         player.setName(name);
         callback?.({ success: true, name: player.name });
         this.socketGroup.addEvent('player:name', { player: player.id, name: player.name });
+    }
+
+    /**
+     * On player change tag
+     */
+    onTag(client: SocketClient, data: ClientEvents['room:tag']['data'], callback?: Reply<'room:tag'>) {
+        if (!isShape(data, { player: rules.id, tag: rules.optional(rules.string(100)) })) {
+            return callback?.(invalidData);
+        }
+
+        const player = client.players.getById(data.player);
+
+        if (!player) {
+            return callback?.({ success: false });
+        }
+
+        player.setTag(data.tag ?? null);
+        callback?.({ success: true, tag: player.tag });
+        this.socketGroup.addEvent('player:tag', { player: player.id, tag: player.tag });
     }
 
     /**

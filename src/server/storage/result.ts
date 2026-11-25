@@ -59,7 +59,8 @@ export function buildGameResult(game: Game, endedAt: number = Date.now()): GameR
         statsVersion,
         players: stats.players.map((player, index) => {
             const { id, name, color, score, roundsWon, ...counters } = player;
-            const identity = counted.get(id)?.player.client.identityHash ?? null;
+            const countedPlayer = counted.get(id);
+            const identity = countedPlayer?.player.client.identityHash ?? null;
             const once = identity !== null && !identities.has(identity);
 
             if (once) {
@@ -75,7 +76,10 @@ export function buildGameResult(game: Game, endedAt: number = Date.now()): GameR
                 score,
                 roundsWon,
                 counters: counters as PlayerCounters,
-                identity: once ? identity : null
+                identity: once ? identity : null,
+                // The tag as a copy of the tag at the end of the game, not a link: a later change of the tag does not
+                // rewrite this game (and nothing recalculates)
+                tag: countedPlayer?.player.tag ?? null
             };
         }),
         roundResults: all.rounds.map((round) => ({

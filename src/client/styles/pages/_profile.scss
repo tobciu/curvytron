@@ -105,7 +105,19 @@
                     width: 50%;
                     float: left;
                     padding: 0 10px;
+
+                    &.col-full {
+                        width: 100%;
+                    }
                 }
+            }
+
+            .error {
+                display: block;
+                margin-top: 4px;
+                font-size: 13px;
+                line-height: 1.4;
+                color: #b33;
             }
 
             // What the statistics know of this browser

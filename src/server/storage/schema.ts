@@ -93,6 +93,14 @@ export const migrations: readonly string[] = [
     );
 
     CREATE INDEX deaths_game ON deaths(game_id);
+    `,
+    // 5: the free tag of the player (team / product owner): the statistics group by it
+    `
+    ALTER TABLE players ADD COLUMN tag TEXT;
+    `,
+    // 6: the tag of the player as a copy in the game (it is a snapshot, not a statistic: it is written once and never recalculated)
+    `
+    ALTER TABLE game_players ADD COLUMN tag TEXT;
     `
 ];
 

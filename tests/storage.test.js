@@ -36,7 +36,8 @@ function sampleResult(overrides = {}) {
                 score: 21,
                 roundsWon: 2,
                 counters: { kills: 3 },
-                identity: null
+                identity: null,
+                tag: null
             },
             {
                 slot: 1,
@@ -46,7 +47,8 @@ function sampleResult(overrides = {}) {
                 score: 5,
                 roundsWon: 0,
                 counters: { kills: 0 },
-                identity: null
+                identity: null,
+                tag: null
             }
         ],
         roundResults: [
@@ -502,6 +504,29 @@ describe('the result of a game', () => {
             ['Alice', 'hash-1'],
             ['Bob', 'hash-2'],
             ['Carl', null]
+        ]);
+    });
+
+    it('has the tag of the players as a copy, normalized', () => {
+        const { players } = (() => {
+            const created = createGame(['Alice', 'Bob']);
+
+            ({
+                game,
+                avatars: [alice, bob]
+            } = created);
+
+            return created;
+        })();
+
+        players[0].setTag('Team A');
+        players[1].setTag('team-b');
+        startRound();
+        game.emit('round:end', { winner: alice });
+
+        expect(buildGameResult(game).players.map(({ name, tag }) => [name, tag])).toEqual([
+            ['Alice', 'team-a'],
+            ['Bob', 'team-b']
         ]);
     });
 

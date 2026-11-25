@@ -60,6 +60,10 @@ Living list of planned work. Tick items off (`[x]`) when they are merged and add
 - [ ] Replace the remaining `any` (about 580, `tests/quality.test.js` only lets the number go down): the callbacks of the repositories, the fields of `RoomRepository` (they can be null), the messages of the chat, the canvas
 - [x] Operations: the Dockerfile refuses a Node older than 22.18, `/health` (also the Docker health check), a log file (`log.file`), a bug in a game ends that game only (`curvytron_game_errors_total`)
 - [ ] Pin the exact Node version in the Dockerfile and CI (now: the latest 22.x) once the images are tested in CI
-- [ ] **Player tag**: every player chooses a free tag (e.g. team / product owner). Statistics per tag (team leaderboard, games per team…) and, in the end, game modes on top of it. Design: where the tag lives (profile/identity, not the room tag), charset and length, privacy (public lists?), how the stats page groups it
+- [x] **Player tag**: every player chooses a free tag (e.g. team / product owner): it lives in the profile (stored
+  server-side with the identity, `players.tag`), is cleaned like the room tag (lowercase, digits, dashes, max 24),
+  reaches the room and the game (badge next to the name), synced on change; every game stores the tag as a copy
+  (`game_players.tag`, migration 6): it is a snapshot, not a statistic, so a later tag does not rewrite a past game
+- [ ] **Player tag, continued**: statistics per tag (team leaderboard, games per team…), the stats page groups by tag, and, in the end, game modes on top of it. Open design choices: how the stats page groups it, and whether the tag shows in the public lists
 - [x] **Room tag via URL** (`?tag=` query parameter): the room page carries the tag in the url (`#/room/<name>?tag=<tag>`), keeps it in sync as the tag changes (the link is bookmarkable as a favorite), and the master sets it when opening the link
 - [ ] Documentation: network protocol, how to add a bonus

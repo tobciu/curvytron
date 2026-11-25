@@ -1,9 +1,11 @@
 <script setup lang="ts">
-/** The profile link in the header and the side panel to edit the profile (name, color, controls, options). */
+/** The profile link in the header and the side panel to edit the profile (name, color, tag, controls, options). */
 import { onBeforeUnmount, ref } from 'vue';
 import { BasePlayer } from '../../shared/model/BasePlayer.ts';
+import { tagMaxLength } from '../../shared/tag.ts';
 import { useServices } from '../services';
 import { useLive } from '../composables/useEmitter';
+import { statsApi } from '../core/statsApi';
 import ColorPicker from './ColorPicker.vue';
 import IdentityPanel from './IdentityPanel.vue';
 
@@ -16,6 +18,25 @@ const { maxLength: nameMaxLength, colorMaxLength } = BasePlayer as unknown as {
 };
 
 const controls = ref<HTMLInputElement[]>([]);
+const tagInput = ref(model.tag ?? '');
+const tagError = ref('');
+
+/** Blur on the tag input commits it: the profile keeps the normalized tag, the server is told (fire-and-forget). */
+function onTagBlur(): void {
+    model.setTag(tagInput.value);
+    tagInput.value = model.tag ?? '';
+    void saveTag();
+}
+
+async function saveTag(): Promise<void> {
+    tagError.value = '';
+
+    try {
+        await statsApi.setTag(model.tag);
+    } catch {
+        tagError.value = 'Could not save the tag.';
+    }
+}
 
 /** Leave the control inputs once a key was pressed in one of them. */
 function blurControls(): void {
@@ -93,6 +114,20 @@ onBeforeUnmount(() => panel.reset());
                                     @update:model-value="setColor"
                                     @blur="toggle(() => profile.persist())"
                                 />
+                            </div>
+                            <div class="col col-full">
+                                <label for="profile-tag">My tag:</label>
+                                <input
+                                    id="profile-tag"
+                                    v-model="tagInput"
+                                    type="text"
+                                    class="form-control"
+                                    name="tag"
+                                    placeholder="Team, product owner…"
+                                    :maxlength="tagMaxLength"
+                                    @blur="onTagBlur"
+                                />
+                                <small v-if="tagError" class="error">{{ tagError }}</small>
                             </div>
                             <div class="clearfix"></div>
                         </div>

@@ -1,4 +1,5 @@
 import { EventEmitter } from '#event-emitter';
+import { normalizeTag } from '../../shared/tag.ts';
 import { PlayerControl } from '../model/PlayerControl.ts';
 import { BasePlayer } from '../../shared/model/BasePlayer.ts';
 
@@ -9,6 +10,8 @@ export class Profile extends EventEmitter {
     name: any;
     color: any;
     sound: any;
+    /** The free tag of the player (team / product owner): normalized like the room tag, null when there is none */
+    tag: string | null;
     loading: boolean;
     controls: any[];
 
@@ -23,6 +26,7 @@ export class Profile extends EventEmitter {
         this.name = null;
         this.color = null;
         this.sound = true;
+        this.tag = null;
         this.loading = false;
         this.controls = [new PlayerControl(37, 'icon-left-dir'), new PlayerControl(39, 'icon-right-dir')];
 
@@ -48,6 +52,7 @@ export class Profile extends EventEmitter {
             name: this.name,
             color: this.color,
             sound: this.sound,
+            tag: this.tag,
             controls: this.getMapping()
         };
     }
@@ -66,6 +71,10 @@ export class Profile extends EventEmitter {
 
         if (data.sound !== undefined) {
             this.setSound(data.sound);
+        }
+
+        if (data.tag !== undefined) {
+            this.setTag(data.tag);
         }
 
         if (data.controls !== undefined) {
@@ -140,6 +149,18 @@ export class Profile extends EventEmitter {
     setColor(color: string) {
         if (BasePlayer.prototype.validateColor(color)) {
             this.color = color;
+            this.persist();
+        }
+    }
+
+    /**
+     * Set tag (normalized like the room tag, null when there is none)
+     */
+    setTag(tag: unknown) {
+        const normalized = normalizeTag(typeof tag === 'string' ? tag : null);
+
+        if (this.tag !== normalized) {
+            this.tag = normalized;
             this.persist();
         }
     }

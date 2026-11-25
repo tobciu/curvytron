@@ -38,6 +38,28 @@ describe('Profile', () => {
         expect(again.isComplete()).toBeTruthy();
     });
 
+    it('keeps the tag, cleans it, and clears it with an empty string', () => {
+        const profile = new Profile();
+
+        profile.setName('Alice');
+        profile.setColor('#ff0000');
+        profile.setTag('My Team!');
+
+        expect(profile.tag).toBe('my-team');
+
+        const saved = JSON.parse(window.localStorage.getItem('PROFILE'));
+        expect(saved.tag).toBe('my-team');
+
+        const again = new Profile();
+        expect(again.tag).toBe('my-team');
+
+        profile.setTag('   ');
+        expect(profile.tag).toBeNull();
+
+        profile.setTag('  ');
+        expect(profile.tag).toBeNull();
+    });
+
     it('refuses an empty name and an invalid color', () => {
         const profile = new Profile();
 

@@ -75,6 +75,8 @@ export const statsApi = {
     tags: () => get<ApiTags>('tags'),
     me: () => get<ApiMe>('me'),
     setPublic: (shown: boolean) => request<{ success: boolean }>('POST', 'me', {}, { body: { public: shown } }),
+    /** The free tag of the player: the server cleans it. Null clears it. */
+    setTag: (tag: string | null) => request<{ success: boolean }>('POST', 'me', {}, { body: { tag } }),
     /** A new code for the same player: the old one is sent in the header, the new one in the body */
     rotate: (code: string) => request<{ success: boolean }>('POST', 'me/rotate', {}, { body: { code } }),
     forget: () => request<{ success: boolean }>('DELETE', 'me')

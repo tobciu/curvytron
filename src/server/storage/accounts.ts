@@ -1,4 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite';
+import { normalizeTag } from '../../shared/tag.ts';
 import { anonymous, type ApiMe, type ApiMyFeat, type ApiMyTotals } from '../../shared/model/StatsApi.ts';
 import { totalsFromRow } from './totals.ts';
 
@@ -22,8 +23,8 @@ export class Accounts {
 
     /** What the player knows about themselves: their totals and their feats, with the real names of the feats */
     me(hash: string): ApiMe {
-        const player = this.db.prepare('SELECT id, name, public FROM players WHERE identity_hash = ?').get(hash) as
-            { id: number; name: string; public: number } | undefined;
+        const player = this.db.prepare('SELECT id, name, public, tag FROM players WHERE identity_hash = ?').get(hash) as
+            { id: number; name: string; public: number; tag: string | null } | undefined;
 
         if (!player) {
             return { known: false };
@@ -64,6 +65,7 @@ export class Accounts {
             known: true,
             name: player.name,
             public: player.public === 1,
+            tag: player.tag,
             totals: mine,
             feats: feats.map(({ other_name: other, other_public: otherPublic, ...feat }) => ({
                 ...feat,
@@ -82,6 +84,18 @@ export class Accounts {
                  ON CONFLICT(identity_hash) DO UPDATE SET public = excluded.public`
             )
             .run(hash, anonymous, shown ? 1 : 0, now, now);
+    }
+
+    /** The free tag of the player (team / product owner). Works before the first game: the entry is made, the game gives it the name. */
+    setTag(hash: string, tag: string | null): void {
+        const now = Date.now();
+
+        this.db
+            .prepare(
+                `INSERT INTO players (identity_hash, name, tag, created_at, last_seen) VALUES (?, ?, ?, ?, ?)
+                 ON CONFLICT(identity_hash) DO UPDATE SET tag = excluded.tag`
+            )
+            .run(hash, anonymous, normalizeTag(tag), now, now);
     }
 
     /**
@@ -119,7 +133,7 @@ export class Accounts {
         this.db.exec('BEGIN IMMEDIATE');
 
         try {
-            this.db.prepare('UPDATE game_players SET name = ? WHERE player_id = ?').run(anonymous, id);
+            this.db.prepare('UPDATE game_players SET name = ?, tag = NULL WHERE player_id = ?').run(anonymous, id);
             this.db.prepare('DELETE FROM players WHERE id = ?').run(id);
             this.db.exec('COMMIT');
         } catch (error) {
