@@ -23,9 +23,19 @@
     li {
         margin: 0 0 8px;
         padding: 10px 20px;
-        background: transparentize(#fff, 0.95);
+        background: transparentize(#fff, 0.92);
+        border: 1px solid transparentize(#fff, 0.4);
+        border-radius: 6px;
         font-size: 18px;
         font-weight: 300;
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.28);
+    }
+
+    // A very subtle pulse of the glow, for those who are allowed to see it
+    @media (prefers-reduced-motion: no-preference) {
+        li {
+            animation: feat-glow 3.2s ease-in-out infinite alternate;
+        }
     }
 
     .label {
@@ -240,5 +250,16 @@
         tr:hover td {
             background-color: transparentize(#fff, 0.9);
         }
+    }
+}
+
+// A very subtle pulse of the glow of the feats
+@keyframes feat-glow {
+    from {
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.22);
+    }
+
+    to {
+        box-shadow: 0 0 16px rgba(255, 215, 0, 0.48);
     }
 }

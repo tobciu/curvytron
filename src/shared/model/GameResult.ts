@@ -29,6 +29,16 @@ export interface GameResultRound {
     size: number;
 }
 
+export interface GameResultDeath {
+    round: number;
+    /** Slot of the player that died */
+    slot: number;
+    /** Slot of the killer: the one whose trail was hit, null for a border. The dead player itself for its own trail */
+    killer: number | null;
+    /** Milliseconds since the start of the round */
+    time: number;
+}
+
 export interface GameResultFeat {
     round: number;
     /** Slot of the player */
@@ -54,4 +64,5 @@ export interface GameResult {
     players: GameResultPlayer[];
     roundResults: GameResultRound[];
     feats: GameResultFeat[];
+    deaths: GameResultDeath[];
 }

@@ -81,6 +81,17 @@ export interface Feat {
     other?: number;
 }
 
+/** A death of the game: the time is in ms since the start of the round */
+export interface GameDeath {
+    round: number;
+    /** Id of the player that died */
+    id: number;
+    /** Id of the killer: the one whose trail was hit, null for a border. The dead player itself for its own trail */
+    killer: number | null;
+    /** Milliseconds since the start of the round */
+    time: number;
+}
+
 /** How a round ended */
 export interface RoundResult {
     round: number;
@@ -97,4 +108,5 @@ export interface GameStatsData {
     awards: Award[];
     rounds: RoundResult[];
     feats: Feat[];
+    deaths: GameDeath[];
 }

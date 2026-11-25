@@ -18,9 +18,15 @@ export const awardFields: Record<string, keyof PlayerStats> = {
 };
 
 /**
- * Awards that need more than one: a streak of one round is no streak
+ * Awards that need more than one: a streak of one round is no streak, a marathon that does not matter is no marathon
  */
-const awardMinimum: Record<string, number> = { streak: 2 };
+const awardMinimum: Record<string, number> = {
+    streak: 2,
+    // A marathon that stayed under the usual range of the games is not one
+    marathon: 5000,
+    // A runner that did not really go through the gaps is not one
+    gapRunner: 35
+};
 
 /**
  * The awards of a game from the counters of its players: the server gives them when a round ends, and they are worked out
