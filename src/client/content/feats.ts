@@ -26,10 +26,18 @@ export const featInfo: Record<string, FeatInfo> = {
         label: 'Photo finish',
         description: 'Died at the very same moment as the others, nobody won the round.'
     },
+    mutualKill: {
+        label: 'Mutual kill',
+        description: 'Died on the trail of {other} at the same moment as {other} died on this player’s trail.'
+    },
+    cutoff: {
+        label: 'Cut off',
+        description:
+            'Cut {other} off the way: {other} died on this player’s trail or at the border, and this player died shortly after, close to {other}. (Jesko :D)'
+    },
     pacifist: {
         label: 'Pacifist',
-        description:
-            'Won the round without a single kill, two rounds in a row or with five players or more: the others took care of themselves.'
+        description: 'Won the round without a single kill, two rounds in a row.'
     },
     badKarma: {
         label: 'Bad karma',
@@ -42,7 +50,7 @@ export const featInfo: Record<string, FeatInfo> = {
     },
     bonusRush: {
         label: 'Bonus rush',
-        description: 'Caught three bonuses within five seconds.'
+        description: 'Caught three bonuses within four seconds.'
     },
     daredevil: {
         label: 'Daredevil',

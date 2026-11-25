@@ -81,6 +81,18 @@ export const migrations: readonly string[] = [
     // 3: the size of the map in a round (0 for the rounds before it was kept), to set the length of a game from real rounds
     `
     ALTER TABLE rounds ADD COLUMN size INTEGER NOT NULL DEFAULT 0;
+    `,
+    // 4: the deaths of the games: one row per death (the time is in ms since the start of the round)
+    `
+    CREATE TABLE deaths (
+        game_id       INTEGER NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+        round         INTEGER NOT NULL,
+        slot          INTEGER NOT NULL,
+        killer_slot   INTEGER,
+        time_ms       INTEGER NOT NULL
+    );
+
+    CREATE INDEX deaths_game ON deaths(game_id);
     `
 ];
 

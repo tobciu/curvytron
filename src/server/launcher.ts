@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { Server } from './core/Server.ts';
 import { teeConsole } from './service/FileLog.ts';
 import { createStorage } from './storage/index.ts';
+import { scoringModes, setEnabledScoringModes } from '../shared/scoring.ts';
 
 const rootDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const dev = process.argv.includes('--dev');
@@ -45,6 +46,25 @@ async function createDevMiddleware() {
 
 const config = await loadConfig();
 const packageInfo = JSON.parse(await readFile(path.join(rootDirectory, 'package.json'), 'utf8'));
+
+/**
+ * The modes behind the toggle, from the environment: `ENABLED_SCORING_MODES=classic,starchase`.
+ * The one in the code (`enabledScoringModes` in `shared/scoring.ts`) is the default.
+ */
+const envModes = (process.env.ENABLED_SCORING_MODES ?? '')
+    .split(',')
+    .map((mode) => mode.trim())
+    .filter(Boolean);
+if (envModes.length) {
+    const known = new Set<string>(scoringModes);
+    const unknown = envModes.filter((mode) => !known.has(mode));
+
+    if (unknown.length) {
+        console.warn('Unknown ENABLED_SCORING_MODES entries (ignored): %s', unknown.join(', '));
+    }
+
+    setEnabledScoringModes(envModes);
+}
 
 if (config.log?.file) {
     try {

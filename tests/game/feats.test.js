@@ -3,7 +3,7 @@ import { AvatarBody } from '../../src/server/core/AvatarBody.ts';
 import { BonusSelfFast } from '../../src/server/model/Bonus/BonusSelfFast.ts';
 import { BonusSelfSmall } from '../../src/server/model/Bonus/BonusSelfSmall.ts';
 import { BonusSelfSlow } from '../../src/server/model/Bonus/BonusSelfSlow.ts';
-import { createGame } from '../helpers/game.js';
+import { createGame, place } from '../helpers/game.js';
 
 let game;
 let alice;
@@ -177,6 +177,18 @@ describe('feats', () => {
         expect(feats('photoFinish').map(({ player }) => player)).toEqual([bob.id, carl.id]);
     });
 
+    it('gives a photo finish for deaths that are close together, not one after the other', () => {
+        startRound();
+        crash(alice);
+        vi.advanceTimersByTime(200);
+        crash(bob);
+        vi.advanceTimersByTime(200);
+        crash(carl);
+        endRound(null);
+
+        expect(feats('photoFinish').map(({ player }) => player)).toEqual([bob.id, carl.id]);
+    });
+
     it('gives no photo finish when the last two died one after the other, or somebody won', () => {
         startRound();
         crash(alice);
@@ -187,6 +199,111 @@ describe('feats', () => {
         endRound(null);
 
         expect(ids()).not.toContain('photoFinish');
+    });
+
+    it('gives a mutual kill to the two players that die on each other’s trails at the same moment', () => {
+        startRound();
+        crash(alice, bob);
+        crash(bob, alice);
+        endRound(null);
+
+        expect(feats('mutualKill')).toEqual([
+            { id: 'mutualKill', player: alice.id, round: 1, other: bob.id },
+            { id: 'mutualKill', player: bob.id, round: 1, other: alice.id }
+        ]);
+    });
+
+    it('gives a mutual kill when the deaths are close together, but not when they are far apart', () => {
+        startRound();
+        crash(alice, bob);
+        vi.advanceTimersByTime(200);
+        crash(bob, alice);
+        endRound(null);
+
+        expect(feats('mutualKill').map(({ player }) => player)).toEqual([alice.id, bob.id]);
+
+        startRound();
+        crash(alice, bob);
+        vi.advanceTimersByTime(300);
+        crash(bob, alice);
+        endRound(null);
+
+        expect(feats('mutualKill')).toHaveLength(2);
+    });
+
+    it('gives a cut off when somebody dies on this player’s trail and this player dies shortly after', () => {
+        startRound();
+        place(alice, 45, 45);
+        place(bob, 47, 45);
+        crash(bob, alice);
+        vi.advanceTimersByTime(1000);
+        crash(alice);
+        endRound(null);
+
+        expect(feats('cutoff')).toEqual([{ id: 'cutoff', player: alice.id, round: 1, other: bob.id }]);
+    });
+
+    it('gives a cut off when somebody dies at the border and this player dies shortly after', () => {
+        startRound();
+        place(alice, 45, 45);
+        place(bob, 47, 45);
+        crash(bob);
+        vi.advanceTimersByTime(1000);
+        crash(alice);
+        endRound(null);
+
+        expect(feats('cutoff')).toEqual([{ id: 'cutoff', player: alice.id, round: 1, other: bob.id }]);
+    });
+
+    it('gives no cut off when the giver and the victim are far apart at the victim’s death', () => {
+        startRound();
+        place(alice, 10, 10);
+        place(bob, 80, 80);
+        crash(bob, alice);
+        vi.advanceTimersByTime(1000);
+        crash(alice);
+        endRound(null);
+
+        expect(ids()).not.toContain('cutoff');
+    });
+
+    it('gives no cut off when the last death was on somebody else’s trail, or when this player dies too late', () => {
+        startRound();
+        place(alice, 45, 45);
+        place(bob, 47, 45);
+        crash(bob, carl);
+        vi.advanceTimersByTime(1000);
+        crash(alice);
+
+        expect(ids()).not.toContain('cutoff');
+
+        startRound();
+        place(alice, 45, 45);
+        place(bob, 47, 45);
+        crash(bob, alice);
+        vi.advanceTimersByTime(2000);
+        crash(alice);
+        endRound(null);
+
+        expect(ids()).not.toContain('cutoff');
+    });
+
+    it('gives a cut off once per victim in the round', () => {
+        startRound();
+        place(alice, 45, 45);
+        place(bob, 47, 45);
+        place(carl, 46, 47);
+        crash(bob, alice);
+        vi.advanceTimersByTime(500);
+        crash(carl, alice);
+        vi.advanceTimersByTime(500);
+        crash(alice);
+        endRound(null);
+
+        expect(feats('cutoff')).toEqual([
+            { id: 'cutoff', player: alice.id, round: 1, other: bob.id },
+            { id: 'cutoff', player: alice.id, round: 1, other: carl.id }
+        ]);
     });
 
     it('gives a pacifist the second win in a row without a kill, not the first', () => {
@@ -224,13 +341,20 @@ describe('feats', () => {
         expect(ids()).not.toContain('pacifist');
     });
 
-    it('gives a pacifist the first win without a kill with five players', () => {
+    it('gives no pacifist on the first win without a kill with five players, only the two in a row', () => {
         playGame(5);
+
         startRound();
         game.avatars.items.filter((avatar) => avatar !== alice).forEach((avatar) => crash(avatar));
         endRound(alice);
 
-        expect(feats('pacifist')).toEqual([{ id: 'pacifist', player: alice.id, round: 1 }]);
+        expect(ids()).not.toContain('pacifist');
+
+        startRound();
+        game.avatars.items.filter((avatar) => avatar !== alice).forEach((avatar) => crash(avatar));
+        endRound(alice);
+
+        expect(feats('pacifist')).toEqual([{ id: 'pacifist', player: alice.id, round: 2 }]);
     });
 
     it('gives bad karma for dying soon after a bonus that is bad for you', () => {
@@ -320,7 +444,28 @@ describe('feats', () => {
         expect(feats('timesUp')).toHaveLength(1);
     });
 
-    it('gives a bonus rush for three bonuses within five seconds', () => {
+    it('gives a bonus rush for three bonuses within four seconds', () => {
+        startRound();
+
+        const catchBonus = () => {
+            game.bonusManager.add(new BonusSelfSmall(50, 50));
+            alice.setPosition(50, 50);
+            game.bonusManager.testCatch(alice);
+        };
+
+        catchBonus();
+        vi.advanceTimersByTime(1500);
+        catchBonus();
+
+        expect(ids()).not.toContain('bonusRush');
+
+        vi.advanceTimersByTime(1500);
+        catchBonus();
+
+        expect(feats('bonusRush')).toEqual([{ id: 'bonusRush', player: alice.id, round: 1 }]);
+    });
+
+    it('gives no bonus rush when the third bonus comes too late', () => {
         startRound();
 
         const catchBonus = () => {
@@ -332,13 +477,10 @@ describe('feats', () => {
         catchBonus();
         vi.advanceTimersByTime(2000);
         catchBonus();
-
-        expect(ids()).not.toContain('bonusRush');
-
-        vi.advanceTimersByTime(2000);
+        vi.advanceTimersByTime(2500);
         catchBonus();
 
-        expect(feats('bonusRush')).toEqual([{ id: 'bonusRush', player: alice.id, round: 1 }]);
+        expect(ids()).not.toContain('bonusRush');
     });
 
     it('gives a daredevil for three close calls within three seconds', () => {

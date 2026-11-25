@@ -57,6 +57,10 @@ function sampleResult(overrides = {}) {
             { round: 1, slot: 0, feat: 'cleanSweep' },
             { round: 2, slot: 1, feat: 'revenge', other: 0 }
         ],
+        deaths: [
+            { round: 1, slot: 1, killer: 0, time: 3000 },
+            { round: 2, slot: 0, killer: null, time: 5000 }
+        ],
         ...overrides
     };
 }
@@ -74,7 +78,7 @@ describe('the schema', () => {
                 .prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
                 .all()
                 .map(({ name }) => name)
-        ).toEqual(['feats', 'game_players', 'games', 'player_totals', 'players', 'rounds']);
+        ).toEqual(['deaths', 'feats', 'game_players', 'games', 'player_totals', 'players', 'rounds']);
     });
 
     it('refuses a database of a newer version than the server knows', () => {
@@ -153,6 +157,10 @@ describe('the SQLite storage', () => {
         expect(storage.db.prepare('SELECT round, slot, feat, other_slot FROM feats').all()).toEqual([
             { round: 1, slot: 0, feat: 'cleanSweep', other_slot: null },
             { round: 2, slot: 1, feat: 'revenge', other_slot: 0 }
+        ]);
+        expect(storage.db.prepare('SELECT round, slot, killer_slot, time_ms FROM deaths').all()).toEqual([
+            { round: 1, slot: 1, killer_slot: 0, time_ms: 3000 },
+            { round: 2, slot: 0, killer_slot: null, time_ms: 5000 }
         ]);
     });
 
@@ -404,6 +412,11 @@ describe('the result of a game', () => {
         expect(result.players[0].counters).toMatchObject({ kills: 2 });
         expect(result.players[0].counters).not.toHaveProperty('name');
         expect(result.feats).toContainEqual({ round: 1, slot: 0, feat: 'doubleKill' });
+        // Both deaths: Bob and Carl on the trail of Alice, with the time in ms since the start of the round
+        expect(result.deaths).toEqual([
+            { round: 1, slot: 1, killer: 0, time: expect.any(Number) },
+            { round: 1, slot: 2, killer: 0, time: expect.any(Number) }
+        ]);
         expect(result.endedAt - result.startedAt).toBeGreaterThanOrEqual(1000);
     });
 

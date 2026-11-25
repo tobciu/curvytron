@@ -234,6 +234,33 @@ describe('near misses', () => {
 
         expect(game.stats.getAwards()).toContainEqual({ id: 'closeCall', player: alice.id, value: 1 });
     });
+
+    it('gives a marathon and a gap runner only from the minimum, not before', () => {
+        startRound();
+
+        const players = game.stats.players;
+        players.get(alice.id).distance = 4999;
+        players.get(alice.id).gapRuns = 34;
+        players.get(bob.id).distance = 5000;
+        players.get(bob.id).gapRuns = 35;
+        players.get(carl.id).distance = 4998;
+        players.get(carl.id).gapRuns = 33;
+
+        const awards = game.stats.getAwards();
+
+        expect(awards.find((award) => award.id === 'marathon')).toMatchObject({ player: bob.id, value: 5000 });
+        expect(awards.find((award) => award.id === 'gapRunner')).toMatchObject({ player: bob.id, value: 35 });
+
+        for (const player of players.values()) {
+            player.distance = 4999;
+            player.gapRuns = 34;
+        }
+
+        const again = game.stats.getAwards();
+
+        expect(again.find((award) => award.id === 'marathon')).toBeUndefined();
+        expect(again.find((award) => award.id === 'gapRunner')).toBeUndefined();
+    });
 });
 
 describe('squeezes and rounds', () => {
@@ -345,7 +372,6 @@ describe('gap runs', () => {
         game.update(16);
 
         expect(stats(alice).gapRuns).toBe(1);
-        expect(game.stats.getAwards()).toContainEqual({ id: 'gapRunner', player: alice.id, value: 1 });
     });
 
     it('does not count where there is no gap, nor the gap of the player itself', () => {

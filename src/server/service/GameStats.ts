@@ -8,7 +8,7 @@ import { Feats, isNearWall } from './Feats.ts';
 import { coinValue, isSpecialBonus } from '../../shared/bonuses.ts';
 import { harmfulBonuses } from '../../shared/missions.ts';
 import { computeAwards } from '../../shared/awards.ts';
-import type { Award, GameStatsData, PlayerStats, RoundCounters, RoundResult } from '../../shared/model/GameStats.ts';
+import type { Award, GameDeath, GameStatsData, PlayerStats, RoundCounters, RoundResult } from '../../shared/model/GameStats.ts';
 
 /**
  * Between two positions of an avatar, a larger distance is a teleport (borderless, new round)
@@ -60,6 +60,8 @@ export class GameStats {
     wallAt: Map<number, number> = new Map();
     /** Special feats of the game, they are hidden until they happen */
     feats: Feats = new Feats();
+    /** Deaths of the game so far, one entry per death */
+    deaths: GameDeath[] = [];
     /** Rounds in a row that an avatar has won right now */
     streaks: Map<number, number> = new Map();
     /** Last number given to a gap */
@@ -467,7 +469,8 @@ export class GameStats {
         const grave =
             data.killer !== null && data.killer.id !== data.avatar.id && this.feats.isGraveKill(data.killer, time);
 
-        this.feats.die(data.avatar, data.killer, time);
+        this.feats.die(data.avatar, data.killer, time, this.positions);
+        this.deaths.push({ round: this.rounds.length + 1, id: data.avatar.id, killer: data.killer?.id ?? null, time });
         this.deathOrder.push(data.avatar.id);
         this.wallAt.delete(data.avatar.id);
         this.boostAt.delete(data.avatar.id);
@@ -640,7 +643,8 @@ export class GameStats {
             })),
             awards: this.getAwards(),
             rounds: this.rounds,
-            feats: this.feats.feats
+            feats: this.feats.feats,
+            deaths: this.deaths
         };
     }
 }

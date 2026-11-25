@@ -7,6 +7,8 @@ export const featIds = [
     'doubleKill',
     'revenge',
     'photoFinish',
+    'mutualKill',
+    'cutoff',
     'pacifist',
     'badKarma',
     'earlyExit',
@@ -33,14 +35,23 @@ const karmaWindow = 2000;
 const karmaBonuses = new Set(['BonusSelfFast', 'BonusSelfRandom']);
 
 /** The last players of a round that die this close to each other (ms) died at the same moment */
-const photoFinishWindow = 50;
+const photoFinishWindow = 250;
+
+/** Two players that die on each other's trail this close together (ms) killed each other at the same moment */
+const mutualKillWindow = 250;
+
+/** Dying this soon (ms) after somebody died on this avatar's trail or at the border is a cut off */
+const cutoffWindow = 1500;
+
+/** How close (units) the giver and the victim must be at the moment of the victim's death */
+const cutoffDistance = 30;
 
 /** Dying this soon (ms) after the invincibility ended is no luck, it is bad timing */
 const timesUpWindow = 500;
 
 /** This many bonuses within this much time (ms) */
 const bonusRushCount = 3;
-const bonusRushWindow = 5000;
+const bonusRushWindow = 4000;
 
 /** This many close calls within this much time (ms) */
 const daredevilCount = 3;
@@ -72,9 +83,6 @@ const minPlayers = 3;
 /** With fewer players than this, a revenge is too easy: there are not enough players to get lost between */
 const revengePlayers = 5;
 
-/** A pacifist needs two rounds in a row, unless there are this many players: then it is hard to stay out */
-const pacifistPlayers = 5;
-
 /**
  * Special feats: things that happen in a round and are not counted by the statistics. They are hidden: nobody tells
  * what they are, the players see them when they happen, at the end of the round and of the game.
@@ -95,7 +103,7 @@ export class Feats {
     killers: Map<number, number> = new Map();
     previousKillers: Map<number, number> = new Map();
     /** When (ms since the start of the round) the avatars died, in the order of the deaths */
-    deaths: Array<{ id: number; time: number }> = [];
+    deaths: Array<{ id: number; time: number; killer: number | null; distances: Map<number, number> }> = [];
     lastKill: Map<number, number> = new Map();
     /** When an avatar caught a bonus that is bad for it */
     badCatches: Map<number, number> = new Map();
@@ -129,10 +137,20 @@ export class Feats {
     }
 
     /**
-     * Somebody died: `killer` is the one whose trail was hit, null for a border, the avatar itself for its own trail
+     * Somebody died: `killer` is the one whose trail was hit, null for a border, the avatar itself for its own trail.
+     * `positions` is the position of every participant at the moment of the death, which is used to check that the
+     * giver and the victim are close together (the cut off).
      */
-    die(avatar: Avatar, killer: Avatar | null, time: number) {
-        this.deaths.push({ id: avatar.id, time });
+    die(avatar: Avatar, killer: Avatar | null, time: number, positions: Map<number, [number, number]> = new Map()) {
+        const distances = new Map<number, number>();
+
+        for (const [id, [x, y]] of positions) {
+            if (id !== avatar.id) {
+                distances.set(id, Math.hypot(x - avatar.x, y - avatar.y));
+            }
+        }
+
+        this.deaths.push({ id: avatar.id, time, killer: killer?.id ?? null, distances });
 
         const caught = this.badCatches.get(avatar.id);
 
@@ -151,6 +169,33 @@ export class Feats {
         } else if (time <= rookieWindow) {
             // A border or the own trail, right at the start
             this.give('rookieMistake', avatar.id);
+        }
+
+        this.endCutoffs(avatar, time);
+    }
+
+    /**
+     * Cut someone off the way: they died on this avatar's trail or at the border, and this avatar died shortly after
+     */
+    private endCutoffs(avatar: Avatar, time: number) {
+        for (const death of this.deaths) {
+            if (death.id === avatar.id || time - death.time > cutoffWindow) {
+                continue;
+            }
+
+            // The victim died on this avatar's trail (the trail of the avatar) or on a border of the game
+            if (death.killer !== avatar.id && death.killer !== null) {
+                continue;
+            }
+
+            // The giver and the victim must be close together at the moment of the victim's death
+            const distance = death.distances.get(avatar.id);
+
+            if (distance === undefined || distance > cutoffDistance) {
+                continue;
+            }
+
+            this.give('cutoff', avatar.id, death.id);
         }
     }
 
@@ -254,7 +299,7 @@ export class Feats {
                 }
             }
 
-            this.endPacifist(winner, players);
+            this.endPacifist(winner);
 
             this.endFirstDeaths();
         }
@@ -262,6 +307,8 @@ export class Feats {
         if (players < minPlayers) {
             this.lastPacifist = null;
         }
+
+        this.endMutualKills();
 
         if (!winner && this.deaths.length >= 2) {
             const last = Math.max(...this.deaths.map(({ time }) => time));
@@ -277,19 +324,37 @@ export class Feats {
         this.rounds++;
     }
 
-    /** Winning without a kill: it takes a streak of rounds, or enough players to make it hard to stay out */
-    private endPacifist(winner: Avatar | null, players: number) {
+    /** Winning without a kill: it takes a streak of two rounds in a row */
+    private endPacifist(winner: Avatar | null) {
         if (!winner || this.kills.get(winner.id)) {
             this.lastPacifist = null;
 
             return;
         }
 
-        if (players >= pacifistPlayers || this.lastPacifist === winner.id) {
+        if (this.lastPacifist === winner.id) {
             this.give('pacifist', winner.id);
         }
 
         this.lastPacifist = winner.id;
+    }
+
+    /** Two players that die on each other's trail at the same moment killed each other */
+    private endMutualKills() {
+        for (const { id: a, time: timeA } of this.deaths) {
+            for (const { id: b, time: timeB } of this.deaths) {
+                if (a === b || Math.abs(timeA - timeB) > mutualKillWindow) {
+                    continue;
+                }
+
+                if (this.killers.get(a) !== b || this.killers.get(b) !== a) {
+                    continue;
+                }
+
+                this.give('mutualKill', a, b);
+                this.give('mutualKill', b, a);
+            }
+        }
     }
 
     /** Whoever is the first to die, round after round */

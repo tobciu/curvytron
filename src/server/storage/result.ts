@@ -97,6 +97,13 @@ export function buildGameResult(game: Game, endedAt: number = Date.now()): GameR
                           ...(feat.other === undefined ? {} : { other: slotOf(feat.other) ?? undefined })
                       }
                   ];
+        }),
+        deaths: all.deaths.flatMap((death) => {
+            const slot = slotOf(death.id);
+
+            return slot === null
+                ? []
+                : [{ round: death.round, slot, killer: slotOf(death.killer), time: death.time }];
         })
     };
 }

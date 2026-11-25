@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { computeAwards } from '../../shared/awards.ts';
 import type { PlayerCounters } from '../../shared/model/GameResult.ts';
-import type { Feat, PlayerStats, RoundResult } from '../../shared/model/GameStats.ts';
+import type { Feat, GameDeath, PlayerStats, RoundResult } from '../../shared/model/GameStats.ts';
 import {
     anonymous,
     retiredFeats,
@@ -231,6 +231,18 @@ export class StatsQueries {
             )
             .all(id) as Array<{ round: number; slot: number; feat: string; other_slot: number | null }>;
 
+        const deaths: GameDeath[] = [];
+        const deathRows = this.db
+            .prepare(`SELECT round, slot, killer_slot, time_ms FROM deaths WHERE game_id = ? ORDER BY round, time_ms, rowid`)
+            .all(id) as Array<{ round: number; slot: number; killer_slot: number | null; time_ms: number }>;
+
+        for (const death of deathRows) {
+            // Same rule as the feats: a death is told to the player that died, the others only get the numbers
+            if (mine.has(death.slot)) {
+                deaths.push({ round: death.round, id: death.slot, killer: death.killer_slot ?? null, time: death.time_ms });
+            }
+        }
+
         for (const feat of featRows) {
             if (mine.has(feat.slot)) {
                 // The owner of a feat knows it already, nobody else is told what it was: the others only get the number
@@ -247,7 +259,7 @@ export class StatsQueries {
 
         return {
             ...this.toGame(game, this.playersOf([id], viewer).get(id) ?? [], featRows.length),
-            stats: { players, awards: computeAwards(players), rounds, feats },
+            stats: { players, awards: computeAwards(players), rounds, feats, deaths },
             hiddenFeats
         };
     }

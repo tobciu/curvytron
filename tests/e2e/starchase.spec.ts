@@ -1,7 +1,11 @@
 import { expect, test } from '@playwright/test';
+import { isScoringModeEnabled } from '../../src/shared/scoring';
 import { addLocalPlayer, createRoom, openPlayer, readyAll, roomName } from './helpers';
 
 test('Star Chase: shows the missions during the round and what everybody got after it', async ({ browser }) => {
+    // Star Chase is behind the feature toggle: the room settings hide the mode, so the test cannot select it
+    test.skip(!isScoringModeEnabled('starchase'), 'Star Chase is behind the feature toggle');
+
     const name = roomName('starchase');
     const alice = await openPlayer(browser, 'Alice', { color: '#ff0000' });
 

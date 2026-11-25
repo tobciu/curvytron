@@ -4,6 +4,39 @@
 export const scoringModes = ['classic', 'starchase'] as const;
 export type ScoringModeId = (typeof scoringModes)[number];
 
+/**
+ * Feature toggle for the modes that are still in development: a disabled mode is hidden from the
+ * room settings and rejected by the server, the room stays in the classic one.
+ * Flip a mode here to publish it, or set the `ENABLED_SCORING_MODES` environment variable
+ * (comma-separated, e.g. `classic,starchase`) to override the list at runtime.
+ */
+export const enabledScoringModes: readonly ScoringModeId[] = ['classic'];
+
+/** The runtime override, set by the server at launch (from the environment) and by the page at runtime (from `server:info`) */
+let runtimeModes: readonly ScoringModeId[] | null = null;
+
+/**
+ * Override the enabled modes. Unknown ids are dropped; an empty list keeps the default.
+ * Called by the server at launch (`ENABLED_SCORING_MODES`) and by the client (`server:info`).
+ */
+export function setEnabledScoringModes(modes: unknown): void {
+    const list = Array.isArray(modes)
+        ? modes.filter((mode): mode is ScoringModeId => typeof mode === 'string' && (scoringModes as readonly string[]).includes(mode))
+        : [];
+
+    runtimeModes = list.length ? [...new Set(list)] : null;
+}
+
+/** The modes that are enabled: the runtime override, or the default */
+export function getEnabledScoringModes(): readonly ScoringModeId[] {
+    return runtimeModes ?? enabledScoringModes;
+}
+
+/** Is this mode ready for players? */
+export function isScoringModeEnabled(mode: unknown): boolean {
+    return getEnabledScoringModes().includes(mode as ScoringModeId);
+}
+
 export const defaultScoringMode: ScoringModeId = 'classic';
 
 /** The ways a game can be over: the first to reach a score, after a number of rounds, or after some time */

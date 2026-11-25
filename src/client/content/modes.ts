@@ -1,5 +1,9 @@
+import { computed, ref } from 'vue';
+import { getEnabledScoringModes, setEnabledScoringModes, type ScoringModeId } from '../../shared/scoring';
+
 /**
- * The game modes, for the rules page. A new mode is one more entry here: it gets its own card.
+ * The game modes, for the rules page and the room settings.
+ * A new mode is one more entry here: it gets its own card, and is enabled with the toggle in shared/scoring.ts.
  */
 export interface GameMode {
     id: string;
@@ -10,7 +14,7 @@ export interface GameMode {
     rules: readonly string[];
 }
 
-export const gameModes: readonly GameMode[] = [
+const allGameModes: readonly GameMode[] = [
     {
         id: 'classic',
         name: 'Classic',
@@ -37,3 +41,34 @@ export const gameModes: readonly GameMode[] = [
         ]
     }
 ];
+
+/**
+ * The modes ready for players: the toggle hides the ones still in development.
+ * The server tells the page which modes it has enabled (`server:info`), before anything renders:
+ * the settings and the rules page mirror what the server allows. Until then (and before the server
+ * says anything) the default of `shared/scoring.ts` is used.
+ */
+const enabled = ref<ScoringModeId[]>([...getEnabledScoringModes()]);
+
+/** Apply the modes the server announced (`server:info`) */
+export function setClientEnabledModes(modes: ScoringModeId[]): void {
+    setEnabledScoringModes(modes);
+    enabled.value = [...getEnabledScoringModes()];
+}
+
+/**
+ * Apply what the server announced through `server:info`.
+ * The client emitter wraps the payload in a DOM-like event (`{ type, detail }`), the server sends the payload itself.
+ */
+export function applyServerInfo(event: unknown): void {
+    const wrapped = event as { detail?: { enabledModes?: unknown } } | null;
+    const modes = wrapped?.detail?.enabledModes ?? (event as { enabledModes?: unknown } | null)?.enabledModes;
+
+    if (Array.isArray(modes)) {
+        setClientEnabledModes(modes.filter((mode): mode is ScoringModeId => typeof mode === 'string'));
+    }
+}
+
+export const gameModes = computed<readonly GameMode[]>(() =>
+    allGameModes.filter((mode) => enabled.value.includes(mode.id as ScoringModeId))
+);

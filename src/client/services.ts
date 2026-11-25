@@ -1,5 +1,6 @@
 import { inject, type App, type InjectionKey } from 'vue';
 import { SocketClient } from './core/SocketClient.ts';
+import { applyServerInfo } from './content/modes.ts';
 import { Profile } from './service/Profile.ts';
 import { SoundManager } from './service/SoundManager.ts';
 import { ActivityWatcher } from './service/ActivityWatcher.ts';
@@ -28,6 +29,10 @@ export const servicesKey: InjectionKey<Services> = Symbol('services');
 /** Instantiate and wire the services (opens the socket to the server). */
 export function createServices(): Services {
     const client = new SocketClient();
+
+    // The server tells the page which modes are enabled (before the settings or the rules render)
+    client.on('server:info', applyServerInfo);
+
     const profile = new Profile();
     const profilePanel = new ProfilePanel(profile as unknown as T.Profile);
     const sound = new SoundManager(profile);

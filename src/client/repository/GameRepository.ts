@@ -433,8 +433,12 @@ export class GameRepository extends EventEmitter {
         }
 
         for (let i = this.game.avatars.items.length - 1; i >= 0; i--) {
-            this.game.avatars.items[i].local = true;
-            this.game.avatars.items[i].ready = true;
+            const avatar = this.game.avatars.items[i];
+
+            // A spectator's avatars must not become local just because the round is
+            // running: the local flag belongs to the players of this page
+            avatar.local = Boolean(avatar.player?.local);
+            avatar.ready = true;
         }
 
         for (const id of data.away) {

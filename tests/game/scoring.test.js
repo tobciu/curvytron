@@ -215,3 +215,49 @@ describe('the random numbers of the modes', () => {
         expect(Math.max(...numbers)).toBeGreaterThan(0.9);
     });
 });
+
+describe('the feature toggle of the modes', () => {
+    it('keeps a disabled mode on the classic rule set', async () => {
+        const { getScoringMode } = await import('../../src/server/scoring/index.ts');
+        const { classicMode } = await import('../../src/server/scoring/ClassicMode.ts');
+        const { starChaseMode } = await import('../../src/server/scoring/StarChaseMode.ts');
+        const { enabledScoringModes, defaultScoringMode } = await import('../../src/shared/scoring.ts');
+
+        expect(enabledScoringModes).not.toContain('starchase');
+
+        // A mode behind the toggle cannot be played with its own rules: it is scored by the classic one
+        expect(getScoringMode('starchase')).toBe(classicMode);
+        expect(getScoringMode('starchase')).not.toBe(starChaseMode);
+
+        // The default and the only enabled mode is the classic one
+        expect(getScoringMode(defaultScoringMode)).toBe(classicMode);
+    });
+
+    it('follows the runtime override that the server sets at launch', async () => {
+        const { getScoringMode } = await import('../../src/server/scoring/index.ts');
+        const { classicMode } = await import('../../src/server/scoring/ClassicMode.ts');
+        const { starChaseMode } = await import('../../src/server/scoring/StarChaseMode.ts');
+        const { getEnabledScoringModes, isScoringModeEnabled, setEnabledScoringModes } = await import(
+            '../../src/shared/scoring.ts'
+        );
+
+        setEnabledScoringModes(['classic', 'starchase']);
+        expect(getEnabledScoringModes()).toEqual(['classic', 'starchase']);
+        expect(isScoringModeEnabled('starchase')).toBe(true);
+        expect(getScoringMode('starchase')).toBe(starChaseMode);
+
+        // Unknown ids are dropped; an empty list falls back to the default
+        setEnabledScoringModes(['starchase', 'chaos', 42]);
+        expect(getEnabledScoringModes()).toEqual(['starchase']);
+        expect(getScoringMode('starchase')).toBe(starChaseMode);
+
+        setEnabledScoringModes(['chaos']);
+        expect(getEnabledScoringModes()).toEqual(['classic']);
+        expect(isScoringModeEnabled('starchase')).toBe(false);
+        expect(getScoringMode('starchase')).toBe(classicMode);
+
+        // Unknown argument, no crash
+        setEnabledScoringModes(undefined);
+        expect(getEnabledScoringModes()).toEqual(['classic']);
+    });
+});

@@ -21,6 +21,7 @@ export class SqliteStorage implements Storage {
     insertPlayer: StatementSync;
     insertRound: StatementSync;
     insertFeat: StatementSync;
+    insertDeath: StatementSync;
     upsertIdentity: StatementSync;
     selectTotals: StatementSync;
     writeTotals: StatementSync;
@@ -58,6 +59,9 @@ export class SqliteStorage implements Storage {
             );
             this.insertFeat = this.db.prepare(
                 'INSERT INTO feats (game_id, round, slot, feat, other_slot) VALUES (?, ?, ?, ?, ?)'
+            );
+            this.insertDeath = this.db.prepare(
+                'INSERT INTO deaths (game_id, round, slot, killer_slot, time_ms) VALUES (?, ?, ?, ?, ?)'
             );
             this.upsertIdentity = this.db.prepare(
                 `INSERT INTO players (identity_hash, name, created_at, last_seen) VALUES (?, ?, ?, ?)
@@ -138,6 +142,10 @@ export class SqliteStorage implements Storage {
 
             for (const feat of result.feats) {
                 this.insertFeat.run(id, feat.round, feat.slot, feat.feat, feat.other ?? null);
+            }
+
+            for (const death of result.deaths) {
+                this.insertDeath.run(id, death.round, death.slot, death.killer, death.time);
             }
 
             this.db.exec('COMMIT');

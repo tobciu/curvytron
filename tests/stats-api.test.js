@@ -56,6 +56,7 @@ function result(overrides = {}) {
             { round: 1, slot: 0, feat: 'cleanSweep' },
             { round: 2, slot: 1, feat: 'revenge', other: 0 }
         ],
+        deaths: [],
         ...overrides
     };
 }

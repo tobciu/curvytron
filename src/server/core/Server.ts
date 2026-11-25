@@ -8,6 +8,7 @@ import { SocketClient } from './SocketClient.ts';
 import { RoomRepository } from '../repository/RoomRepository.ts';
 import { Collection } from '../../shared/Collection.ts';
 import { metrics } from '../service/Metrics.ts';
+import { getEnabledScoringModes } from '../../shared/scoring.ts';
 import type { Room } from '../model/Room.ts';
 import type { Storage } from '../storage/Storage.ts';
 import { createStatsApi } from './StatsApi.ts';
@@ -204,6 +205,7 @@ export class Server extends EventEmitter {
         if (session) {
             session.tab = tab;
             session.resume(socket, ip);
+            this.sendRuntimeInfo(session);
             console.info('Client %s is back.', session.id);
 
             return;
@@ -219,8 +221,14 @@ export class Server extends EventEmitter {
         metrics.connections.inc();
         this.roomsController.attach(client);
         this.emit('client', client);
+        this.sendRuntimeInfo(client);
 
         console.info('Client %s connected.', client.id);
+    }
+
+    /** Tell the page which modes are enabled: the room settings and the rules page mirror the runtime toggle */
+    sendRuntimeInfo(client: SocketClient) {
+        client.addEvent('server:info', { enabledModes: [...getEnabledScoringModes()] });
     }
 
     /**
