@@ -198,6 +198,55 @@ describe('the tag of a room', () => {
     });
 });
 
+describe('the tag of a player', () => {
+    it('is set by the owner of the player and reaches the room', async () => {
+        const master = { client: await connect() };
+        const guest = { client: await connect() };
+
+        const ids = await createRoom('tagged', [
+            { ...master, player: 'Alice' },
+            { ...guest, player: 'Bob' }
+        ]);
+
+        const aliceId = ids[0];
+        const inRoom = guest.client.waitFor('player:tag');
+
+        expect(await master.client.request('room:tag', { player: aliceId, tag: 'Daily Runde' })).toEqual({
+            success: true,
+            tag: 'daily-runde'
+        });
+        expect(await inRoom).toMatchObject({ player: aliceId, tag: 'daily-runde' });
+
+        // The tag is cleaned and can be cleared
+        expect(await master.client.request('room:tag', { player: aliceId, tag: '' })).toEqual({
+            success: true,
+            tag: null
+        });
+    });
+
+    it('is refused for a player that is not owned by the caller', async () => {
+        const master = { client: await connect() };
+        const guest = { client: await connect() };
+
+        const ids = await createRoom('tagged', [
+            { ...master, player: 'Alice' },
+            { ...guest, player: 'Bob' }
+        ]);
+
+        const bobId = ids[1];
+
+        expect(await master.client.request('room:tag', { player: bobId, tag: 'x' })).toEqual({ success: false });
+    });
+
+    it('is a no-op for a player that is not in the room', async () => {
+        const master = { client: await connect() };
+
+        await createRoom('tagged', [{ ...master, player: 'Alice' }]);
+
+        expect(await master.client.request('room:tag', { player: 404, tag: 'x' })).toEqual({ success: false });
+    });
+});
+
 describe('when the game is over', () => {
     it('is set by the room master and reaches the room', async () => {
         const master = { client: await connect() };
@@ -304,6 +353,7 @@ describe('wrong data from the clients', () => {
         '[["player:add",{},1]]',
         '[["player:add",{"name":5},1]]',
         '[["player:add",{"name":"x","color":5},1]]',
+        '[["player:add",{"name":"x","tag":5},1]]',
         '[["player:remove",null,1]]',
         '[["player:kick",null,1]]',
         '[["room:ready",null,1]]',
@@ -313,6 +363,8 @@ describe('wrong data from the clients', () => {
         '[["room:name",{"player":"a","name":5},1]]',
         '[["room:color",null,1]]',
         '[["room:color",{"player":1,"color":{}},1]]',
+        '[["room:tag",null,1]]',
+        '[["room:tag",{"player":"a","tag":5},1]]',
         '[["room:config:open",null,1]]',
         '[["room:config:max-score",null,1]]',
         '[["room:config:max-score",{"maxScore":"abc"},1]]',
@@ -417,6 +469,7 @@ describe('validation of the events', () => {
         ['player:add', null],
         ['player:add', { name: 5 }],
         ['player:add', { name: 'x', color: 5 }],
+        ['player:add', { name: 'x', tag: 5 }],
         ['player:add', { name: 'x'.repeat(500) }],
         ['player:remove', { player: 'a' }],
         ['player:remove', { player: -1 }],
@@ -424,6 +477,8 @@ describe('validation of the events', () => {
         ['room:ready', { player: 1.5 }],
         ['room:name', { player: 1, name: 5 }],
         ['room:color', { player: 1, color: {} }],
+        ['room:tag', { player: 1, tag: 5 }],
+        ['room:tag', { player: 1, tag: 'x'.repeat(101) }],
         ['player:kick', { player: null }],
         ['room:config:open', { open: 'yes' }],
         ['room:config:max-score', { maxScore: {} }],

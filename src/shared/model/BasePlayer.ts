@@ -1,4 +1,5 @@
 import { EventEmitter } from '#event-emitter';
+import { normalizeTag } from '../tag.ts';
 import type { BaseAvatar } from './BaseAvatar.ts';
 import type { PlayerData } from '../protocol.ts';
 
@@ -12,6 +13,8 @@ export abstract class BasePlayer extends EventEmitter {
     ready: boolean;
     id: number | null;
     avatar: BaseAvatar | null;
+    /** The free tag of the player (team / product owner), normalized like the room tag: null when there is none */
+    tag: string | null;
 
     /**
      * Max length for name
@@ -35,6 +38,14 @@ export abstract class BasePlayer extends EventEmitter {
         this.ready = ready !== undefined && ready;
         this.id = null;
         this.avatar = null;
+        this.tag = null;
+    }
+
+    /**
+     * Set the tag (normalized like the room tag). The caller may pass whatever is in the input.
+     */
+    setTag(tag: string | null | undefined) {
+        this.tag = normalizeTag(tag ?? null);
     }
 
     /**
@@ -102,7 +113,8 @@ export abstract class BasePlayer extends EventEmitter {
             id: this.id,
             name: this.name,
             color: this.color,
-            ready: this.ready
+            ready: this.ready,
+            tag: this.tag
         };
     }
 

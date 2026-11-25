@@ -86,6 +86,15 @@ The `DATABASE_FILE` environment variable takes precedence over `file`.
 - The room master can give the room a **tag** in the room settings (`daily`, `launch`), at any time: the games of the room
   are stored with the tag it has when they end, so that they can be grouped later. The tag is also carried by the url of
   the room (`#/room/<name>?tag=<tag>`): the link can be saved as a favorite, and it sets the tag when the master opens it.
+- Every player can give themselves a free **tag** in the profile (Player fieldset, after the color): the team, the product
+  owner, whatever the player needs. The tag lives in the browser profile and in the server next to the identity (`players.tag`,
+  migration 5), is cleaned like the room tag (lowercase, digits, dashes, max 24), and is sent with the name and color to the
+  room: it is shown as a badge next to the name in the room and in the game. The tag is kept in the room from the moment the
+  profile changes it (not just at the end of a game), and it does not enter the public lists (leaderboard, records, games);
+  the ones who hide their identity stay out.
+- At the end of a game, the tag of every player is stored as a **copy** in the game (`game_players.tag`, migration 6): a
+  snapshot, not a link — a later change of the tag does neither rewrite the past game nor recalculate any statistic. The
+  copy goes with the name when the identity is deleted.
 
 **Metrics:**
 

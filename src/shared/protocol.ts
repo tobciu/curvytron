@@ -49,6 +49,8 @@ export interface PlayerData {
     name: string;
     color: string;
     ready: boolean;
+    /** The free tag of the player (team / product owner), or null when there is none */
+    tag?: string | null;
     /** Is the client of the player active (its window has the focus)? */
     active?: boolean;
     /** Is the player connected? A player whose connection dropped stays in the game until it ends */
@@ -108,11 +110,18 @@ export interface ClientEvents {
             | { success: false; error?: string };
     };
     'room:leave': { data: void; reply: void };
-    'player:add': { data: { name: string; color?: string | null }; reply: Result };
+    'player:add': {
+        data: { name: string; color?: string | null; tag?: string | null };
+        reply: Result;
+    };
     'player:remove': { data: { player: number }; reply: Result };
     'player:kick': { data: { player: number }; reply: Failure | (Result & { kicked: boolean }) };
     'room:ready': { data: { player: number }; reply: Failure | (Result & { ready?: boolean }) };
     'room:name': { data: { player: number; name: string }; reply: Failure | (Result & { name?: string }) };
+    'room:tag': {
+        data: { player: number; tag: string | null };
+        reply: Failure | (Result & { tag?: string | null });
+    };
     'room:color': { data: { player: number; color: string }; reply: Failure | (Result & { color?: string }) };
     'room:talk': { data: string; reply: Result };
     'room:config:open': {
@@ -174,6 +183,7 @@ export interface ServerEvents {
     'room:game:start': void;
     'player:ready': { player: number; ready: boolean };
     'player:name': { player: number; name: string };
+    'player:tag': { player: number; tag: string | null };
     'player:color': { player: number; color: string };
     /** A player lost the connection (`online: false`) or came back */
     'player:connection': { player: number; online: boolean };

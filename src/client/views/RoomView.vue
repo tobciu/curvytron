@@ -144,7 +144,7 @@ onBeforeRouteLeave((to) => {
 
 // Events:
 
-const roomEvents = ['player:leave', 'player:ready', 'player:color', 'player:name', 'client:activity'];
+const roomEvents = ['player:leave', 'player:ready', 'player:color', 'player:name', 'player:tag', 'client:activity'];
 
 useEvents(repository, roomEvents, () => bump());
 useEvents(repository, ['room:close'], goHome);
@@ -172,12 +172,12 @@ onBeforeUnmount(leaveRoom);
 
 // Players:
 
-function addPlayer(playerName: string | null = username.value, color: string | null = null): void {
+function addPlayer(playerName: string | null = username.value, color: string | null = null, tag: string | null = null): void {
     if (!playerName) {
         return;
     }
 
-    repository.addPlayer(playerName, color, (result: { success: boolean; error?: string }) => {
+    repository.addPlayer(playerName, color, tag, (result: { success: boolean; error?: string }) => {
         if (result.success) {
             username.value = '';
         } else {
@@ -232,6 +232,26 @@ function setName(player: Player): void {
 
             if (player.profile) {
                 profile.setName(player.name);
+            }
+
+            bump();
+        });
+    }
+}
+
+function setTag(player: Player): void {
+    if (player.local) {
+        repository.setTag(player.id, player.tag, (result: { success: boolean; error?: string; tag?: string | null }) => {
+            if (!result.success) {
+                console.error('Could not set the tag of %s: %s', player.name, result.error ?? 'Unknown error');
+
+                if (result.tag !== undefined) {
+                    player.tag = result.tag;
+                }
+            }
+
+            if (player.profile) {
+                profile.setTag(player.tag as string | null);
             }
 
             bump();
@@ -319,7 +339,7 @@ function addProfileUser(): void {
         profile.on('change', updateProfile);
         waitingForPlayer = true;
         waitingTimer = setTimeout(stopWaitingForPlayer, 3000);
-        addPlayer(profile.name, profile.color);
+        addPlayer(profile.name, profile.color, profile.tag as string | null);
     }
 }
 
@@ -339,6 +359,11 @@ function updateProfile(): void {
         if (profile.color !== player.color) {
             player.setColor(profile.color as string);
             setColor(player);
+        }
+
+        if (profile.tag !== player.tag) {
+            player.setTag(profile.tag as string | null);
+            setTag(player);
         }
 
         setProfileControls(player);
@@ -543,6 +568,7 @@ void onFail;
                                     :maxlength="nameMaxLength"
                                     @blur="setName(player)"
                                 />
+                                <p v-if="player.tag" class="player-tag">#{{ player.tag }}</p>
                             </td>
                             <td class="col-color">
                                 <ColorPicker
@@ -595,6 +621,7 @@ void onFail;
                             </td>
                             <td class="col-player">
                                 <p class="player-name">{{ player.name }}</p>
+                                <p v-if="player.tag" class="player-tag">#{{ player.tag }}</p>
                             </td>
                             <td class="col-color">
                                 <span class="line-color-preview" :style="{ backgroundColor: player.color }"></span>

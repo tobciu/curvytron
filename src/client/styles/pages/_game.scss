@@ -226,6 +226,15 @@
                     padding-right: 115px;
                 }
 
+                .player-tag {
+                    display: block;
+                    font-size: 11px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    opacity: 0.75;
+                }
+
                 // Connection lost, or not in the round: the score is kept
                 &.away {
                     opacity: 0.4;

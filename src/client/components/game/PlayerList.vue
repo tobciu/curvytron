@@ -93,6 +93,7 @@ useEvents(client, ['die'], ({ detail }) => {
                 avatar.roundScore ? `+${avatar.roundScore}` : ''
             }}</span>
             <span class="player-name" :title="avatar.name">{{ avatar.name }}</span>
+            <span v-if="avatar.player.tag" class="player-tag" :title="avatar.player.tag">#{{ avatar.player.tag }}</span>
             <span v-if="leads(avatar)" class="mission-star" title="Leads a mission">★</span>
             <span :id="`avatar-score-${avatar.id}`" class="score">{{ avatar.score }}</span>
         </div>

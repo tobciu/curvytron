@@ -276,25 +276,26 @@ describe('RoomRepository', () => {
         expect(left).toHaveBeenCalledTimes(1);
     });
 
-    it('applies player color, name and ready updates', () => {
+    it('applies player color, name, tag and ready updates', () => {
         room.join('arena', null, vi.fn());
         client.answer('room:join', structuredClone(roomPayload));
 
         const updates: string[] = [];
 
-        for (const name of ['player:color', 'player:name', 'player:ready']) {
+        for (const name of ['player:color', 'player:name', 'player:tag', 'player:ready']) {
             room.on(name, () => updates.push(name));
         }
 
         client.receive('player:color', { player: 10, color: '#ffdd00' });
         client.receive('player:name', { player: 10, name: 'Alicia' });
+        client.receive('player:tag', { player: 10, tag: 'beta-team' });
         client.receive('player:ready', { player: 10, ready: false });
-        client.receive('player:color', { player: 404, color: '#000000' });
+        client.receive('player:tag', { player: 404, tag: 'nobody' });
 
         const alice = room.room.players.getById(10);
 
-        expect([alice?.color, alice?.name, alice?.ready]).toEqual(['#ffdd00', 'Alicia', false]);
-        expect(updates).toEqual(['player:color', 'player:name', 'player:ready']);
+        expect([alice?.color, alice?.name, alice?.tag, alice?.ready]).toEqual(['#ffdd00', 'Alicia', 'beta-team', false]);
+        expect(updates).toEqual(['player:color', 'player:name', 'player:tag', 'player:ready']);
     });
 
     it('mirrors configuration changes', () => {
@@ -403,14 +404,19 @@ describe('RoomRepository', () => {
     it('sends player management events', () => {
         const callback = vi.fn();
 
-        room.addPlayer('A very long player name that exceeds the limit', '#ff0000'.repeat(5), callback);
+        room.addPlayer('A very long player name that exceeds the limit', '#ff0000'.repeat(5), null, callback);
 
         expect(client.last('player:add').data.name).toHaveLength(Player.maxLength);
         expect(client.last('player:add').data.color).toHaveLength(Player.colorMaxLength);
+        expect(client.last('player:add').data.tag).toBeNull();
 
-        room.addPlayer('Short', null, callback);
+        room.addPlayer('Short', null, null, callback);
 
-        expect(client.last('player:add').data).toEqual({ name: 'Short', color: null });
+        expect(client.last('player:add').data).toEqual({ name: 'Short', color: null, tag: null });
+
+        room.addPlayer('With tag', '#00ff00', 'Beta Team!', callback);
+
+        expect(client.last('player:add').data).toEqual({ name: 'With tag', color: '#00ff00', tag: 'Beta Team!' });
 
         const bob = new Player(11, new Client(2), 'Bob', '#00ff00', false);
 
@@ -456,6 +462,14 @@ describe('RoomRepository', () => {
         room.setConfigBonus('accel', callback);
 
         expect(client.last('room:config:bonus').data).toEqual({ bonus: 'accel' });
+
+        room.setTag(10, 'Beta Team!', callback);
+
+        expect(client.last('room:tag').data).toEqual({ player: 10, tag: 'Beta Team!' });
+
+        room.setTag(10, null, callback);
+
+        expect(client.last('room:tag').data).toEqual({ player: 10, tag: null });
     });
 
     it('keeps the player color when setting it fails', () => {

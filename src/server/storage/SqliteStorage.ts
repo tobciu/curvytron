@@ -51,8 +51,8 @@ export class SqliteStorage implements Storage {
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             );
             this.insertPlayer = this.db.prepare(
-                `INSERT INTO game_players (game_id, slot, player_id, name, color, rank, score, rounds_won, stats_json)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                `INSERT INTO game_players (game_id, slot, player_id, name, color, rank, score, rounds_won, stats_json, tag)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             );
             this.insertRound = this.db.prepare(
                 'INSERT INTO rounds (game_id, round, winner_slot, duration_ms, size) VALUES (?, ?, ?, ?, ?)'
@@ -132,7 +132,8 @@ export class SqliteStorage implements Storage {
                     player.rank,
                     player.score,
                     player.roundsWon,
-                    JSON.stringify(player.counters)
+                    JSON.stringify(player.counters),
+                    player.tag
                 );
             }
 

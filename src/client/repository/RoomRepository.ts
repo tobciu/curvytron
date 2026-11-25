@@ -35,6 +35,7 @@ export class RoomRepository extends EventEmitter {
         this.onPlayerReady = this.onPlayerReady.bind(this);
         this.onPlayerColor = this.onPlayerColor.bind(this);
         this.onPlayerName = this.onPlayerName.bind(this);
+        this.onPlayerTag = this.onPlayerTag.bind(this);
         this.onConfigOpen = this.onConfigOpen.bind(this);
         this.onConfigMaxScore = this.onConfigMaxScore.bind(this);
         this.onConfigTag = this.onConfigTag.bind(this);
@@ -62,6 +63,7 @@ export class RoomRepository extends EventEmitter {
         this.client.on('player:ready', this.onPlayerReady);
         this.client.on('player:color', this.onPlayerColor);
         this.client.on('player:name', this.onPlayerName);
+        this.client.on('player:tag', this.onPlayerTag);
         this.client.on('player:connection', this.onPlayerConnection);
         this.client.on('room:config:open', this.onConfigOpen);
         this.client.on('room:config:max-score', this.onConfigMaxScore);
@@ -91,6 +93,7 @@ export class RoomRepository extends EventEmitter {
         this.client.off('player:ready', this.onPlayerReady);
         this.client.off('player:color', this.onPlayerColor);
         this.client.off('player:name', this.onPlayerName);
+        this.client.off('player:tag', this.onPlayerTag);
         this.client.off('player:connection', this.onPlayerConnection);
         this.client.off('room:config:open', this.onConfigOpen);
         this.client.off('room:config:max-score', this.onConfigMaxScore);
@@ -176,6 +179,7 @@ export class RoomRepository extends EventEmitter {
                     data.players[i].ready
                 );
 
+                player.setTag(data.players[i].tag ?? null);
                 player.online = data.players[i].online !== false;
                 room.addPlayer(player);
             } else {
@@ -247,12 +251,13 @@ export class RoomRepository extends EventEmitter {
     /**
      * Add player
      */
-    addPlayer(name: string, color: any, callback: (...args: any[]) => any) {
+    addPlayer(name: string, color: any, tag: string | null, callback: (result: { success: boolean; error?: string }) => void) {
         this.client.addEvent(
             'player:add',
             {
                 name: name.substring(0, Player.maxLength),
-                color: color ? color.substring(0, Player.colorMaxLength) : null
+                color: color ? color.substring(0, Player.colorMaxLength) : null,
+                tag: tag ? tag.substring(0, 100) : null
             },
             callback
         );
@@ -311,6 +316,13 @@ export class RoomRepository extends EventEmitter {
         name = name.substring(0, Player.maxLength).trim();
 
         this.client.addEvent('room:name', { player, name }, callback);
+    }
+
+    /**
+     * Set tag
+     */
+    setTag(player: number, tag: string | null, callback: (result: { success: boolean; error?: string; tag?: string | null }) => void) {
+        this.client.addEvent('room:tag', { player, tag }, callback);
     }
 
     /**
@@ -405,6 +417,7 @@ export class RoomRepository extends EventEmitter {
                 data.player.ready
             );
 
+        player.setTag(data.player.tag ?? null);
         player.online = data.player.online !== false;
 
         if (this.room.addPlayer(player)) {
@@ -471,6 +484,19 @@ export class RoomRepository extends EventEmitter {
         if (player) {
             player.setName(data.name);
             this.emit('player:name', { player });
+        }
+    }
+
+    /**
+     * On player change tag
+     */
+    onPlayerTag(e: ServerEvent<'player:tag'>) {
+        const data = e.detail,
+            player = this.room.players.getById(data.player);
+
+        if (player) {
+            player.setTag(data.tag ?? null);
+            this.emit('player:tag', { player });
         }
     }
 

@@ -198,13 +198,29 @@ export function createStatsApi(storage: Storage | null): Router {
             return;
         }
 
-        const { public: shown } = (request.body ?? {}) as { public?: unknown };
+        const body = (request.body ?? {}) as { public?: unknown; tag?: unknown };
+        const { public: shown, tag } = body;
 
-        if (typeof shown !== 'boolean') {
+        if (shown === undefined && tag === undefined) {
+            return fail(response, 400, 'Say what to change.');
+        }
+
+        if (shown !== undefined && typeof shown !== 'boolean') {
             return fail(response, 400, 'Say whether to show you in the lists.');
         }
 
-        accounts().setPublic(hash, shown);
+        if (tag !== undefined && tag !== null && typeof tag !== 'string') {
+            return fail(response, 400, 'Not a tag.');
+        }
+
+        if (shown !== undefined) {
+            accounts().setPublic(hash, shown);
+        }
+
+        if (tag !== undefined) {
+            accounts().setTag(hash, tag);
+        }
+
         response.json({ success: true });
     });
 

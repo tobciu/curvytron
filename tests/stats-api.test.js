@@ -22,6 +22,7 @@ function player(name, slot, rank, extra = {}) {
         roundsWon: 3 - rank,
         counters: { kills: 0, wallDeaths: 1 },
         identity: codes[name.toLowerCase()] ? hashIdentity(codes[name.toLowerCase()]) : null,
+        tag: null,
         ...extra
     };
 }
@@ -177,6 +178,34 @@ describe('the games', () => {
         expect(game.feats).toBe(1);
         expect(game.hiddenFeats).toBe(1);
         expect(queries.listGames({ limit: 10, before: null, tag: null }).games[0].feats).toBe(1);
+    });
+
+    it('stores the tag of a player in the game as a copy, not a link: a later tag does not rewrite it', () => {
+        storage.saveGame(
+            result({
+                players: [
+                    player('Alice', 0, 1, { tag: 'team-a', counters: { kills: 4 } }),
+                    player('Bob', 1, 2),
+                    player('Carl', 2, 3)
+                ]
+            })
+        );
+
+        expect(
+            storage.db.prepare('SELECT slot, tag FROM game_players WHERE game_id = 1 ORDER BY slot').all()
+        ).toEqual([
+            { slot: 0, tag: 'team-a' },
+            { slot: 1, tag: null },
+            { slot: 2, tag: null }
+        ]);
+
+        // A later change of the tag does not rewrite the game (nor the stats)
+        storage.accounts.setTag(hashIdentity(codes.alice), 'team-b');
+
+        expect(storage.db.prepare('SELECT tag FROM game_players WHERE game_id = 1 AND slot = 0').get()).toEqual({
+            tag: 'team-a'
+        });
+        expect(storage.accounts.me(hashIdentity(codes.alice))).toMatchObject({ tag: 'team-b' });
     });
 
     it('is nothing when there is no such game', () => {
@@ -477,6 +506,23 @@ describe('the entry of a player', () => {
         expect(queries.leaderboard('games', null).entries.map(({ name }) => name)).toContain('Dora');
     });
 
+    it('keeps the free tag of a player, even before their first game, and cleans it', () => {
+        const dora = hashIdentity('dora-code-0123456789ab');
+
+        storage.accounts.setTag(dora, 'My Team!');
+
+        expect(storage.accounts.me(dora)).toMatchObject({ known: true, tag: 'my-team' });
+
+        // The tag survives the first game and is cleared with a null
+        storage.saveGame(result({ players: [player('Dora', 0, 1, { identity: dora }), player('Bob', 1, 2)] }));
+
+        expect(storage.accounts.me(dora)).toMatchObject({ name: 'Dora', tag: 'my-team' });
+
+        storage.accounts.setTag(dora, null);
+
+        expect(storage.accounts.me(dora)).toMatchObject({ tag: null });
+    });
+
     it('gives the same player a new code, with their history, and the old code is worth nothing', () => {
         const fresh = hashIdentity('alice-new-code-0123456789');
 
@@ -501,6 +547,17 @@ describe('the entry of a player', () => {
     });
 
     it('forgets a player: entry and totals are gone, the games stay without their name', () => {
+        // A third game, with the tag of the players as a copy
+        storage.saveGame(
+            result({
+                players: [
+                    player('Alice', 0, 1, { tag: 'team-a' }),
+                    player('Bob', 1, 2, { tag: 'team-b' }),
+                    player('Carl', 2, 3)
+                ]
+            })
+        );
+
         expect(storage.accounts.forget(hash('bob'))).toBe(true);
         expect(storage.accounts.forget(hash('bob'))).toBe(false);
 
@@ -508,7 +565,16 @@ describe('the entry of a player', () => {
         expect(storage.db.prepare('SELECT COUNT(*) AS totals FROM player_totals').get()).toEqual({ totals: 2 });
         expect(queries.getGame(1).players.map(({ name }) => name)).toEqual(['Alice', anonymous, 'Carl']);
         expect(queries.leaderboard('games', null).entries.map(({ name }) => name)).toEqual(['Alice', 'Carl']);
-        expect(storage.db.prepare('SELECT COUNT(*) AS games FROM games').get()).toEqual({ games: 2 });
+        expect(storage.db.prepare('SELECT COUNT(*) AS games FROM games').get()).toEqual({ games: 3 });
+
+        // The copy of the tag goes with the name: Alice keeps hers, Bob and his tag are gone
+        expect(
+            storage.db.prepare('SELECT slot, tag FROM game_players WHERE game_id = 3 ORDER BY slot').all()
+        ).toEqual([
+            { slot: 0, tag: 'team-a' },
+            { slot: 1, tag: null },
+            { slot: 2, tag: null }
+        ]);
     });
 });
 
@@ -558,6 +624,21 @@ describe('the HTTP interface for the own entry', () => {
         expect((await call('POST', '/me', codes.bob, { public: 'no' })).status).toBe(400);
         expect((await call('POST', '/me', codes.bob, '{not json')).status).toBe(400);
         expect((await call('POST', '/me', null, { public: true })).status).toBe(401);
+    });
+
+    it('keeps the free tag of the caller, and nobody else’s', async () => {
+        expect((await call('POST', '/me', codes.bob, { tag: 'Beta Team' })).status).toBe(200);
+        expect(await (await call('GET', '/me', codes.bob)).json()).toMatchObject({ known: true, tag: 'beta-team' });
+        expect(await (await call('GET', '/me', codes.alice)).json()).toMatchObject({ tag: null });
+
+        // A null clears it, an empty one is no tag, anything else is rejected
+        expect((await call('POST', '/me', codes.bob, { tag: null })).status).toBe(200);
+        expect(await (await call('GET', '/me', codes.bob)).json()).toMatchObject({ tag: null });
+        expect((await call('POST', '/me', codes.bob, { tag: '  ' })).status).toBe(200);
+        expect(await (await call('GET', '/me', codes.bob)).json()).toMatchObject({ tag: null });
+        expect((await call('POST', '/me', codes.bob, { tag: 42 })).status).toBe(400);
+        expect((await call('POST', '/me', codes.bob, {})).status).toBe(400);
+        expect((await call('POST', '/me', null, { tag: 'x' })).status).toBe(401);
     });
 
     it('rotates the code', async () => {

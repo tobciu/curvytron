@@ -128,4 +128,4 @@ export interface ApiMyFeat {
 
 /** What `/api/me` tells the browser about its own identity */
 export type ApiMe =
-    { known: false } | { known: true; name: string; public: boolean; totals: ApiMyTotals; feats: ApiMyFeat[] };
+    { known: false } | { known: true; name: string; public: boolean; tag: string | null; totals: ApiMyTotals; feats: ApiMyFeat[] };
