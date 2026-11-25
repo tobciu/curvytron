@@ -1,12 +1,13 @@
 <script setup lang="ts">
 /** A room: players, parameters and chat, until the master starts the game. */
-import { computed, onBeforeUnmount, ref, shallowRef, triggerRef } from 'vue';
+import { computed, onBeforeUnmount, ref, shallowRef, triggerRef, watch } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { BasePlayer } from '../../shared/model/BasePlayer.ts';
 import { gamepadListener } from '../gamepadListener.ts';
 import { useServices } from '../services';
 import { useEvents } from '../composables/useEmitter';
 import { pluralizePlayers } from '../utils';
+import { getUrlTag, urlWithTag } from '../url';
 import ChatPanel from '../components/ChatPanel.vue';
 import ColorPicker from '../components/ColorPicker.vue';
 import RoomParameters from '../components/RoomParameters.vue';
@@ -59,6 +60,8 @@ function onJoined(result: { success: boolean; room?: Room; name?: string; error?
         adoptOwnPlayers();
         attachEvents();
         addProfileUser();
+        applyUrlTag();
+        syncUrlTag();
         bump();
     } else {
         console.error('Could not join room %s: %s', result.name, result.error);
@@ -69,6 +72,53 @@ function onJoined(result: { success: boolean; room?: Room; name?: string; error?
 function goHome(): void {
     router.push('/');
 }
+
+/** The tag set from the URL is on its way to the server: the URL is not synced until it lands */
+let pendingUrlTag = false;
+
+/**
+ * A room link with a tag (`#/room/<name>?tag=daily`) sets the tag when the page opens: the
+ * master only (the server would refuse otherwise) and only when it differs from the current one.
+ */
+function applyUrlTag(): void {
+    const tag = getUrlTag(route.query);
+
+    if (!tag || !repository.amIMaster() || room.value?.tag === tag) {
+        return;
+    }
+
+    pendingUrlTag = true;
+
+    repository.setConfigTag(tag, () => {
+        pendingUrlTag = false;
+    });
+}
+
+/**
+ * The URL carries the tag, so a tagged room can be saved as a favorite: keep it in sync with the room.
+ */
+function syncUrlTag(): void {
+    if (pendingUrlTag) {
+        return;
+    }
+
+    const next = urlWithTag(route.query, room.value?.tag ?? null);
+
+    if (JSON.stringify(next) === JSON.stringify(route.query)) {
+        return;
+    }
+
+    router.replace({ query: next });
+}
+
+// The tag is applied and the url kept in sync both at the opening of the page and every time the url changes
+watch(
+    () => route.query.tag,
+    () => {
+        applyUrlTag();
+        syncUrlTag();
+    }
+);
 
 function leaveRoom(): void {
     if (room.value) {
@@ -102,7 +152,11 @@ useEvents(repository, ['player:join'], onJoin);
 useEvents(repository, ['room:master'], onRoomMaster);
 useEvents(repository, ['room:game:start'], start);
 useEvents(repository, ['room:config:open'], onConfigOpen);
-useEvents(repository, ['config:tag'], () => bump());
+useEvents(repository, ['config:tag'], () => {
+    pendingUrlTag = false;
+    bump();
+    syncUrlTag();
+});
 useEvents(repository, ['room:launch:start'], onLaunchStart);
 useEvents(repository, ['room:launch:cancel'], onLaunchCancel);
 

@@ -86,6 +86,52 @@ test('the room master changes when the master leaves', async ({ browser }) => {
     await expect(playerRows(bob)).toHaveCount(1);
 });
 
+test('the tag of the room is set from the url, and kept there as a favorite', async ({ browser }) => {
+    const alice = await openPlayer(browser, 'Alice', { color: '#ff0000' });
+    const name = roomName('urltag');
+
+    await createRoom(alice, name);
+
+    // The url carries the tag: the master sets it when the page opens
+    await alice.goto(`/#/room/${name}?tag=daily-runde`);
+
+    await expect(alice.locator('.room h2.header .tag')).toHaveText('#daily-runde');
+    await expect(alice).toHaveURL(new RegExp(`#/room/${name}\\?tag=daily-runde$`));
+
+    await alice.locator('.icon-params').click();
+    await expect(alice.locator('#room-tag')).toHaveValue('daily-runde');
+});
+
+test('a room link with a tag does nothing in the hands of a player', async ({ browser }) => {
+    const alice = await openPlayer(browser, 'Alice');
+    const bob = await openPlayer(browser, 'Bob');
+    const name = roomName('urltag-other');
+
+    await createRoom(alice, name);
+    await joinRoom(bob, name);
+
+    await bob.goto(`/#/room/${name}?tag=daily`);
+
+    // The link carries the tag, but only the master can set it: neither side sets it
+    await expect(bob.locator('.room h2.header .tag')).toHaveCount(0);
+    await expect(alice.locator('.room h2.header .tag')).toHaveCount(0);
+    await expect(bob).toHaveURL(new RegExp(`#/room/${name}$`));
+});
+
+test('changing the tag in the parameters keeps the url in sync', async ({ browser }) => {
+    const alice = await openPlayer(browser, 'Alice', { color: '#ff0000' });
+    const name = roomName('urltag-form');
+
+    await createRoom(alice, name);
+    await alice.locator('.icon-params').click();
+
+    await alice.locator('#room-tag').fill('My-Day');
+    await alice.locator('#room-tag').blur();
+
+    await expect(alice.locator('.room h2.header .tag')).toHaveText('#my-day');
+    await expect(alice).toHaveURL(new RegExp(`#/room/${name}\\?tag=my-day$`));
+});
+
 test('chat messages are shared', async ({ browser }) => {
     const name = roomName('chat');
     const alice = await openPlayer(browser, 'Alice');
