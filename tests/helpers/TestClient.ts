@@ -65,6 +65,13 @@ export class TestClient {
      * Wait for the next event with the given name (and matching the optional predicate)
      */
     waitFor(name: string, matches: (data: any) => boolean = () => true, timeout = 5000): Promise<any> {
+        // The event may have already arrived (e.g. `server:info`, sent by the server at once)
+        const pending = this.events.find(([eventName, data]) => eventName === name && matches(data));
+
+        if (pending) {
+            return Promise.resolve(pending[1]);
+        }
+
         return new Promise((resolve, reject) => {
             const timer = setTimeout(() => reject(new Error(`Timeout waiting for "${name}"`)), timeout);
 

@@ -261,17 +261,15 @@ describe('when the game is over', () => {
             mode: 'classic'
         });
         expect(await same).toMatchObject({ condition: 'points' });
-        const win = master.client.waitFor('room:config:win');
 
-        // Star Chase ends after rounds unless the master chooses otherwise, and tells it with the mode
+        // Star Chase is behind the feature toggle: the server rejects it and the room stays classic
         expect(await master.client.request('room:config:mode', { mode: 'starchase' })).toEqual({
-            success: true,
-            mode: 'starchase'
+            success: false,
+            mode: 'classic'
         });
-        expect(await win).toMatchObject({ condition: 'rounds' });
         expect(await master.client.request('room:config:mode', { mode: 'chaos' })).toEqual({
             success: false,
-            mode: 'starchase'
+            mode: 'classic'
         });
     });
 });

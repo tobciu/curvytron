@@ -1,6 +1,7 @@
 import { Room } from '../../src/server/model/Room.ts';
 import { Player } from '../../src/server/model/Player.ts';
 import { Collection } from '../../src/shared/Collection.ts';
+import { starChaseMode } from '../../src/server/scoring/StarChaseMode.ts';
 
 /** A client that is not connected to anything: it ignores what is sent to it. */
 export function createClient(id) {
@@ -30,6 +31,13 @@ export function createGame(names = ['Alice', 'Bob', 'Carl'], configure = null) {
         return player;
     });
     const game = room.newGame();
+
+    // Star Chase is behind the feature toggle: the game created here would be scored by the classic one.
+    // These tests exercise the rules of Star Chase directly, as the game does when the mode is enabled.
+    if (room.config.mode === 'starchase') {
+        game.scoring = starChaseMode;
+        game.warmdownTime = starChaseMode.warmdownTime;
+    }
 
     return { room, game, players, avatars: game.avatars.items };
 }

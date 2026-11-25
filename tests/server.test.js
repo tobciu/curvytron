@@ -26,6 +26,13 @@ afterAll(() => {
 });
 
 describe('socket protocol', () => {
+    it('tells the client which modes are enabled on connection', async () => {
+        const client = await connect();
+        const info = await client.waitFor('server:info');
+
+        expect(info.enabledModes).toEqual(['classic']);
+    });
+
     it('identifies clients', async () => {
         const client = await connect();
 

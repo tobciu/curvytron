@@ -147,6 +147,8 @@ export interface ClientEvents {
 /** `[avatar id, ...]`: the positions and the sizes are compressed (see `shared/service/Compressor.ts`) */
 export interface ServerEvents {
     latency: number;
+    /** Announces the modes the server has enabled, once the connection comes up: the page mirrors it in the room settings */
+    'server:info': { enabledModes: ScoringModeId[] };
     'client:add': number | { client: ClientData };
     'client:remove': number;
     'client:activity': { client: number; active: boolean };

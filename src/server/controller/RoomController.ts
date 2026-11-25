@@ -6,6 +6,7 @@ import { Player } from '../model/Player.ts';
 import { Chat } from '../service/Chat.ts';
 import { Collection } from '../../shared/Collection.ts';
 import { normalizeTag } from '../../shared/tag.ts';
+import { isScoringModeEnabled } from '../../shared/scoring.ts';
 import { invalidData, isShape, rules } from '../core/validate.ts';
 import type { SocketClient } from '../core/SocketClient.ts';
 import type { Room } from '../model/Room.ts';
@@ -773,7 +774,8 @@ export class RoomController extends EventEmitter {
             return callback?.(invalidData);
         }
 
-        const success = this.isRoomMaster(client) && this.room.config.setMode(data.mode);
+        // A mode behind the feature toggle can not be selected: the room stays in the classic one
+        const success = this.isRoomMaster(client) && isScoringModeEnabled(data.mode) && this.room.config.setMode(data.mode);
 
         callback?.({ success, mode: this.room.config.mode });
 

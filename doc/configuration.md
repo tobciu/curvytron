@@ -26,6 +26,19 @@ Details of `config.json`:
 | -------- | ---------------------------------------------------------------------------------------------- | ------------- | ------ | -------- |
 | port     | The port on which Curvytron server will run (the `PORT` environment variable takes precedence) | 8080          | Number | Required |
 
+**Scoring modes:**
+
+The modes that are still in development are hidden from the room settings and the rules page, and the server rejects them.
+A mode is disabled by default (`enabledScoringModes` in `src/shared/scoring.ts`, currently only `classic`). To publish a
+mode, flip it there, or set the environment variable:
+
+| Variable                | Description                                                                                              | Default value | Type   | Required |
+| ----------------------- | -------------------------------------------------------------------------------------------------------- | ------------- | ------ | -------- |
+| `ENABLED_SCORING_MODES` | Comma-separated list of the enabled modes (`classic`, `starchase`); unknown entries are ignored with a warning | none          | String | Optional |
+
+The list is read once at launch: the server announces it to every connecting browser, so the page follows without a
+rebuild. Unset means the default of the code.
+
 **Log:**
 
 What the server prints (clients, errors, warnings) can also be written to a file, with the time and the level of every
