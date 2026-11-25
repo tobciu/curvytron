@@ -526,6 +526,7 @@ describe('GameRepository', () => {
         const avatar = {
             id: 1,
             local: true,
+            player: { local: true },
             alive: true,
             x: 10,
             y: 20,
@@ -748,6 +749,15 @@ describe('GameRepository', () => {
         expect(game.avatars.getById(1).local).toBe(true);
         expect(game.avatars.getById(1).ready).toBe(true);
         expect(emitted).toContain('spectate');
+
+        // A spectator never becomes local: only its own avatars stay local
+        client.receive('spectate', { maxScore: 10, inRound: false, rendered: false, size: 80, away: [] });
+
+        game.avatars.getById(1).player = { local: false };
+        client.receive('spectate', { maxScore: 10, inRound: false, rendered: false, size: 80, away: [] });
+
+        expect(game.avatars.getById(1).local).toBe(false);
+        expect(game.avatars.getById(1).ready).toBe(true);
 
         game.newRound.mockClear();
         client.receive('spectate', { maxScore: 10, inRound: true, rendered: false, size: 80, away: [] });
